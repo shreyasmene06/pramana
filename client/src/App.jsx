@@ -28,8 +28,8 @@ import './App.css'
 const API = import.meta.env.VITE_API_BASE_URL || '';
 
 // App version — increment with each commit
-const TENALI_VERSION = '1.0.31'
-const TENALI_BUILD_DATE = '2026-04-27 07:45 IST'
+const TENALI_VERSION = '1.0.32'
+const TENALI_BUILD_DATE = '2026-04-27 08:02 IST'
 
 // Inject version badge into DOM once (appears on all routes)
 ;(() => {
@@ -6951,8 +6951,8 @@ function GymQuiz({ title, subtitle, typeKeys, welcomeText, algebraInput, onBack 
       )}
       {started && !finished && (
         <>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.3rem' }}>
-            <div className="progress-pill center">
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '20px' }}>
+            <div className="progress-pill">
               Question {questionNumber}{adaptive ? '' : `/${totalQ}`}
             </div>
             {question && <div className="progress-pill">{question.type}</div>}
