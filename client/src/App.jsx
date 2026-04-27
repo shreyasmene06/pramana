@@ -28,8 +28,8 @@ import './App.css'
 const API = import.meta.env.VITE_API_BASE_URL || '';
 
 // App version — increment with each commit
-const TENALI_VERSION = '1.0.28'
-const TENALI_BUILD_DATE = '2026-04-27 07:01 IST'
+const TENALI_VERSION = '1.0.31'
+const TENALI_BUILD_DATE = '2026-04-27 07:45 IST'
 
 // Inject version badge into DOM once (appears on all routes)
 ;(() => {
@@ -6131,6 +6131,84 @@ function AdditionApp({ onBack }) {
 
 /* ─── Gym puzzle infrastructure (shared by GymArithmetic, GymAlgebra, BasicGym) ─── */
 
+// LaTeX-style stacked fraction used by the Gym puzzles. Inline-friendly: aligns
+// with the surrounding text baseline. (A separate `Frac` component exists later in
+// the file with a slightly different visual style — kept distinct on purpose.)
+function MathFrac({ num, den }) {
+  return (
+    <span style={{
+      display: 'inline-flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      verticalAlign: '-0.45em',
+      margin: '0 0.18em',
+      lineHeight: 1.05,
+      fontSize: '0.95em',
+    }}>
+      <span style={{ padding: '0 0.35em', borderBottom: '1.5px solid currentColor' }}>{num}</span>
+      <span style={{ padding: '0.05em 0.35em 0' }}>{den}</span>
+    </span>
+  )
+}
+
+/**
+ * Render a math-ish string into JSX, typesetting:
+ *   \frac{NUM}{DEN}   → stacked fraction (recursive — NUM/DEN can themselves contain math)
+ *   ^N / ^-N          → superscript exponent (digits only, optional leading minus)
+ * Anything else passes through as plain text.
+ */
+function renderMath(text) {
+  if (text == null) return null
+  const out = []
+  let i = 0
+  let buf = ''
+  const flush = () => { if (buf) { out.push(buf); buf = '' } }
+  while (i < text.length) {
+    if (text.startsWith('\\frac{', i)) {
+      flush()
+      // Parse the two brace groups, supporting nesting.
+      let j = i + 6
+      let depth = 1
+      const ns = j
+      while (j < text.length) {
+        if (text[j] === '{') depth++
+        else if (text[j] === '}') { depth--; if (depth === 0) break }
+        j++
+      }
+      const numStr = text.slice(ns, j)
+      j++   // skip closing } of numerator
+      if (text[j] !== '{') { buf += text.slice(i, j); i = j; continue }
+      j++   // skip opening { of denominator
+      depth = 1
+      const ds = j
+      while (j < text.length) {
+        if (text[j] === '{') depth++
+        else if (text[j] === '}') { depth--; if (depth === 0) break }
+        j++
+      }
+      const denStr = text.slice(ds, j)
+      j++   // skip closing } of denominator
+      out.push(<MathFrac key={`f${out.length}`} num={renderMath(numStr)} den={renderMath(denStr)} />)
+      i = j
+    } else if (text[i] === '^') {
+      const m = text.slice(i).match(/^\^(-?\d+)/)
+      if (m) {
+        flush()
+        out.push(<sup key={`s${out.length}`} style={{ fontSize: '0.72em' }}>{m[1]}</sup>)
+        i += m[0].length
+      } else { buf += text[i]; i++ }
+    } else { buf += text[i]; i++ }
+  }
+  flush()
+  return out
+}
+
+// Strip math sentinels for plain-text contexts (e.g., the results table cells).
+function mathToPlain(text) {
+  if (text == null) return ''
+  return String(text).replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, '$1/$2')
+}
+
 // Pick a uniformly-random integer in [min, max] (inclusive).
 function gymPickInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min }
 function gymRandSign() { return Math.random() < 0.5 ? -1 : 1 }
@@ -6145,35 +6223,46 @@ function gymFormatDec(m, s, dp) {
 }
 
 // ─── Arithmetic generators (1–6) ───
+// Each generator accepts a difficulty parameter d ∈ [0, 1] (default 0.5).
+// d=0 → easiest variant of the type; d=1 → hardest variant.
 
-// (1) Signed 1- or 2-digit add/sub
-function gen_arith_add() {
-  const a = gymPickInt(1, 99) * gymRandSign()
-  const b = gymPickInt(1, 99) * gymRandSign()
+// Clamp a difficulty to [0, 1].
+function gymClampDiff(d) { return Math.min(1, Math.max(0, d == null ? 0.5 : d)) }
+
+// (1) Signed 1- or 2-digit add/sub. Larger magnitudes as d grows.
+function gen_arith_add(d) {
+  d = gymClampDiff(d)
+  const maxAbs = Math.max(5, Math.round(5 + 94 * d))   // 5 at d=0, 99 at d=1
+  const a = gymPickInt(1, maxAbs) * gymRandSign()
+  const b = gymPickInt(1, maxAbs) * gymRandSign()
   const op = Math.random() < 0.5 ? '+' : '−'
   const result = op === '+' ? a + b : a - b
   const aStr = a < 0 ? `(${a})` : String(a)
   const bStr = b < 0 ? `(${b})` : String(b)
-  return { type: 'Add/Sub', prompt: `${aStr} ${op} ${bStr} = ?`, kind: 'integer', answer: result }
+  return { type: 'Add/Sub', difficulty: d, prompt: `${aStr} ${op} ${bStr} = ?`, kind: 'integer', answer: result }
 }
 
-// (2) Multiplication: 1d × 1d (90%); 1d × 2d (~10%, very rare)
-function gen_arith_mul() {
+// (2) Multiplication: mostly 1d × 1d. Chance of 1d × 2d grows with d.
+function gen_arith_mul(d) {
+  d = gymClampDiff(d)
+  const rare2dChance = 0.05 + 0.25 * d        // 5% at d=0, 17% at d=0.5, 30% at d=1
   let a, b
-  if (Math.random() < 0.1) {
+  if (Math.random() < rare2dChance) {
     const oneDig = gymPickInt(2, 9) * gymRandSign()
     const twoDig = gymPickInt(10, 99) * gymRandSign()
     if (Math.random() < 0.5) { a = oneDig; b = twoDig } else { a = twoDig; b = oneDig }
   } else {
-    a = gymPickInt(2, 9) * gymRandSign()
-    b = gymPickInt(2, 9) * gymRandSign()
+    const maxFactor = Math.max(5, Math.round(5 + 4 * d))   // 5 at d=0, 9 at d=1
+    a = gymPickInt(2, maxFactor) * gymRandSign()
+    b = gymPickInt(2, maxFactor) * gymRandSign()
   }
-  return { type: 'Multiply', prompt: `${gymSigned(a)} × ${gymSigned(b)} = ?`, kind: 'integer', answer: a * b }
+  return { type: 'Multiply', difficulty: d, prompt: `${gymSigned(a)} × ${gymSigned(b)} = ?`, kind: 'integer', answer: a * b }
 }
 
-// (3) Divisible fraction → integer (1-digit or 2-digit pair, signed)
-function gen_arith_fracdiv() {
-  const twoDigit = Math.random() < 0.5
+// (3) Divisible fraction → integer. d controls 1-digit vs 2-digit pair likelihood.
+function gen_arith_fracdiv(d) {
+  d = gymClampDiff(d)
+  const twoDigit = Math.random() < d
   let num, den
   if (twoDigit) {
     const q = gymPickInt(2, 9)
@@ -6183,17 +6272,18 @@ function gen_arith_fracdiv() {
     den = denMag * gymRandSign()
   } else {
     const opts = []
-    for (let n = 2; n <= 9; n++) for (let d = 2; d <= 9; d++) if (n !== d && n % d === 0) opts.push([n, d])
+    for (let n = 2; n <= 9; n++) for (let dd = 2; dd <= 9; dd++) if (n !== dd && n % dd === 0) opts.push([n, dd])
     const [nMag, dMag] = opts[Math.floor(Math.random() * opts.length)]
     num = nMag * gymRandSign()
     den = dMag * gymRandSign()
   }
-  return { type: 'Fraction ÷', prompt: `${gymSigned(num)} / ${gymSigned(den)} = ?`, kind: 'integer', answer: num / den }
+  return { type: 'Fraction ÷', difficulty: d, prompt: `\\frac{${num}}{${den}} = ?`, kind: 'integer', answer: num / den }
 }
 
-// (4) Reduce a fraction (1-digit pair or 2-digit pair, signed)
-function gen_arith_fracred() {
-  const twoDigit = Math.random() < 0.5
+// (4) Reduce a fraction. d controls 1-digit vs 2-digit pair likelihood.
+function gen_arith_fracred(d) {
+  d = gymClampDiff(d)
+  const twoDigit = Math.random() < d
   let num, den, redN, redD
   if (twoDigit) {
     let a, b
@@ -6206,7 +6296,7 @@ function gen_arith_fracred() {
     const lo = Math.ceil(10 / Math.min(a, b))
     const hi = Math.floor(99 / Math.max(a, b))
     const gMin = Math.max(lo, 2)
-    if (hi < gMin) return gen_arith_fracred()
+    if (hi < gMin) return gen_arith_fracred(d)
     const g = gymPickInt(gMin, hi)
     num = g * a * gymRandSign()
     den = g * b * gymRandSign()
@@ -6223,20 +6313,24 @@ function gen_arith_fracred() {
   }
   const sign = (num < 0 ? -1 : 1) * (den < 0 ? -1 : 1)
   redN = sign * redN
-  return { type: 'Reduce', prompt: `Reduce: ${gymSigned(num)}/${gymSigned(den)}`, kind: 'fraction', answer: { n: redN, d: redD } }
+  return { type: 'Reduce', difficulty: d, prompt: `Reduce: \\frac{${num}}{${den}}`, kind: 'fraction', answer: { n: redN, d: redD } }
 }
 
-// (5) Decimal multiplication; never two 2-digit mantissas
-function gen_arith_decarith() {
+// (5) Decimal multiplication; never two 2-digit mantissas.
+// d controls (a) chance of one operand being 2-digit and (b) max decimal places.
+function gen_arith_decarith(d) {
+  d = gymClampDiff(d)
+  const twoDigChance = d                                         // 0% → 100%
+  const maxDp = Math.max(0, Math.round(0.5 + d * 2.5))            // 1 at d=0, 2 at d=0.5, 3 at d=1
   let m1, m2
-  if (Math.random() < 0.5) {
+  if (Math.random() >= twoDigChance) {
     m1 = gymPickInt(1, 9); m2 = gymPickInt(1, 9)
   } else {
     m1 = gymPickInt(1, 9); m2 = gymPickInt(10, 99)
     if (Math.random() < 0.5) { [m1, m2] = [m2, m1] }
   }
-  const dp1 = gymPickInt(0, 3)
-  const dp2 = gymPickInt(0, 3)
+  const dp1 = gymPickInt(0, maxDp)
+  const dp2 = gymPickInt(0, maxDp)
   const s1 = gymRandSign()
   const s2 = gymRandSign()
   const d1 = gymFormatDec(m1, s1, dp1)
@@ -6255,11 +6349,12 @@ function gen_arith_decarith() {
     resultStr = signPrefix + (fracP ? `${Number(intP)}.${fracP}` : `${Number(intP)}`)
   }
   const exactValue = (sign * numerMag) / Math.pow(10, totalDp)
-  return { type: 'Decimal ×', prompt: `${d1} × ${d2} = ?`, kind: 'decimal', answer: { decimal: resultStr, exactValue } }
+  return { type: 'Decimal ×', difficulty: d, prompt: `${d1} × ${d2} = ?`, kind: 'decimal', answer: { decimal: resultStr, exactValue } }
 }
 
-// (6) Decimal fraction reduction — 2-digit × 2-digit mantissas, up to 4 dp
-function gen_arith_decfracred() {
+// (6) Decimal fraction reduction — 2-digit × 2-digit mantissas. d controls dp.
+function gen_arith_decfracred(d) {
+  d = gymClampDiff(d)
   let a, b
   let attempts = 0
   while (true) {
@@ -6270,15 +6365,16 @@ function gen_arith_decfracred() {
   const lo = Math.ceil(10 / Math.min(a, b))
   const hi = Math.floor(99 / Math.max(a, b))
   const gMin = Math.max(lo, 2)
-  if (hi < gMin) return gen_arith_decfracred()
+  if (hi < gMin) return gen_arith_decfracred(d)
   const g = gymPickInt(gMin, hi)
-  const dp = gymPickInt(1, 4)
+  const maxDp = Math.max(1, Math.round(1 + d * 3))             // 1 at d=0, 4 at d=1
+  const dp = gymPickInt(1, maxDp)
   const sa = gymRandSign()
   const sb = gymRandSign()
   const numStr = gymFormatDec(g * a, sa, dp)
   const denStr = gymFormatDec(g * b, sb, dp)
   const sign = sa * sb
-  return { type: 'Decimal Reduce', prompt: `Reduce: ${numStr}/${denStr}`, kind: 'fraction', answer: { n: sign * a, d: b } }
+  return { type: 'Decimal Reduce', difficulty: d, prompt: `Reduce: \\frac{${numStr}}{${denStr}}`, kind: 'fraction', answer: { n: sign * a, d: b } }
 }
 
 // ─── Polynomial helpers (shared by algebra generators + answer parser) ───
@@ -6402,65 +6498,83 @@ const GYM_DIV_PAIRS = (() => {
 
 // ─── Algebra generators (7–12) ───
 // All operands have 1-digit signed coefficients so every multiplication remains 1-digit × 1-digit.
+// Each generator takes a difficulty d ∈ [0, 1] (default 0.5).
 
-// (7) Single-term mul or div: (ax^p)(bx^q) or (ax^p)/(bx^q)
-function gen_alg_term() {
+// (7) Single-term mul or div. d controls power range.
+function gen_alg_term(d) {
+  d = gymClampDiff(d)
+  const maxPow = Math.max(2, Math.round(2 + d * 7))   // 2 at d=0, 5 at d=0.5, 9 at d=1
   const isMul = Math.random() < 0.5
   if (isMul) {
     const a = gymPickInt(2, 9) * gymRandSign()
     const b = gymPickInt(2, 9) * gymRandSign()
-    const p = gymPickInt(1, 9)
-    const q = gymPickInt(1, 9)
-    return { type: 'Single Term ×', prompt: `(${gymFormatTerm(a, p)})(${gymFormatTerm(b, q)}) = ?`, kind: 'polynomial', answer: { [p + q]: a * b } }
+    const p = gymPickInt(1, maxPow)
+    const q = gymPickInt(1, maxPow)
+    return { type: 'Single Term ×', difficulty: d, prompt: `(${gymFormatTerm(a, p)})(${gymFormatTerm(b, q)}) = ?`, kind: 'polynomial', answer: { [p + q]: a * b } }
   }
   const [aMag, bMag] = GYM_DIV_PAIRS[Math.floor(Math.random() * GYM_DIV_PAIRS.length)]
   const a = aMag * gymRandSign()
   const b = bMag * gymRandSign()
-  const q = gymPickInt(1, 7)
-  const p = q + gymPickInt(1, Math.max(1, 9 - q))
-  return { type: 'Single Term ÷', prompt: `(${gymFormatTerm(a, p)}) / (${gymFormatTerm(b, q)}) = ?`, kind: 'polynomial', answer: { [p - q]: a / b } }
+  const qPow = gymPickInt(1, Math.max(1, maxPow - 1))
+  const pPow = qPow + gymPickInt(1, Math.max(1, maxPow - qPow))
+  return { type: 'Single Term ÷', difficulty: d, prompt: `\\frac{${gymFormatTerm(a, pPow)}}{${gymFormatTerm(b, qPow)}} = ?`, kind: 'polynomial', answer: { [pPow - qPow]: a / b } }
 }
 
-// (8) Multiply two degree-1 polynomials: (ax + b)(cx + d)
-function gen_alg_mul1() {
-  const p1 = { 1: gymPickInt(1, 9) * gymRandSign(), 0: gymPickInt(1, 9) * gymRandSign() }
-  const p2 = { 1: gymPickInt(1, 9) * gymRandSign(), 0: gymPickInt(1, 9) * gymRandSign() }
-  return { type: 'Multiply (deg 1)', prompt: `(${gymFormatPoly(p1)})(${gymFormatPoly(p2)}) = ?`, kind: 'polynomial', answer: gymMultiplyPolys(p1, p2) }
+// (8) Multiply two degree-1 polynomials. d controls coefficient magnitude.
+function gen_alg_mul1(d) {
+  d = gymClampDiff(d)
+  const maxC = Math.max(2, Math.round(3 + d * 6))   // 3 at d=0, 6 at d=0.5, 9 at d=1
+  const p1 = { 1: gymPickInt(1, maxC) * gymRandSign(), 0: gymPickInt(1, maxC) * gymRandSign() }
+  const p2 = { 1: gymPickInt(1, maxC) * gymRandSign(), 0: gymPickInt(1, maxC) * gymRandSign() }
+  return { type: 'Multiply (deg 1)', difficulty: d, prompt: `(${gymFormatPoly(p1)})(${gymFormatPoly(p2)}) = ?`, kind: 'polynomial', answer: gymMultiplyPolys(p1, p2) }
 }
 
-// (9) Add two degree-1 polynomials
-function gen_alg_add1() {
-  const p1 = { 1: gymPickInt(1, 9) * gymRandSign(), 0: gymPickInt(1, 9) * gymRandSign() }
-  const p2 = { 1: gymPickInt(1, 9) * gymRandSign(), 0: gymPickInt(1, 9) * gymRandSign() }
-  return { type: 'Add (deg 1)', prompt: `(${gymFormatPoly(p1)}) + (${gymFormatPoly(p2)}) = ?`, kind: 'polynomial', answer: gymAddPolys(p1, p2) }
+// (9) Add two degree-1 polynomials. d controls coefficient magnitude.
+function gen_alg_add1(d) {
+  d = gymClampDiff(d)
+  const maxC = Math.max(2, Math.round(3 + d * 6))
+  const p1 = { 1: gymPickInt(1, maxC) * gymRandSign(), 0: gymPickInt(1, maxC) * gymRandSign() }
+  const p2 = { 1: gymPickInt(1, maxC) * gymRandSign(), 0: gymPickInt(1, maxC) * gymRandSign() }
+  return { type: 'Add (deg 1)', difficulty: d, prompt: `(${gymFormatPoly(p1)}) + (${gymFormatPoly(p2)}) = ?`, kind: 'polynomial', answer: gymAddPolys(p1, p2) }
 }
 
-// (10) Multiply two polynomials of degree ≤ 3 (each in {2, 3} for variety vs type 8)
-function gen_alg_mul3() {
-  const p1 = gymRandPoly(gymPickInt(2, 3))
-  const p2 = gymRandPoly(gymPickInt(2, 3))
-  return { type: 'Multiply (deg ≤ 3)', prompt: `(${gymFormatPoly(p1)})(${gymFormatPoly(p2)}) = ?`, kind: 'polynomial', answer: gymMultiplyPolys(p1, p2) }
+// (10) Multiply two polynomials of degree ≤ 3. d controls degree (and coefficient size).
+function gen_alg_mul3(d) {
+  d = gymClampDiff(d)
+  const deg1 = Math.random() < d ? 3 : 2
+  const deg2 = Math.random() < d ? 3 : 2
+  const p1 = gymRandPoly(deg1)
+  const p2 = gymRandPoly(deg2)
+  return { type: 'Multiply (deg ≤ 3)', difficulty: d, prompt: `(${gymFormatPoly(p1)})(${gymFormatPoly(p2)}) = ?`, kind: 'polynomial', answer: gymMultiplyPolys(p1, p2) }
 }
 
-// (11) Add two polynomials of degree ≤ 3
-function gen_alg_add3() {
-  const p1 = gymRandPoly(gymPickInt(1, 3))
-  const p2 = gymRandPoly(gymPickInt(1, 3))
-  return { type: 'Add (deg ≤ 3)', prompt: `(${gymFormatPoly(p1)}) + (${gymFormatPoly(p2)}) = ?`, kind: 'polynomial', answer: gymAddPolys(p1, p2) }
+// (11) Add two polynomials of degree ≤ 3. d controls degree.
+function gen_alg_add3(d) {
+  d = gymClampDiff(d)
+  const targetDeg = (jitter) => Math.max(1, Math.min(3, Math.round(1 + d * 2 + jitter)))
+  const deg1 = targetDeg((Math.random() - 0.5) * 1.0)
+  const deg2 = targetDeg((Math.random() - 0.5) * 1.0)
+  const p1 = gymRandPoly(deg1)
+  const p2 = gymRandPoly(deg2)
+  return { type: 'Add (deg ≤ 3)', difficulty: d, prompt: `(${gymFormatPoly(p1)}) + (${gymFormatPoly(p2)}) = ?`, kind: 'polynomial', answer: gymAddPolys(p1, p2) }
 }
 
-// (12) Solve ax + b = c for integer x (x in -9..9 \ {0}, a 1-digit nonzero, b 1-digit signed)
-function gen_alg_lineq() {
+// (12) Solve ax + b = c for integer x. d controls magnitude of x, a, b.
+function gen_alg_lineq(d) {
+  d = gymClampDiff(d)
+  const maxX = Math.max(3, Math.round(3 + d * 6))   // 3 at d=0, 9 at d=1
+  const maxA = Math.max(2, Math.round(2 + d * 7))   // 2 at d=0, 9 at d=1
+  const maxB = Math.max(3, Math.round(3 + d * 6))
   let x
-  do { x = gymPickInt(-9, 9) } while (x === 0)
-  const a = gymPickInt(2, 9) * gymRandSign()
-  const b = gymPickInt(-9, 9)
+  do { x = gymPickInt(-maxX, maxX) } while (x === 0)
+  const a = gymPickInt(2, maxA) * gymRandSign()
+  const b = gymPickInt(-maxB, maxB)
   const c = a * x + b
   const aStr = a === 1 ? 'x' : a === -1 ? '-x' : `${a}x`
   let bStr = ''
   if (b > 0) bStr = ` + ${b}`
   else if (b < 0) bStr = ` − ${-b}`
-  return { type: 'Solve x', prompt: `${aStr}${bStr} = ${c},   x = ?`, kind: 'integer', answer: x }
+  return { type: 'Solve x', difficulty: d, prompt: `${aStr}${bStr} = ${c},   x = ?`, kind: 'integer', answer: x }
 }
 
 // ─── Type registry & key groupings ───
@@ -6512,7 +6626,7 @@ function gymFormatAnswer(q) {
   if (q.kind === 'integer') return String(q.answer)
   if (q.kind === 'fraction') {
     const { n, d } = q.answer
-    return d === 1 ? String(n) : `${n}/${d}`
+    return d === 1 ? String(n) : `\\frac{${n}}{${d}}`
   }
   if (q.kind === 'decimal') return q.answer.decimal
   if (q.kind === 'polynomial') return gymFormatPoly(q.answer)
@@ -6520,8 +6634,11 @@ function gymFormatAnswer(q) {
 }
 
 function gymCheckAnswer(q, raw) {
-  const trimmed = String(raw).trim()
+  let trimmed = String(raw).trim()
   if (!trimmed) return false
+  // Accept \frac{a}{b} as an equivalent form of "a/b" (e.g., copied from the prompt).
+  const fracMatch = trimmed.match(/^\\frac\{([^{}]+)\}\{([^{}]+)\}$/)
+  if (fracMatch) trimmed = `${fracMatch[1]}/${fracMatch[2]}`
   if (q.kind === 'polynomial') {
     const userPoly = gymParsePoly(trimmed)
     if (!userPoly) return false
@@ -6576,9 +6693,11 @@ function GymQuiz({ title, subtitle, typeKeys, welcomeText, algebraInput, onBack 
   const [numQuestions, setNumQuestions] = useState(String(DEFAULT_TOTAL))
   const [started, setStarted] = useState(false)
   const [finished, setFinished] = useState(false)
+  const [adaptive, setAdaptive] = useState(false)             // Adaptive mode: infinite stream until Stop
+  // plan is an array of { type, difficulty }. Empty in adaptive mode.
   const [plan, setPlan] = useState([])
   const [questionNumber, setQuestionNumber] = useState(0)
-  const [totalQ, setTotalQ] = useState(DEFAULT_TOTAL)
+  const [totalQ, setTotalQ] = useState(DEFAULT_TOTAL)         // Infinity in adaptive mode
   const [question, setQuestion] = useState(null)
   const [answer, setAnswer] = useState('')
   const [score, setScore] = useState(0)
@@ -6588,20 +6707,31 @@ function GymQuiz({ title, subtitle, typeKeys, welcomeText, algebraInput, onBack 
   const [results, setResults] = useState([])
   const timer = useTimer()
 
+  // Adaptive difficulty: 0 (easy) → 1 (hard). Updated after each answer.
+  // Use a ref so the very next loadQuestion call picks up the latest value
+  // without waiting for state to flush.
+  const [adaptDiff, setAdaptDiff] = useState(0.3)
+  const adaptDiffRef = useRef(0.3)
+
+  // Build the plan: each slot gets a (type, difficulty) pair.
+  // Difficulty grows linearly from ~0 at the first slot to ~1 at the last slot,
+  // so the user sees increasing difficulty over the session.
   const buildPlan = (count) => {
+    const types = []
     if (ordering === 'sequential') {
       const per = Math.floor(count / typeKeys.length)
       const rem = count % typeKeys.length
-      const p = []
       typeKeys.forEach((t, i) => {
         const n = per + (i < rem ? 1 : 0)
-        for (let j = 0; j < n; j++) p.push(t)
+        for (let j = 0; j < n; j++) types.push(t)
       })
-      return p
+    } else {
+      for (let i = 0; i < count; i++) types.push(typeKeys[Math.floor(Math.random() * typeKeys.length)])
     }
-    const p = []
-    for (let i = 0; i < count; i++) p.push(typeKeys[Math.floor(Math.random() * typeKeys.length)])
-    return p
+    return types.map((t, i) => ({
+      type: t,
+      difficulty: count > 1 ? i / (count - 1) : 0.5,
+    }))
   }
 
   const startQuiz = () => {
@@ -6609,23 +6739,73 @@ function GymQuiz({ title, subtitle, typeKeys, welcomeText, algebraInput, onBack 
     const p = buildPlan(count)
     setPlan(p)
     setTotalQ(p.length)
+    setAdaptive(false)
     setStarted(true)
     setFinished(false)
     setScore(0)
     setQuestionNumber(1)
     setResults([])
-    loadQuestion(p, 0)
+    loadQuestion(p, 0, false)
   }
 
-  const loadQuestion = (planArr, idx) => {
+  // Adaptive: skip the count input and start an infinite stream of questions whose
+  // difficulty floats between 0 and 1 based on user performance. Stop ends it.
+  const startAdaptive = () => {
+    setPlan([])
+    setTotalQ(Infinity)
+    setAdaptive(true)
+    setStarted(true)
+    setFinished(false)
+    setScore(0)
+    setQuestionNumber(1)
+    setResults([])
+    setAdaptDiff(0.3)
+    adaptDiffRef.current = 0.3
+    loadQuestion(null, 0, true)
+  }
+
+  const loadQuestion = (planArr, idx, forceAdaptive) => {
     setAnswer('')
     setFeedback('')
     setIsCorrect(null)
     setRevealed(false)
-    const t = planArr[idx]
+    const useAdaptive = forceAdaptive !== undefined ? forceAdaptive : adaptive
+    let t, d
+    if (useAdaptive) {
+      t = typeKeys[Math.floor(Math.random() * typeKeys.length)]
+      d = adaptDiffRef.current
+    } else {
+      const slot = planArr ? planArr[idx] : null
+      t = slot ? slot.type : typeKeys[0]
+      d = slot ? slot.difficulty : 0.5
+    }
     const gen = GYM_TYPES[t]?.generator
-    setQuestion(gen ? gen() : null)
+    setQuestion(gen ? gen(d) : null)
     timer.start()
+  }
+
+  // Stop button (adaptive mode only): end the session and show the results screen.
+  const handleStop = () => {
+    setFinished(true)
+    setQuestion(null)
+    timer.reset()
+  }
+
+  // Adaptive difficulty update: rewards correctness AND speed; penalises wrong answers more strongly.
+  const updateAdaptDiff = (correct, timeSec) => {
+    let delta
+    if (correct) {
+      // Faster answers are weighted higher: < 4s → +0.07, 4-10s → +0.04, > 10s → +0.015
+      if (timeSec < 4) delta = 0.07
+      else if (timeSec < 10) delta = 0.04
+      else delta = 0.015
+    } else {
+      // Wrong answers drop difficulty more aggressively
+      delta = -0.10
+    }
+    const next = Math.min(1, Math.max(0, adaptDiffRef.current + delta))
+    adaptDiffRef.current = next
+    setAdaptDiff(next)
   }
 
   const handleSubmitOrNext = () => {
@@ -6637,22 +6817,25 @@ function GymQuiz({ title, subtitle, typeKeys, welcomeText, algebraInput, onBack 
       const timeTaken = timer.stop()
       setIsCorrect(correct)
       if (correct) setScore(s => s + 1)
+      if (adaptive) updateAdaptDiff(correct, timeTaken)
       const corrStr = gymFormatAnswer(question)
       const promptStem = question.prompt.replace(/\s*=\s*\?\s*$/, '')
       setFeedback(correct
         ? `Correct! ${promptStem} = ${corrStr}`
         : `Incorrect. ${promptStem} = ${corrStr}`)
       setResults(prev => [...prev, {
-        question: `[${question.type}] ${question.prompt}`,
+        question: `[${question.type}] ${mathToPlain(question.prompt)}`,
         userAnswer: answer,
-        correctAnswer: corrStr,
+        correctAnswer: mathToPlain(corrStr),
         correct,
         time: timeTaken,
       }])
       setRevealed(true)
       return
     }
-    if (questionNumber >= totalQ) {
+    // Advancing past a revealed question. In fixed-length mode we can finish naturally.
+    // In adaptive mode totalQ is Infinity so this branch never fires — only Stop ends it.
+    if (!adaptive && questionNumber >= totalQ) {
       setFinished(true)
       setQuestion(null)
       timer.reset()
@@ -6670,12 +6853,13 @@ function GymQuiz({ title, subtitle, typeKeys, welcomeText, algebraInput, onBack 
     setIsCorrect(false)
     setFeedback(`Solution: ${promptStem} = ${corrStr}`)
     setResults(prev => [...prev, {
-      question: `[${question.type}] ${question.prompt}`,
+      question: `[${question.type}] ${mathToPlain(question.prompt)}`,
       userAnswer: '—',
-      correctAnswer: corrStr,
+      correctAnswer: mathToPlain(corrStr),
       correct: false,
       time: timeTaken,
     }])
+    if (adaptive) updateAdaptDiff(false, timeTaken)
     setRevealed(true)
   }
 
@@ -6726,6 +6910,9 @@ function GymQuiz({ title, subtitle, typeKeys, welcomeText, algebraInput, onBack 
   const inputPlaceholder = algebraInput ? 'integer, decimal, fraction, or polynomial (e.g. 6x^2-3x+1)' : 'integer, decimal, or a/b'
   const orderingFieldName = `${title.replace(/\s+/g, '')}-order`
 
+  // Average time per answered question (used in the finish summary).
+  const avgTime = results.length > 0 ? (results.reduce((s, r) => s + r.time, 0) / results.length).toFixed(1) : '—'
+
   return (
     <QuizLayout title={title} subtitle={subtitle} onBack={onBack} timer={started && !finished ? timer : null}>
       {!started && !finished && (
@@ -6745,31 +6932,63 @@ function GymQuiz({ title, subtitle, typeKeys, welcomeText, algebraInput, onBack 
             <label className="question-count-label">How many questions?</label>
             <input className="answer-input question-count-input" type="text" value={numQuestions} onChange={(e) => { const v = e.target.value; if (v === '' || /^\d+$/.test(v)) setNumQuestions(v) }} placeholder={String(DEFAULT_TOTAL)} />
           </div>
-          <div className="button-row"><button onClick={startQuiz}>Start Workout</button></div>
+          <p style={{ fontSize: '0.85rem', color: 'var(--clr-dim)', textAlign: 'center', margin: '0 0 8px' }}>
+            Questions are sorted easy → hard across the session.
+          </p>
+          <div className="button-row" style={{ gap: '0.6rem' }}>
+            <button onClick={startQuiz}>Start Workout</button>
+            <button
+              onClick={startAdaptive}
+              style={{ background: 'linear-gradient(135deg, #4caf50, #ff9800, #f44336, #9c27b0)', color: '#fff', border: 'none' }}
+            >
+              Adaptive
+            </button>
+          </div>
+          <p style={{ fontSize: '0.78rem', color: 'var(--clr-dim)', textAlign: 'center', margin: '8px 0 0' }}>
+            Adaptive: infinite stream that adjusts to your performance. Stop anytime.
+          </p>
         </div>
       )}
       {started && !finished && (
         <>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.3rem' }}>
-            <div className="progress-pill center">Question {questionNumber}/{totalQ}</div>
+            <div className="progress-pill center">
+              Question {questionNumber}{adaptive ? '' : `/${totalQ}`}
+            </div>
             {question && <div className="progress-pill">{question.type}</div>}
           </div>
-          <div className="question-box">{question ? question.prompt : 'Loading…'}</div>
+          {adaptive && (
+            <DifficultySlider
+              pct={adaptDiff * 100}
+              onChange={(p) => { const v = p / 100; adaptDiffRef.current = v; setAdaptDiff(v) }}
+            />
+          )}
+          <div className="question-box">{question ? renderMath(question.prompt) : 'Loading…'}</div>
           <input className="answer-input" type="text" value={answer}
             onChange={(e) => { if (!revealed) { const v = e.target.value; if (v === '' || inputCharRegex.test(v)) setAnswer(v) } }}
             disabled={revealed}
             placeholder={inputPlaceholder}
           />
           <NumPad value={answer} onChange={(v) => !revealed && setAnswer(v)} disabled={revealed} showDecimal showSlash showCaret={!!algebraInput} showX={!!algebraInput} />
-          {renderFeedback(feedback, isCorrect)}
-          <div className="button-row">
+          {feedback && (
+            <div className={`feedback ${isCorrect ? 'correct' : 'wrong'}`}>{renderMath(feedback)}</div>
+          )}
+          <div className="button-row" style={{ flexWrap: 'wrap', gap: '0.5rem' }}>
             {!revealed ? (
               <>
                 <button onClick={handleSubmitOrNext} disabled={String(answer).trim() === '' || answer === '-' || answer === '.' || answer === '/'}>Submit</button>
                 <button onClick={handleSolve} style={{ background: 'transparent', border: '1px solid var(--clr-accent)', color: 'var(--clr-accent)' }}>Solve</button>
+                {adaptive && (
+                  <button onClick={handleStop} style={{ background: 'transparent', border: '1px solid #d32f2f', color: '#d32f2f' }}>Stop</button>
+                )}
               </>
             ) : (
-              <button onClick={handleSubmitOrNext}>{questionNumber >= totalQ ? 'Finish Quiz' : 'Next Question'}</button>
+              <>
+                <button onClick={handleSubmitOrNext}>{!adaptive && questionNumber >= totalQ ? 'Finish Quiz' : 'Next Question'}</button>
+                {adaptive && (
+                  <button onClick={handleStop} style={{ background: 'transparent', border: '1px solid #d32f2f', color: '#d32f2f' }}>Stop</button>
+                )}
+              </>
             )}
           </div>
           {results.length > 0 && <ResultsTable results={results} />}
@@ -6777,10 +6996,18 @@ function GymQuiz({ title, subtitle, typeKeys, welcomeText, algebraInput, onBack 
       )}
       {finished && (
         <div className="welcome-box">
-          <p className="welcome-text">Workout complete.</p>
-          <p className="final-score">Final score: {score}/{totalQ}</p>
+          <p className="welcome-text">{adaptive ? 'Adaptive workout stopped.' : 'Workout complete.'}</p>
+          {adaptive
+            ? <p className="final-score">Score: {score}/{results.length}</p>
+            : <p className="final-score">Final score: {score}/{totalQ}</p>}
+          <p className="final-score" style={{ fontSize: '0.95rem' }}>
+            Average time per question: {avgTime}s
+          </p>
           <ResultsTable results={results} />
-          <button onClick={() => { setStarted(false); setFinished(false) }}>Play Again</button>
+          <div className="button-row" style={{ gap: '0.5rem' }}>
+            <button onClick={() => { setStarted(false); setFinished(false); setAdaptive(false) }}>Play Again</button>
+            <button onClick={onBack} style={{ background: 'transparent', border: '1px solid var(--clr-accent)', color: 'var(--clr-accent)' }}>Back to Home</button>
+          </div>
         </div>
       )}
     </QuizLayout>
