@@ -28,8 +28,8 @@ import './App.css'
 const API = import.meta.env.VITE_API_BASE_URL || '';
 
 // App version — increment with each commit
-const TENALI_VERSION = '1.0.25'
-const TENALI_BUILD_DATE = '2026-04-24 10:32 IST'
+const TENALI_VERSION = '1.0.28'
+const TENALI_BUILD_DATE = '2026-04-27 07:01 IST'
 
 // Inject version badge into DOM once (appears on all routes)
 ;(() => {
@@ -5413,6 +5413,9 @@ function App() {
     tatsavit: TatsavitApp,         // Tatsavit (progressive math drill)
     randommix: RandomMixApp,       // Random Mix (adaptive)
     custom: CustomApp,             // Custom lesson builder
+    gymarithmetic: GymArithmeticApp, // GymArithmetic — 6 arithmetic stations
+    gymalgebra: GymAlgebraApp,     // GymAlgebra — 6 algebra stations
+    basicgym: BasicGymApp,         // Basic Gym — combined arithmetic + algebra (12 stations)
   }
 
   // Get the component to render (or null if mode not set)
@@ -5523,6 +5526,9 @@ function Home({ onSelect }) {
     { key: 'vectors', name: 'Vectors', subtitle: 'Add, scale, magnitude', color: 'blue' },
     { key: 'vocab', name: 'Vocabulary', subtitle: 'Match words to definitions', color: 'green' },
     { key: 'spot', name: 'Twin Hunt', subtitle: 'Find the common object', color: 'purple' },
+    { key: 'gymarithmetic', name: 'GymArithmetic', subtitle: 'Mixed arithmetic workout (6 stations)', color: 'blue' },
+    { key: 'gymalgebra', name: 'GymAlgebra', subtitle: 'Mixed algebra workout (6 stations)', color: 'green' },
+    { key: 'basicgym', name: 'Basic Gym', subtitle: 'Combined arithmetic + algebra (12 stations)', color: 'purple' },
   ]
 
   // Combined list for search filtering
@@ -5960,11 +5966,31 @@ function AdditionApp({ onBack }) {
     await fetchQuestion(difficulty)
   }
 
+  // Keyboard shortcuts for faster numeric entry (without needing input focus)
+  // Digits 0-9: append to answer
+  // Minus (-): toggle negative sign
+  // Backspace: delete last character
+  // Enter: submit or next
   useEffect(() => {
     const onKeyDown = (event) => {
-      if (event.key !== 'Enter' || !started || finished) return
-      event.preventDefault()
-      handleSubmitOrNext()
+      if (!started || finished) return
+      if (event.key === 'Enter') {
+        event.preventDefault()
+        handleSubmitOrNext()
+        return
+      }
+      // Only allow digit shortcuts when not revealed or loading
+      if (revealed || loading) return
+      if (/^[0-9]$/.test(event.key)) {
+        event.preventDefault()
+        setAnswer(prev => prev + event.key)
+      } else if (event.key === '-') {
+        event.preventDefault()
+        setAnswer(prev => prev.startsWith('-') ? prev.slice(1) : '-' + prev)
+      } else if (event.key === 'Backspace') {
+        event.preventDefault()
+        setAnswer(prev => prev.slice(0, -1))
+      }
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
@@ -6100,6 +6126,718 @@ function AdditionApp({ onBack }) {
         <button onClick={() => { setStarted(false); setFinished(false) }}>Play Again</button>
       </div>}
     </QuizLayout>
+  )
+}
+
+/* ─── Gym puzzle infrastructure (shared by GymArithmetic, GymAlgebra, BasicGym) ─── */
+
+// Pick a uniformly-random integer in [min, max] (inclusive).
+function gymPickInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min }
+function gymRandSign() { return Math.random() < 0.5 ? -1 : 1 }
+function gymGcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b > 0) { [a, b] = [b, a % b] } return a || 1 }
+function gymSigned(n) { return n < 0 ? `(${n})` : String(n) }
+function gymFormatDec(m, s, dp) {
+  if (dp === 0) return (s < 0 && m !== 0 ? '-' : '') + m
+  const padded = String(m).padStart(dp + 1, '0')
+  const intP = padded.slice(0, padded.length - dp)
+  const fracP = padded.slice(padded.length - dp)
+  return (s < 0 && m !== 0 ? '-' : '') + intP + '.' + fracP
+}
+
+// ─── Arithmetic generators (1–6) ───
+
+// (1) Signed 1- or 2-digit add/sub
+function gen_arith_add() {
+  const a = gymPickInt(1, 99) * gymRandSign()
+  const b = gymPickInt(1, 99) * gymRandSign()
+  const op = Math.random() < 0.5 ? '+' : '−'
+  const result = op === '+' ? a + b : a - b
+  const aStr = a < 0 ? `(${a})` : String(a)
+  const bStr = b < 0 ? `(${b})` : String(b)
+  return { type: 'Add/Sub', prompt: `${aStr} ${op} ${bStr} = ?`, kind: 'integer', answer: result }
+}
+
+// (2) Multiplication: 1d × 1d (90%); 1d × 2d (~10%, very rare)
+function gen_arith_mul() {
+  let a, b
+  if (Math.random() < 0.1) {
+    const oneDig = gymPickInt(2, 9) * gymRandSign()
+    const twoDig = gymPickInt(10, 99) * gymRandSign()
+    if (Math.random() < 0.5) { a = oneDig; b = twoDig } else { a = twoDig; b = oneDig }
+  } else {
+    a = gymPickInt(2, 9) * gymRandSign()
+    b = gymPickInt(2, 9) * gymRandSign()
+  }
+  return { type: 'Multiply', prompt: `${gymSigned(a)} × ${gymSigned(b)} = ?`, kind: 'integer', answer: a * b }
+}
+
+// (3) Divisible fraction → integer (1-digit or 2-digit pair, signed)
+function gen_arith_fracdiv() {
+  const twoDigit = Math.random() < 0.5
+  let num, den
+  if (twoDigit) {
+    const q = gymPickInt(2, 9)
+    const maxDen = Math.floor(99 / q)
+    const denMag = gymPickInt(10, maxDen)
+    num = q * denMag * gymRandSign()
+    den = denMag * gymRandSign()
+  } else {
+    const opts = []
+    for (let n = 2; n <= 9; n++) for (let d = 2; d <= 9; d++) if (n !== d && n % d === 0) opts.push([n, d])
+    const [nMag, dMag] = opts[Math.floor(Math.random() * opts.length)]
+    num = nMag * gymRandSign()
+    den = dMag * gymRandSign()
+  }
+  return { type: 'Fraction ÷', prompt: `${gymSigned(num)} / ${gymSigned(den)} = ?`, kind: 'integer', answer: num / den }
+}
+
+// (4) Reduce a fraction (1-digit pair or 2-digit pair, signed)
+function gen_arith_fracred() {
+  const twoDigit = Math.random() < 0.5
+  let num, den, redN, redD
+  if (twoDigit) {
+    let a, b
+    let attempts = 0
+    while (true) {
+      a = gymPickInt(1, 9); b = gymPickInt(2, 9)
+      if (a !== b && gymGcd(a, b) === 1) break
+      if (++attempts > 200) { a = 1; b = 2; break }
+    }
+    const lo = Math.ceil(10 / Math.min(a, b))
+    const hi = Math.floor(99 / Math.max(a, b))
+    const gMin = Math.max(lo, 2)
+    if (hi < gMin) return gen_arith_fracred()
+    const g = gymPickInt(gMin, hi)
+    num = g * a * gymRandSign()
+    den = g * b * gymRandSign()
+    redN = a; redD = b
+  } else {
+    const opts = []
+    for (let i = 2; i <= 9; i++) for (let j = 2; j <= 9; j++) if (i !== j && gymGcd(i, j) > 1) opts.push([i, j])
+    const [nMag, dMag] = opts[Math.floor(Math.random() * opts.length)]
+    num = nMag * gymRandSign()
+    den = dMag * gymRandSign()
+    const g = gymGcd(nMag, dMag)
+    redN = nMag / g
+    redD = dMag / g
+  }
+  const sign = (num < 0 ? -1 : 1) * (den < 0 ? -1 : 1)
+  redN = sign * redN
+  return { type: 'Reduce', prompt: `Reduce: ${gymSigned(num)}/${gymSigned(den)}`, kind: 'fraction', answer: { n: redN, d: redD } }
+}
+
+// (5) Decimal multiplication; never two 2-digit mantissas
+function gen_arith_decarith() {
+  let m1, m2
+  if (Math.random() < 0.5) {
+    m1 = gymPickInt(1, 9); m2 = gymPickInt(1, 9)
+  } else {
+    m1 = gymPickInt(1, 9); m2 = gymPickInt(10, 99)
+    if (Math.random() < 0.5) { [m1, m2] = [m2, m1] }
+  }
+  const dp1 = gymPickInt(0, 3)
+  const dp2 = gymPickInt(0, 3)
+  const s1 = gymRandSign()
+  const s2 = gymRandSign()
+  const d1 = gymFormatDec(m1, s1, dp1)
+  const d2 = gymFormatDec(m2, s2, dp2)
+  const sign = s1 * s2
+  const numerMag = m1 * m2
+  const totalDp = dp1 + dp2
+  let resultStr
+  if (totalDp === 0) {
+    resultStr = String(sign * numerMag)
+  } else {
+    const padded = String(numerMag).padStart(totalDp + 1, '0')
+    const intP = padded.slice(0, padded.length - totalDp)
+    const fracP = padded.slice(padded.length - totalDp).replace(/0+$/, '')
+    const signPrefix = sign < 0 && numerMag !== 0 ? '-' : ''
+    resultStr = signPrefix + (fracP ? `${Number(intP)}.${fracP}` : `${Number(intP)}`)
+  }
+  const exactValue = (sign * numerMag) / Math.pow(10, totalDp)
+  return { type: 'Decimal ×', prompt: `${d1} × ${d2} = ?`, kind: 'decimal', answer: { decimal: resultStr, exactValue } }
+}
+
+// (6) Decimal fraction reduction — 2-digit × 2-digit mantissas, up to 4 dp
+function gen_arith_decfracred() {
+  let a, b
+  let attempts = 0
+  while (true) {
+    a = gymPickInt(1, 9); b = gymPickInt(2, 9)
+    if (a !== b && gymGcd(a, b) === 1) break
+    if (++attempts > 200) { a = 1; b = 2; break }
+  }
+  const lo = Math.ceil(10 / Math.min(a, b))
+  const hi = Math.floor(99 / Math.max(a, b))
+  const gMin = Math.max(lo, 2)
+  if (hi < gMin) return gen_arith_decfracred()
+  const g = gymPickInt(gMin, hi)
+  const dp = gymPickInt(1, 4)
+  const sa = gymRandSign()
+  const sb = gymRandSign()
+  const numStr = gymFormatDec(g * a, sa, dp)
+  const denStr = gymFormatDec(g * b, sb, dp)
+  const sign = sa * sb
+  return { type: 'Decimal Reduce', prompt: `Reduce: ${numStr}/${denStr}`, kind: 'fraction', answer: { n: sign * a, d: b } }
+}
+
+// ─── Polynomial helpers (shared by algebra generators + answer parser) ───
+
+// Format a single monomial coeff·x^power (used inside parenthesised single-term factors).
+function gymFormatTerm(coeff, power) {
+  if (coeff === 0) return '0'
+  const abs = Math.abs(coeff)
+  const sign = coeff < 0 ? '-' : ''
+  if (power === 0) return sign + abs
+  if (power === 1) return sign + (abs === 1 ? 'x' : `${abs}x`)
+  return sign + (abs === 1 ? `x^${power}` : `${abs}x^${power}`)
+}
+
+// Format a polynomial (sparse {power: coeff}) as "ax^n + bx^k − c" form.
+function gymFormatPoly(coeffs) {
+  const powers = Object.keys(coeffs).map(Number).filter(p => coeffs[p] !== 0).sort((a, b) => b - a)
+  if (powers.length === 0) return '0'
+  let out = ''
+  powers.forEach((p, i) => {
+    const c = coeffs[p]
+    const abs = Math.abs(c)
+    let term
+    if (p === 0) term = String(abs)
+    else if (p === 1) term = abs === 1 ? 'x' : `${abs}x`
+    else term = abs === 1 ? `x^${p}` : `${abs}x^${p}`
+    if (i === 0) out += (c < 0 ? '-' : '') + term
+    else out += (c < 0 ? ' − ' : ' + ') + term
+  })
+  return out
+}
+
+// Parse a polynomial expression into a sparse {power: coeff} map. Returns null on failure.
+function gymParsePoly(input) {
+  let s = String(input).replace(/\s+/g, '').replace(/\*\*/g, '^').replace(/−/g, '-').toLowerCase()
+  if (!s) return null
+  if (!/^[\dx+\-^.\/]*$/.test(s)) return null
+  s = s.replace(/-/g, '+-')
+  if (s.startsWith('+')) s = s.slice(1)
+  const terms = s.split('+').filter(t => t !== '')
+  if (terms.length === 0) return null
+  const coeffs = {}
+  for (const t of terms) {
+    if (t === '' || t === '-') return null
+    const xIdx = t.indexOf('x')
+    if (xIdx === -1) {
+      const v = Number(t)
+      if (!Number.isFinite(v)) return null
+      coeffs[0] = (coeffs[0] || 0) + v
+      continue
+    }
+    const coeffStr = t.slice(0, xIdx)
+    const rest = t.slice(xIdx + 1)
+    let coeff
+    if (coeffStr === '' || coeffStr === '+') coeff = 1
+    else if (coeffStr === '-') coeff = -1
+    else { coeff = Number(coeffStr); if (!Number.isFinite(coeff)) return null }
+    let power
+    if (rest === '') power = 1
+    else if (rest.startsWith('^')) {
+      power = Number(rest.slice(1))
+      if (!Number.isInteger(power) || power < 0) return null
+    } else return null
+    coeffs[power] = (coeffs[power] || 0) + coeff
+  }
+  return coeffs
+}
+
+// Compare two polynomials, treating zero coefficients as absent.
+function gymPolysEqual(p1, p2) {
+  const allKeys = new Set([...Object.keys(p1), ...Object.keys(p2)])
+  for (const k of allKeys) {
+    const a = p1[k] || 0
+    const b = p2[k] || 0
+    if (a !== b) return false
+  }
+  return true
+}
+
+// Random polynomial of given degree. Leading coefficient is forced nonzero (1-digit signed);
+// lower coefficients are drawn 1-digit signed and may sometimes be zero (sparse).
+function gymRandPoly(degree) {
+  const coeffs = {}
+  coeffs[degree] = gymPickInt(1, 9) * gymRandSign()
+  for (let p = degree - 1; p >= 0; p--) {
+    if (Math.random() < 0.2) continue                        // sparse: 20% chance of skipping
+    const c = gymPickInt(1, 9) * gymRandSign()
+    coeffs[p] = c
+  }
+  return coeffs
+}
+
+function gymMultiplyPolys(p1, p2) {
+  const out = {}
+  for (const k1 of Object.keys(p1)) {
+    for (const k2 of Object.keys(p2)) {
+      const power = Number(k1) + Number(k2)
+      out[power] = (out[power] || 0) + p1[k1] * p2[k2]
+    }
+  }
+  return out
+}
+
+function gymAddPolys(p1, p2) {
+  const out = { ...p1 }
+  for (const k of Object.keys(p2)) {
+    out[k] = (out[k] || 0) + p2[k]
+    if (out[k] === 0) delete out[k]
+  }
+  return out
+}
+
+// Magnitude pairs (a, b) with a/b an integer ≥ 2 — i.e., nontrivial single-term divisions.
+const GYM_DIV_PAIRS = (() => {
+  const pairs = []
+  for (let a = 2; a <= 9; a++) for (let b = 2; b <= 9; b++) {
+    if (a % b === 0 && a / b !== 1) pairs.push([a, b])
+  }
+  return pairs
+})()
+
+// ─── Algebra generators (7–12) ───
+// All operands have 1-digit signed coefficients so every multiplication remains 1-digit × 1-digit.
+
+// (7) Single-term mul or div: (ax^p)(bx^q) or (ax^p)/(bx^q)
+function gen_alg_term() {
+  const isMul = Math.random() < 0.5
+  if (isMul) {
+    const a = gymPickInt(2, 9) * gymRandSign()
+    const b = gymPickInt(2, 9) * gymRandSign()
+    const p = gymPickInt(1, 9)
+    const q = gymPickInt(1, 9)
+    return { type: 'Single Term ×', prompt: `(${gymFormatTerm(a, p)})(${gymFormatTerm(b, q)}) = ?`, kind: 'polynomial', answer: { [p + q]: a * b } }
+  }
+  const [aMag, bMag] = GYM_DIV_PAIRS[Math.floor(Math.random() * GYM_DIV_PAIRS.length)]
+  const a = aMag * gymRandSign()
+  const b = bMag * gymRandSign()
+  const q = gymPickInt(1, 7)
+  const p = q + gymPickInt(1, Math.max(1, 9 - q))
+  return { type: 'Single Term ÷', prompt: `(${gymFormatTerm(a, p)}) / (${gymFormatTerm(b, q)}) = ?`, kind: 'polynomial', answer: { [p - q]: a / b } }
+}
+
+// (8) Multiply two degree-1 polynomials: (ax + b)(cx + d)
+function gen_alg_mul1() {
+  const p1 = { 1: gymPickInt(1, 9) * gymRandSign(), 0: gymPickInt(1, 9) * gymRandSign() }
+  const p2 = { 1: gymPickInt(1, 9) * gymRandSign(), 0: gymPickInt(1, 9) * gymRandSign() }
+  return { type: 'Multiply (deg 1)', prompt: `(${gymFormatPoly(p1)})(${gymFormatPoly(p2)}) = ?`, kind: 'polynomial', answer: gymMultiplyPolys(p1, p2) }
+}
+
+// (9) Add two degree-1 polynomials
+function gen_alg_add1() {
+  const p1 = { 1: gymPickInt(1, 9) * gymRandSign(), 0: gymPickInt(1, 9) * gymRandSign() }
+  const p2 = { 1: gymPickInt(1, 9) * gymRandSign(), 0: gymPickInt(1, 9) * gymRandSign() }
+  return { type: 'Add (deg 1)', prompt: `(${gymFormatPoly(p1)}) + (${gymFormatPoly(p2)}) = ?`, kind: 'polynomial', answer: gymAddPolys(p1, p2) }
+}
+
+// (10) Multiply two polynomials of degree ≤ 3 (each in {2, 3} for variety vs type 8)
+function gen_alg_mul3() {
+  const p1 = gymRandPoly(gymPickInt(2, 3))
+  const p2 = gymRandPoly(gymPickInt(2, 3))
+  return { type: 'Multiply (deg ≤ 3)', prompt: `(${gymFormatPoly(p1)})(${gymFormatPoly(p2)}) = ?`, kind: 'polynomial', answer: gymMultiplyPolys(p1, p2) }
+}
+
+// (11) Add two polynomials of degree ≤ 3
+function gen_alg_add3() {
+  const p1 = gymRandPoly(gymPickInt(1, 3))
+  const p2 = gymRandPoly(gymPickInt(1, 3))
+  return { type: 'Add (deg ≤ 3)', prompt: `(${gymFormatPoly(p1)}) + (${gymFormatPoly(p2)}) = ?`, kind: 'polynomial', answer: gymAddPolys(p1, p2) }
+}
+
+// (12) Solve ax + b = c for integer x (x in -9..9 \ {0}, a 1-digit nonzero, b 1-digit signed)
+function gen_alg_lineq() {
+  let x
+  do { x = gymPickInt(-9, 9) } while (x === 0)
+  const a = gymPickInt(2, 9) * gymRandSign()
+  const b = gymPickInt(-9, 9)
+  const c = a * x + b
+  const aStr = a === 1 ? 'x' : a === -1 ? '-x' : `${a}x`
+  let bStr = ''
+  if (b > 0) bStr = ` + ${b}`
+  else if (b < 0) bStr = ` − ${-b}`
+  return { type: 'Solve x', prompt: `${aStr}${bStr} = ${c},   x = ?`, kind: 'integer', answer: x }
+}
+
+// ─── Type registry & key groupings ───
+const GYM_TYPES = {
+  add:        { label: 'Add/Sub',            generator: gen_arith_add },
+  mul:        { label: 'Multiply',           generator: gen_arith_mul },
+  fracdiv:    { label: 'Fraction ÷',         generator: gen_arith_fracdiv },
+  fracred:    { label: 'Reduce',             generator: gen_arith_fracred },
+  decarith:   { label: 'Decimal ×',          generator: gen_arith_decarith },
+  decfracred: { label: 'Decimal Reduce',     generator: gen_arith_decfracred },
+  algterm:    { label: 'Single Term ×÷',     generator: gen_alg_term },
+  algmul1:    { label: 'Multiply (deg 1)',   generator: gen_alg_mul1 },
+  algadd1:    { label: 'Add (deg 1)',        generator: gen_alg_add1 },
+  algmul3:    { label: 'Multiply (deg ≤ 3)', generator: gen_alg_mul3 },
+  algadd3:    { label: 'Add (deg ≤ 3)',      generator: gen_alg_add3 },
+  alglineq:   { label: 'Solve x',            generator: gen_alg_lineq },
+}
+const GYM_ARITH_KEYS = ['add', 'mul', 'fracdiv', 'fracred', 'decarith', 'decfracred']
+const GYM_ALG_KEYS = ['algterm', 'algmul1', 'algadd1', 'algmul3', 'algadd3', 'alglineq']
+const GYM_ALL_KEYS = [...GYM_ARITH_KEYS, ...GYM_ALG_KEYS]
+
+// ─── Answer parsing & checking ───
+
+// Parse a numeric answer ("1/2", "-3/4", "0.21", "5", "-3"). Returns tagged value or null.
+function gymParseNumeric(raw) {
+  const s = String(raw).trim()
+  if (!s || s === '-' || s === '.' || s === '/') return null
+  if (s.includes('/') && !/[xX^]/.test(s)) {
+    const parts = s.split('/')
+    if (parts.length !== 2) return null
+    const n = Number(parts[0]); const d = Number(parts[1])
+    if (!Number.isFinite(n) || !Number.isFinite(d) || d === 0) return null
+    return { kind: 'fraction', n, d }
+  }
+  const v = Number(s)
+  if (!Number.isFinite(v)) return null
+  return { kind: 'number', value: v }
+}
+
+function gymReduceFrac(n, d) {
+  if (d === 0) return null
+  const g = gymGcd(n, d)
+  let rn = n / g, rd = d / g
+  if (rd < 0) { rn = -rn; rd = -rd }
+  return { n: rn, d: rd }
+}
+
+function gymFormatAnswer(q) {
+  if (q.kind === 'integer') return String(q.answer)
+  if (q.kind === 'fraction') {
+    const { n, d } = q.answer
+    return d === 1 ? String(n) : `${n}/${d}`
+  }
+  if (q.kind === 'decimal') return q.answer.decimal
+  if (q.kind === 'polynomial') return gymFormatPoly(q.answer)
+  return ''
+}
+
+function gymCheckAnswer(q, raw) {
+  const trimmed = String(raw).trim()
+  if (!trimmed) return false
+  if (q.kind === 'polynomial') {
+    const userPoly = gymParsePoly(trimmed)
+    if (!userPoly) return false
+    return gymPolysEqual(userPoly, q.answer)
+  }
+  const parsed = gymParseNumeric(trimmed)
+  if (!parsed) return false
+  if (q.kind === 'integer') {
+    let v
+    if (parsed.kind === 'fraction') {
+      if (parsed.d === 0) return false
+      v = parsed.n / parsed.d
+    } else v = parsed.value
+    return v === q.answer
+  }
+  if (q.kind === 'fraction') {
+    let n, d
+    if (parsed.kind === 'fraction') { n = parsed.n; d = parsed.d }
+    else {
+      if (!Number.isInteger(parsed.value)) return false
+      n = parsed.value; d = 1
+    }
+    const r = gymReduceFrac(n, d)
+    return !!r && r.n === q.answer.n && r.d === q.answer.d
+  }
+  if (q.kind === 'decimal') {
+    let v
+    if (parsed.kind === 'fraction') v = parsed.n / parsed.d
+    else v = parsed.value
+    return Math.abs(v - q.answer.exactValue) < 1e-9
+  }
+  return false
+}
+
+/**
+ * GymQuiz Component
+ * Shared quiz engine used by GymArithmetic, GymAlgebra, and BasicGym.
+ * Provides ordering selection (random | sequential), question planning,
+ * lifecycle, keyboard shortcuts (digits, sign, decimal, slash, x, ^, Backspace, Enter),
+ * and rendering.
+ *
+ * @param {Object} props
+ * @param {string} props.title - Layout title
+ * @param {string} props.subtitle - Layout subtitle
+ * @param {string[]} props.typeKeys - Keys into GYM_TYPES that this puzzle draws from
+ * @param {string} props.welcomeText - Intro paragraph on the welcome screen
+ * @param {boolean} props.algebraInput - When true, accept x/X and ^ in answers
+ * @param {Function} props.onBack - Return to home menu
+ */
+function GymQuiz({ title, subtitle, typeKeys, welcomeText, algebraInput, onBack }) {
+  const [ordering, setOrdering] = useState('random')          // 'random' | 'sequential'
+  const [numQuestions, setNumQuestions] = useState(String(DEFAULT_TOTAL))
+  const [started, setStarted] = useState(false)
+  const [finished, setFinished] = useState(false)
+  const [plan, setPlan] = useState([])
+  const [questionNumber, setQuestionNumber] = useState(0)
+  const [totalQ, setTotalQ] = useState(DEFAULT_TOTAL)
+  const [question, setQuestion] = useState(null)
+  const [answer, setAnswer] = useState('')
+  const [score, setScore] = useState(0)
+  const [feedback, setFeedback] = useState('')
+  const [isCorrect, setIsCorrect] = useState(null)
+  const [revealed, setRevealed] = useState(false)
+  const [results, setResults] = useState([])
+  const timer = useTimer()
+
+  const buildPlan = (count) => {
+    if (ordering === 'sequential') {
+      const per = Math.floor(count / typeKeys.length)
+      const rem = count % typeKeys.length
+      const p = []
+      typeKeys.forEach((t, i) => {
+        const n = per + (i < rem ? 1 : 0)
+        for (let j = 0; j < n; j++) p.push(t)
+      })
+      return p
+    }
+    const p = []
+    for (let i = 0; i < count; i++) p.push(typeKeys[Math.floor(Math.random() * typeKeys.length)])
+    return p
+  }
+
+  const startQuiz = () => {
+    const count = numQuestions !== '' && Number(numQuestions) > 0 ? Number(numQuestions) : DEFAULT_TOTAL
+    const p = buildPlan(count)
+    setPlan(p)
+    setTotalQ(p.length)
+    setStarted(true)
+    setFinished(false)
+    setScore(0)
+    setQuestionNumber(1)
+    setResults([])
+    loadQuestion(p, 0)
+  }
+
+  const loadQuestion = (planArr, idx) => {
+    setAnswer('')
+    setFeedback('')
+    setIsCorrect(null)
+    setRevealed(false)
+    const t = planArr[idx]
+    const gen = GYM_TYPES[t]?.generator
+    setQuestion(gen ? gen() : null)
+    timer.start()
+  }
+
+  const handleSubmitOrNext = () => {
+    if (!question) return
+    if (!revealed) {
+      const trimmed = String(answer).trim()
+      if (!trimmed || trimmed === '-' || trimmed === '.' || trimmed === '/') return
+      const correct = gymCheckAnswer(question, trimmed)
+      const timeTaken = timer.stop()
+      setIsCorrect(correct)
+      if (correct) setScore(s => s + 1)
+      const corrStr = gymFormatAnswer(question)
+      const promptStem = question.prompt.replace(/\s*=\s*\?\s*$/, '')
+      setFeedback(correct
+        ? `Correct! ${promptStem} = ${corrStr}`
+        : `Incorrect. ${promptStem} = ${corrStr}`)
+      setResults(prev => [...prev, {
+        question: `[${question.type}] ${question.prompt}`,
+        userAnswer: answer,
+        correctAnswer: corrStr,
+        correct,
+        time: timeTaken,
+      }])
+      setRevealed(true)
+      return
+    }
+    if (questionNumber >= totalQ) {
+      setFinished(true)
+      setQuestion(null)
+      timer.reset()
+      return
+    }
+    setQuestionNumber(n => n + 1)
+    loadQuestion(plan, questionNumber)        // questionNumber is current (1-based); plan[questionNumber] is the next 0-based slot
+  }
+
+  const handleSolve = () => {
+    if (revealed) return
+    const timeTaken = timer.stop()
+    const corrStr = gymFormatAnswer(question)
+    const promptStem = question.prompt.replace(/\s*=\s*\?\s*$/, '')
+    setIsCorrect(false)
+    setFeedback(`Solution: ${promptStem} = ${corrStr}`)
+    setResults(prev => [...prev, {
+      question: `[${question.type}] ${question.prompt}`,
+      userAnswer: '—',
+      correctAnswer: corrStr,
+      correct: false,
+      time: timeTaken,
+    }])
+    setRevealed(true)
+  }
+
+  // Keyboard shortcuts. Algebra mode also accepts 'x'/'X', '^', and '+'.
+  useEffect(() => {
+    const onKeyDown = (event) => {
+      if (!started || finished) return
+      if (event.key === 'Enter') {
+        event.preventDefault()
+        handleSubmitOrNext()
+        return
+      }
+      if (revealed) return
+      if (/^[0-9]$/.test(event.key)) {
+        event.preventDefault()
+        setAnswer(prev => prev + event.key)
+      } else if (event.key === '-') {
+        event.preventDefault()
+        // Algebra mode: append minus (used as separator); arithmetic mode: toggle leading sign
+        if (algebraInput) setAnswer(prev => prev + '-')
+        else setAnswer(prev => prev.startsWith('-') ? prev.slice(1) : '-' + prev)
+      } else if (event.key === '+' && algebraInput) {
+        event.preventDefault()
+        setAnswer(prev => prev + '+')
+      } else if (event.key === '.') {
+        event.preventDefault()
+        setAnswer(prev => prev + '.')
+      } else if (event.key === '/') {
+        event.preventDefault()
+        setAnswer(prev => prev.includes('/') && !algebraInput ? prev : prev + '/')
+      } else if ((event.key === 'x' || event.key === 'X') && algebraInput) {
+        event.preventDefault()
+        setAnswer(prev => prev + 'x')
+      } else if (event.key === '^' && algebraInput) {
+        event.preventDefault()
+        setAnswer(prev => prev + '^')
+      } else if (event.key === 'Backspace') {
+        event.preventDefault()
+        setAnswer(prev => prev.slice(0, -1))
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [started, finished, question, answer, revealed, score, questionNumber, plan, totalQ, algebraInput])
+
+  const inputCharRegex = algebraInput ? /^[\dxX^+\-./\s]*$/ : /^[\d./\-]*$/
+  const inputPlaceholder = algebraInput ? 'integer, decimal, fraction, or polynomial (e.g. 6x^2-3x+1)' : 'integer, decimal, or a/b'
+  const orderingFieldName = `${title.replace(/\s+/g, '')}-order`
+
+  return (
+    <QuizLayout title={title} subtitle={subtitle} onBack={onBack} timer={started && !finished ? timer : null}>
+      {!started && !finished && (
+        <div className="welcome-box">
+          <p className="welcome-text">{welcomeText}</p>
+          <div className="checkbox-group" style={{ marginBottom: '12px' }}>
+            <label className={`checkbox-pill${ordering === 'random' ? ' active' : ''}`}>
+              <input type="radio" name={orderingFieldName} checked={ordering === 'random'} onChange={() => setOrdering('random')} />
+              Random Mix
+            </label>
+            <label className={`checkbox-pill${ordering === 'sequential' ? ' active' : ''}`}>
+              <input type="radio" name={orderingFieldName} checked={ordering === 'sequential'} onChange={() => setOrdering('sequential')} />
+              Sequential (≈ n/{typeKeys.length} of each)
+            </label>
+          </div>
+          <div className="question-count-row">
+            <label className="question-count-label">How many questions?</label>
+            <input className="answer-input question-count-input" type="text" value={numQuestions} onChange={(e) => { const v = e.target.value; if (v === '' || /^\d+$/.test(v)) setNumQuestions(v) }} placeholder={String(DEFAULT_TOTAL)} />
+          </div>
+          <div className="button-row"><button onClick={startQuiz}>Start Workout</button></div>
+        </div>
+      )}
+      {started && !finished && (
+        <>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.3rem' }}>
+            <div className="progress-pill center">Question {questionNumber}/{totalQ}</div>
+            {question && <div className="progress-pill">{question.type}</div>}
+          </div>
+          <div className="question-box">{question ? question.prompt : 'Loading…'}</div>
+          <input className="answer-input" type="text" value={answer}
+            onChange={(e) => { if (!revealed) { const v = e.target.value; if (v === '' || inputCharRegex.test(v)) setAnswer(v) } }}
+            disabled={revealed}
+            placeholder={inputPlaceholder}
+          />
+          <NumPad value={answer} onChange={(v) => !revealed && setAnswer(v)} disabled={revealed} showDecimal showSlash showCaret={!!algebraInput} showX={!!algebraInput} />
+          {renderFeedback(feedback, isCorrect)}
+          <div className="button-row">
+            {!revealed ? (
+              <>
+                <button onClick={handleSubmitOrNext} disabled={String(answer).trim() === '' || answer === '-' || answer === '.' || answer === '/'}>Submit</button>
+                <button onClick={handleSolve} style={{ background: 'transparent', border: '1px solid var(--clr-accent)', color: 'var(--clr-accent)' }}>Solve</button>
+              </>
+            ) : (
+              <button onClick={handleSubmitOrNext}>{questionNumber >= totalQ ? 'Finish Quiz' : 'Next Question'}</button>
+            )}
+          </div>
+          {results.length > 0 && <ResultsTable results={results} />}
+        </>
+      )}
+      {finished && (
+        <div className="welcome-box">
+          <p className="welcome-text">Workout complete.</p>
+          <p className="final-score">Final score: {score}/{totalQ}</p>
+          <ResultsTable results={results} />
+          <button onClick={() => { setStarted(false); setFinished(false) }}>Play Again</button>
+        </div>
+      )}
+    </QuizLayout>
+  )
+}
+
+/**
+ * GymArithmeticApp — six arithmetic stations:
+ *   add/sub, multiply, divisible fractions, fraction reduction,
+ *   decimal multiplication, and decimal-fraction reduction.
+ */
+function GymArithmeticApp({ onBack }) {
+  return (
+    <GymQuiz
+      title="GymArithmetic"
+      subtitle="Mixed reps across 6 arithmetic stations"
+      typeKeys={GYM_ARITH_KEYS}
+      welcomeText="Six stations: signed add/sub, signed multiply, divisible fractions, fraction reduction, decimal multiplication, and decimal-fraction reduction."
+      algebraInput={false}
+      onBack={onBack}
+    />
+  )
+}
+
+/**
+ * GymAlgebraApp — six algebra stations:
+ *   single-term ×÷, deg-1 multiply, deg-1 add, deg≤3 multiply, deg≤3 add, solve linear equations.
+ *
+ * All operations stay within 1-digit × 1-digit multiplication; coefficients in
+ * the displayed problems are 1-digit signed.
+ */
+function GymAlgebraApp({ onBack }) {
+  return (
+    <GymQuiz
+      title="GymAlgebra"
+      subtitle="Mixed reps across 6 algebra stations"
+      typeKeys={GYM_ALG_KEYS}
+      welcomeText="Six algebra stations: single-term × or ÷, degree-1 multiply/add, degree-≤3 multiply/add, and solving linear equations. Every multiplication stays within 1-digit × 1-digit."
+      algebraInput={true}
+      onBack={onBack}
+    />
+  )
+}
+
+/**
+ * BasicGymApp — combined arithmetic + algebra (12 stations total).
+ */
+function BasicGymApp({ onBack }) {
+  return (
+    <GymQuiz
+      title="Basic Gym"
+      subtitle="12 mixed arithmetic & algebra stations"
+      typeKeys={GYM_ALL_KEYS}
+      welcomeText="Twelve stations covering signed arithmetic (add/sub, multiply, fractions, decimals) and algebra (single terms, polynomials, linear equations). Every multiplication stays within 1-digit × 1-digit."
+      algebraInput={true}
+      onBack={onBack}
+    />
   )
 }
 
