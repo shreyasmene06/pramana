@@ -28,8 +28,8 @@ import './App.css'
 const API = import.meta.env.VITE_API_BASE_URL || '';
 
 // App version — increment with each commit
-const TENALI_VERSION = '1.0.35'
-const TENALI_BUILD_DATE = '2026-04-29 08:23 IST'
+const TENALI_VERSION = '1.0.36'
+const TENALI_BUILD_DATE = '2026-04-29 08:31 IST'
 
 // Inject version badge into DOM once (appears on all routes)
 ;(() => {
@@ -5459,6 +5459,7 @@ function Home({ onSelect }) {
   const featuredApps = [
     { key: 'randommix', name: 'Random Mix', subtitle: 'Adaptive cross-topic quiz', color: 'featured' },
     { key: 'custom', name: 'Custom Lesson', subtitle: 'Build your own mixed quiz', color: 'featured' },
+    { key: 'gym', name: 'Gym', subtitle: 'Adaptive workout across all 6 gym puzzles', color: 'featured' },
   ]
 
   // All regular quiz apps sorted alphabetically by name
@@ -9557,7 +9558,7 @@ const IndicesGymApp = makeMCQuizApp({
 //     mastery across sessions.
 // ───────────────────────────────────────────────────────────────────────────
 
-const GYM_TYPES = [
+const GYM_PUZZLE_TYPES = [
   { key: 'gymdecimals', name: 'Decimals',     api: 'gymdecimals-api' },
   { key: 'funcgym',     name: 'Functions',    api: 'funcgym-api' },
   { key: 'dotprodgym',  name: 'Dot Products', api: 'dotprodgym-api' },
@@ -9620,14 +9621,14 @@ function gymDifficultyFor(mastery) {
  * Returns the GYM_TYPES entry that was selected.
  */
 function pickNextGym(stats) {
-  const weights = GYM_TYPES.map(g => Math.max(0.1, 1 - gymMastery(stats[g.key])))
+  const weights = GYM_PUZZLE_TYPES.map(g => Math.max(0.1, 1 - gymMastery(stats[g.key])))
   const total = weights.reduce((a, b) => a + b, 0)
   let r = Math.random() * total
-  for (let i = 0; i < GYM_TYPES.length; i++) {
+  for (let i = 0; i < GYM_PUZZLE_TYPES.length; i++) {
     r -= weights[i]
-    if (r <= 0) return GYM_TYPES[i]
+    if (r <= 0) return GYM_PUZZLE_TYPES[i]
   }
-  return GYM_TYPES[GYM_TYPES.length - 1]
+  return GYM_PUZZLE_TYPES[GYM_PUZZLE_TYPES.length - 1]
 }
 
 /**
@@ -9856,7 +9857,7 @@ function GymApp({ onBack }) {
             Questions are picked from the gyms you're <em>least</em> comfortable with, and each gym's difficulty
             ramps up as your mastery rises.
           </p>
-          <div style={{ margin: '14px 0' }}>{GYM_TYPES.map(renderMasteryRow)}</div>
+          <div style={{ margin: '14px 0' }}>{GYM_PUZZLE_TYPES.map(renderMasteryRow)}</div>
           <div className="question-count-row">
             <label className="question-count-label">How many questions?</label>
             <input className="answer-input question-count-input" type="text" value={numQuestions}
@@ -9921,7 +9922,7 @@ function GymApp({ onBack }) {
           <p className="final-score">Final score: {score}/{totalQ}</p>
           <div style={{ margin: '14px 0', textAlign: 'left' }}>
             <div style={{ fontSize: '0.85rem', color: 'var(--clr-text-soft)', marginBottom: 6 }}>Updated mastery:</div>
-            {GYM_TYPES.map(renderMasteryRow)}
+            {GYM_PUZZLE_TYPES.map(renderMasteryRow)}
           </div>
           <ResultsTable results={results} />
           <button onClick={() => setPhase('setup')}>Workout Again</button>
