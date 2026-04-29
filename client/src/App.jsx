@@ -28,8 +28,8 @@ import './App.css'
 const API = import.meta.env.VITE_API_BASE_URL || '';
 
 // App version — increment with each commit
-const TENALI_VERSION = '1.0.37'
-const TENALI_BUILD_DATE = '2026-04-29 08:34 IST'
+const TENALI_VERSION = '1.0.38'
+const TENALI_BUILD_DATE = '2026-04-29 08:53 IST'
 
 // Inject version badge into DOM once (appears on all routes)
 ;(() => {
@@ -588,10 +588,18 @@ function AdaptiveTablesApp({ studentName }) {
     setRevealed(true)
     if (correct) setScore(s => s + 1)
 
-    // Generate feedback message with speed label
-    const speedLabel = elapsed < FAST_THRESH ? 'fast' : elapsed < MEDIUM_THRESH ? 'ok' : 'slow'
+    // Generate feedback message with an encouraging speed cue.
+    // Old labels ("ok" / "slow") were too negative — students learning their
+    // tables for the first time felt scolded. Replace with affirmative cues
+    // that point toward the next milestone (under 5s, under 3s) and tell the
+    // student to keep going.
+    const speedCue = elapsed < FAST_THRESH
+      ? 'lightning fast 🚀'
+      : elapsed < MEDIUM_THRESH
+        ? "almost there — you'll be under 3s soon!"
+        : "you'll soon be under 5s, keep going!"
     const fb = correct
-      ? `Correct! ${question.table} × ${question.multiplier} = ${question.answer} (${(elapsed / 1000).toFixed(1)}s — ${speedLabel})`
+      ? `Correct! ${question.table} × ${question.multiplier} = ${question.answer} (${(elapsed / 1000).toFixed(1)}s — ${speedCue})`
       : `${question.table} × ${question.multiplier} = ${question.answer} (you said ${userAns || '?'})`
     setFeedback(fb)
 
@@ -666,13 +674,15 @@ function AdaptiveTablesApp({ studentName }) {
       setMasteredWithout(0)  // Reset advancement counter (not ready yet)
 
     } else {
-      // CASE: Student is still learning (< 70% accuracy or > 6s avg time)
-      // Action: Ensure table is shown; reset advancement counter
+      // CASE: Student is still building speed (< 70% accuracy or > 6s avg time).
+      // Action: Make sure the table is on screen so they can lean on it; reset
+      // the advancement counter. Phrasing is intentionally encouraging — early
+      // learners shouldn't be told they're "slow" or "need practice".
       if (!showTable) {
         setShowTable(true)
-        setStatusMsg(`Needs practice — table shown again`)
+        setStatusMsg(`No worries — bringing the table back to help. You've got this!`)
       } else {
-        setStatusMsg(`Learning — keep practicing with the table`)
+        setStatusMsg(`Keep going — every try is making you faster 💪`)
       }
       setMasteredWithout(0)  // Reset; student's not ready to advance
     }
