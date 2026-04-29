@@ -28,8 +28,8 @@ import './App.css'
 const API = import.meta.env.VITE_API_BASE_URL || '';
 
 // App version — increment with each commit
-const TENALI_VERSION = '1.0.34'
-const TENALI_BUILD_DATE = '2026-04-29 08:15 IST'
+const TENALI_VERSION = '1.0.35'
+const TENALI_BUILD_DATE = '2026-04-29 08:23 IST'
 
 // Inject version badge into DOM once (appears on all routes)
 ;(() => {
@@ -5416,9 +5416,7 @@ function App() {
     tatsavit: TatsavitApp,         // Tatsavit (progressive math drill)
     randommix: RandomMixApp,       // Random Mix (adaptive)
     custom: CustomApp,             // Custom lesson builder
-    gymarithmetic: GymArithmeticApp, // GymArithmetic — 6 arithmetic stations
-    gymalgebra: GymAlgebraApp,     // GymAlgebra — 6 algebra stations
-    basicgym: BasicGymApp,         // Basic Gym — combined arithmetic + algebra (12 stations)
+    gym: GymApp,                   // Unified adaptive Gym — bundles all 6 below
     gymdecimals: GymDecimalsApp,   // Gym Decimals — signed decimal multiplication (MCQ)
     funcgym: FuncGymApp,           // Functions Gym — polynomial evaluation (MCQ)
     dotprodgym: DotProdGymApp,     // DotProducts Gym — 2D/3D dot products (MCQ)
@@ -5535,15 +5533,12 @@ function Home({ onSelect }) {
     { key: 'vectors', name: 'Vectors', subtitle: 'Add, scale, magnitude', color: 'blue' },
     { key: 'vocab', name: 'Vocabulary', subtitle: 'Match words to definitions', color: 'green' },
     { key: 'spot', name: 'Twin Hunt', subtitle: 'Find the common object', color: 'purple' },
-    { key: 'gymarithmetic', name: 'GymArithmetic', subtitle: 'Mixed arithmetic workout (6 stations)', color: 'blue' },
-    { key: 'gymalgebra', name: 'GymAlgebra', subtitle: 'Mixed algebra workout (6 stations)', color: 'green' },
     { key: 'gymdecimals', name: 'Gym Decimals', subtitle: 'Signed decimal × decimal — 1-digit MCQ', color: 'purple' },
     { key: 'funcgym', name: 'Functions Gym', subtitle: 'Evaluate small polynomials (MCQ)', color: 'blue' },
     { key: 'dotprodgym', name: 'DotProducts Gym', subtitle: '2D/3D dot products (MCQ)', color: 'green' },
     { key: 'fracaddgym', name: 'Fractions-add-gym', subtitle: 'Add single-digit fractions (MCQ)', color: 'purple' },
     { key: 'lineqgym', name: 'LinearEquations-Gym', subtitle: 'Solve linear equations (MCQ)', color: 'blue' },
     { key: 'indicesgym', name: 'Indices-Gym', subtitle: 'Index laws (MCQ)', color: 'green' },
-    { key: 'basicgym', name: 'Basic Gym', subtitle: 'Combined arithmetic + algebra (12 stations)', color: 'purple' },
   ]
 
   // Combined list for search filtering
@@ -7026,60 +7021,6 @@ function GymQuiz({ title, subtitle, typeKeys, welcomeText, algebraInput, onBack 
         </div>
       )}
     </QuizLayout>
-  )
-}
-
-/**
- * GymArithmeticApp — six arithmetic stations:
- *   add/sub, multiply, divisible fractions, fraction reduction,
- *   decimal multiplication, and decimal-fraction reduction.
- */
-function GymArithmeticApp({ onBack }) {
-  return (
-    <GymQuiz
-      title="GymArithmetic"
-      subtitle="Mixed reps across 6 arithmetic stations"
-      typeKeys={GYM_ARITH_KEYS}
-      welcomeText="Six stations: signed add/sub, signed multiply, divisible fractions, fraction reduction, decimal multiplication, and decimal-fraction reduction."
-      algebraInput={false}
-      onBack={onBack}
-    />
-  )
-}
-
-/**
- * GymAlgebraApp — six algebra stations:
- *   single-term ×÷, deg-1 multiply, deg-1 add, deg≤3 multiply, deg≤3 add, solve linear equations.
- *
- * All operations stay within 1-digit × 1-digit multiplication; coefficients in
- * the displayed problems are 1-digit signed.
- */
-function GymAlgebraApp({ onBack }) {
-  return (
-    <GymQuiz
-      title="GymAlgebra"
-      subtitle="Mixed reps across 6 algebra stations"
-      typeKeys={GYM_ALG_KEYS}
-      welcomeText="Six algebra stations: single-term × or ÷, degree-1 multiply/add, degree-≤3 multiply/add, and solving linear equations. Every multiplication stays within 1-digit × 1-digit."
-      algebraInput={true}
-      onBack={onBack}
-    />
-  )
-}
-
-/**
- * BasicGymApp — combined arithmetic + algebra (12 stations total).
- */
-function BasicGymApp({ onBack }) {
-  return (
-    <GymQuiz
-      title="Basic Gym"
-      subtitle="12 mixed arithmetic & algebra stations"
-      typeKeys={GYM_ALL_KEYS}
-      welcomeText="Twelve stations covering signed arithmetic (add/sub, multiply, fractions, decimals) and algebra (single terms, polynomials, linear equations). Every multiplication stays within 1-digit × 1-digit."
-      algebraInput={true}
-      onBack={onBack}
-    />
   )
 }
 
@@ -9601,6 +9542,395 @@ const IndicesGymApp = makeMCQuizApp({
   },
   tip: 'Use a^k · a^l = a^(k+l), a^k ÷ a^l = a^(k−l), (a^k)^l = a^(k·l). Distractors swap the wrong rule.',
 })
+
+// ───────────────────────────────────────────────────────────────────────────
+// GYM — unified adaptive puzzle that draws from all 6 gym families.
+// ───────────────────────────────────────────────────────────────────────────
+// Behaviour:
+//   - Adaptive only (no difficulty selector). Each question is sampled from
+//     one of the 6 gyms; the gym is picked by inverse-mastery weighting, so
+//     the more comfortable you are with a gym, the less often it appears.
+//   - Difficulty for the chosen gym ramps up with that gym's running mastery
+//     score: easy → medium → hard → extrahard. It can also drop back if the
+//     student's recent accuracy or speed slips on that gym.
+//   - Per-gym stats are persisted to localStorage so the system remembers
+//     mastery across sessions.
+// ───────────────────────────────────────────────────────────────────────────
+
+const GYM_TYPES = [
+  { key: 'gymdecimals', name: 'Decimals',     api: 'gymdecimals-api' },
+  { key: 'funcgym',     name: 'Functions',    api: 'funcgym-api' },
+  { key: 'dotprodgym',  name: 'Dot Products', api: 'dotprodgym-api' },
+  { key: 'fracaddgym',  name: 'Fractions',    api: 'fracaddgym-api' },
+  { key: 'lineqgym',    name: 'Linear Eq.',   api: 'lineqgym-api' },
+  { key: 'indicesgym',  name: 'Indices',      api: 'indicesgym-api' },
+]
+
+const GYM_STATS_KEY = 'tenali-gym-stats-v1'
+// Average time threshold (seconds) above which we start penalising mastery
+// for being slow.
+const GYM_FAST_AVG_S = 6
+// Minimum sample size before mastery becomes meaningful.
+const GYM_MIN_SAMPLES = 4
+
+/** Load the per-gym stats blob from localStorage. */
+function loadGymStats() {
+  try {
+    const raw = localStorage.getItem(GYM_STATS_KEY)
+    if (!raw) return {}
+    return JSON.parse(raw) || {}
+  } catch (e) { return {} }
+}
+
+/** Persist updated stats. Silent on storage failure. */
+function saveGymStats(stats) {
+  try { localStorage.setItem(GYM_STATS_KEY, JSON.stringify(stats)) } catch (e) {}
+}
+
+/**
+ * Compute mastery ∈ [0, 1] for a single gym from its rolling stats.
+ * 0 = struggling / new; 1 = comfortable & fast.
+ *
+ * Uses both accuracy and average response time so that a fast-but-sloppy or
+ * accurate-but-glacial student doesn't get marked as mastered prematurely.
+ */
+function gymMastery(stat) {
+  if (!stat || stat.total < GYM_MIN_SAMPLES) return 0
+  const accuracy = stat.correct / stat.total
+  const avgTime = stat.totalTime / stat.total
+  // Speed factor: 1 if avg ≤ GYM_FAST_AVG_S, decays to 0.4 by 18s.
+  const speedFactor = Math.max(0.4, Math.min(1, 1 - (avgTime - GYM_FAST_AVG_S) / 12))
+  return Math.max(0, Math.min(1, accuracy * speedFactor))
+}
+
+/** Map a gym's mastery score to the difficulty band we'll fetch from. */
+function gymDifficultyFor(mastery) {
+  if (mastery < 0.45) return 'easy'
+  if (mastery < 0.70) return 'medium'
+  if (mastery < 0.88) return 'hard'
+  return 'extrahard'
+}
+
+/**
+ * Pick the next gym to test. Each gym gets a weight = max(0.1, 1 − mastery)
+ * so:
+ *   • Untouched / weak gyms (mastery 0) get weight 1.
+ *   • Mastered gyms (mastery 1) still get weight 0.1, so they re-appear
+ *     occasionally for retention checks (we don't drop them entirely).
+ * Returns the GYM_TYPES entry that was selected.
+ */
+function pickNextGym(stats) {
+  const weights = GYM_TYPES.map(g => Math.max(0.1, 1 - gymMastery(stats[g.key])))
+  const total = weights.reduce((a, b) => a + b, 0)
+  let r = Math.random() * total
+  for (let i = 0; i < GYM_TYPES.length; i++) {
+    r -= weights[i]
+    if (r <= 0) return GYM_TYPES[i]
+  }
+  return GYM_TYPES[GYM_TYPES.length - 1]
+}
+
+/**
+ * Update one gym's rolling stats with a new result. Returns a new stats blob
+ * (immutable update) and persists it to localStorage as a side effect.
+ */
+function updateGymStat(stats, gymKey, correct, timeSec) {
+  const cur = stats[gymKey] || { correct: 0, total: 0, totalTime: 0 }
+  const next = {
+    ...stats,
+    [gymKey]: {
+      correct: cur.correct + (correct ? 1 : 0),
+      total: cur.total + 1,
+      totalTime: cur.totalTime + timeSec,
+    },
+  }
+  saveGymStats(next)
+  return next
+}
+
+/**
+ * GymApp — the unified Gym puzzle. Pulls together all six gym MCQ families
+ * with adaptive selection and per-gym difficulty progression.
+ */
+function GymApp({ onBack }) {
+  const [stats, setStats] = useState(() => loadGymStats())
+  const [phase, setPhase] = useState('setup')   // 'setup' | 'quiz' | 'finished'
+  const [numQuestions, setNumQuestions] = useState(String(DEFAULT_TOTAL))
+  const [totalQ, setTotalQ] = useState(DEFAULT_TOTAL)
+  const [questionNumber, setQuestionNumber] = useState(0)
+  const [score, setScore] = useState(0)
+  const [results, setResults] = useState([])
+  // Per-question state — mirrors makeMCQuizApp but tracks which gym sourced it.
+  const [question, setQuestion] = useState(null)
+  const [currentGym, setCurrentGym] = useState(null)
+  const [currentDifficulty, setCurrentDifficulty] = useState('easy')
+  const [selectedOption, setSelectedOption] = useState('')
+  const [correctOption, setCorrectOption] = useState('')
+  const [feedback, setFeedback] = useState('')
+  const [isCorrect, setIsCorrect] = useState(null)
+  const [revealed, setRevealed] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [loadError, setLoadError] = useState('')
+  const timer = useTimer()
+  const advanceFnRef = useRef(null)
+  const submittedRef = useRef(false)
+  const advancedRef = useRef(false)
+
+  /**
+   * loadNext(): pick a gym (inverse-mastery weighted), fetch a question at
+   * the gym's mastery-derived difficulty, and reset per-question state.
+   */
+  const loadNext = async () => {
+    setLoading(true); setLoadError('')
+    const gym = pickNextGym(stats)
+    const difficulty = gymDifficultyFor(gymMastery(stats[gym.key]))
+    setCurrentGym(gym)
+    setCurrentDifficulty(difficulty)
+    try {
+      const r = await fetch(`${API}/${gym.api}/question?difficulty=${difficulty}`)
+      if (!r.ok) throw new Error(`Server returned ${r.status}`)
+      const data = await r.json()
+      if (!data || !Array.isArray(data.options) || data.options.length < 2) {
+        throw new Error('Question payload missing options array')
+      }
+      setQuestion(data)
+      setSelectedOption(''); setCorrectOption('')
+      setFeedback(''); setIsCorrect(null); setRevealed(false)
+      submittedRef.current = false; advancedRef.current = false
+      timer.start()
+    } catch (e) {
+      console.error('Failed to load Gym question:', e)
+      setQuestion(null)
+      setLoadError(`Couldn't load a question (${e.message || 'unknown error'}). Tap Retry to try again.`)
+    }
+    setLoading(false)
+  }
+
+  const startQuiz = () => {
+    const t = Math.max(1, Math.min(200, Number(numQuestions) || DEFAULT_TOTAL))
+    setTotalQ(t); setScore(0); setResults([]); setQuestionNumber(1)
+    setPhase('quiz')
+    submittedRef.current = false; advancedRef.current = false
+  }
+
+  // Load a fresh question whenever questionNumber advances (during quiz).
+  useEffect(() => { if (phase === 'quiz' && questionNumber > 0) loadNext() },
+    // We intentionally re-run whenever questionNumber changes; stats updates
+    // happen in a ref-like way via setStats so they don't trigger re-fetch.
+    [phase, questionNumber])
+
+  const advance = () => {
+    if (advancedRef.current) return
+    advancedRef.current = true
+    if (questionNumber >= totalQ) setPhase('finished')
+    else setQuestionNumber(n => n + 1)
+  }
+  advanceFnRef.current = advance
+  useAutoAdvance(revealed, advanceFnRef, isCorrect)
+
+  // Enter advances after a wrong answer (no auto-advance on wrong).
+  useEffect(() => {
+    if (phase !== 'quiz' || !revealed || isCorrect) return
+    const h = (e) => { if (e.key === 'Enter') { e.preventDefault(); advance() } }
+    window.addEventListener('keydown', h)
+    return () => window.removeEventListener('keydown', h)
+  }, [phase, revealed, isCorrect, questionNumber])
+
+  // 1-4 / a-d shortcuts to pick options.
+  useEffect(() => {
+    if (phase !== 'quiz') return
+    const onKey = (e) => {
+      if (revealed || loading || !question) return
+      const map = { '1':'A','2':'B','3':'C','4':'D','a':'A','b':'B','c':'C','d':'D' }
+      const letter = map[e.key.toLowerCase()]
+      if (letter && question.options.find(o => o.option === letter)) {
+        e.preventDefault()
+        handleSelect(letter)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [phase, revealed, loading, question])
+
+  const handleSelect = async (letter) => {
+    if (!question || revealed || !currentGym) return
+    if (submittedRef.current) return
+    submittedRef.current = true
+    setSelectedOption(letter)
+    const timeTaken = timer.stop()
+    try {
+      const r = await fetch(`${API}/${currentGym.api}/check`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...question, selectedOption: letter }),
+      })
+      const data = await r.json()
+      setIsCorrect(data.correct); setRevealed(true)
+      setCorrectOption(data.correctOption || '')
+      if (data.correct) setScore(s => s + 1)
+      const correctText = data.correctDisplay || (question.options.find(o => o.option === data.correctOption)?.text) || ''
+      setFeedback(data.correct
+        ? `Correct! [${currentGym.name}] ${correctText}`
+        : `Incorrect. [${currentGym.name}] Answer: ${data.correctOption}. ${correctText}`)
+      setResults(prev => [...prev, {
+        question: `[${currentGym.name} · ${currentDifficulty}] ${question.prompt}`,
+        userAnswer: letter,
+        correctAnswer: data.correctOption + (correctText ? `: ${correctText}` : ''),
+        correct: data.correct,
+        time: timeTaken,
+      }])
+      // Update mastery for the gym this question came from.
+      setStats(prev => updateGymStat(prev, currentGym.key, data.correct, timeTaken))
+    } catch (e) {
+      submittedRef.current = false
+      console.error('Failed to check Gym answer:', e)
+    }
+  }
+
+  const handleSolve = async () => {
+    if (!question || revealed || !currentGym) return
+    submittedRef.current = true
+    timer.stop()
+    try {
+      const r = await fetch(`${API}/${currentGym.api}/check`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...question, selectedOption: '', solve: true }),
+      })
+      const data = await r.json()
+      setIsCorrect(false); setRevealed(true)
+      setCorrectOption(data.correctOption || '')
+      const correctText = data.correctDisplay || (question.options.find(o => o.option === data.correctOption)?.text) || ''
+      const explanation = data.explanation || ''
+      setFeedback(`Solution [${currentGym.name}]: ${data.correctOption}${correctText ? ': ' + correctText : ''}${explanation ? '\n' + explanation : ''}`)
+      setResults(prev => [...prev, {
+        question: `[${currentGym.name} · ${currentDifficulty}] ${question.prompt}`,
+        userAnswer: '(solved)',
+        correctAnswer: data.correctOption + (correctText ? `: ${correctText}` : ''),
+        correct: false,
+        time: 0,
+      }])
+      // A "solve" still counts as an attempt, but credited as incorrect for mastery.
+      setStats(prev => updateGymStat(prev, currentGym.key, false, 0))
+    } catch (e) {
+      submittedRef.current = false
+      console.error('Failed to solve Gym question:', e)
+    }
+  }
+
+  const resetStats = () => {
+    saveGymStats({})
+    setStats({})
+  }
+
+  // Helper for the mastery dashboard rows.
+  const renderMasteryRow = (g) => {
+    const stat = stats[g.key]
+    const mastery = gymMastery(stat)
+    const diff = gymDifficultyFor(mastery)
+    const pct = Math.round(mastery * 100)
+    const samples = stat ? stat.total : 0
+    const acc = stat && stat.total ? Math.round((stat.correct / stat.total) * 100) : 0
+    const avg = stat && stat.total ? (stat.totalTime / stat.total).toFixed(1) : '—'
+    const colour = `hsl(${Math.round(mastery * 120)}, 60%, 45%)`
+    return (
+      <div key={g.key} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.85rem', padding: '4px 0' }}>
+        <span style={{ minWidth: 110, fontWeight: 500 }}>{g.name}</span>
+        <div style={{ flex: 1, height: 8, background: 'var(--clr-bg-soft, rgba(0,0,0,0.08))', borderRadius: 4, overflow: 'hidden' }}>
+          <div style={{ width: `${pct}%`, height: '100%', background: colour, transition: 'width 250ms ease' }} />
+        </div>
+        <span style={{ minWidth: 38, textAlign: 'right', color: colour, fontWeight: 600 }}>{pct}%</span>
+        <span className="progress-pill" style={{ background: ADAPT_COLORS[diff], color: '#fff', fontSize: '0.72rem', padding: '2px 8px' }}>{diff}</span>
+        <span style={{ minWidth: 100, color: 'var(--clr-text-soft)', fontSize: '0.78rem' }}>
+          {samples ? `${acc}% · ${avg}s · n=${samples}` : '— new —'}
+        </span>
+      </div>
+    )
+  }
+
+  return (
+    <QuizLayout title="Gym" subtitle="Adaptive cross-gym workout — 6 puzzles, one session" onBack={onBack} timer={phase === 'quiz' ? timer : null}>
+      {phase === 'setup' && (
+        <div className="welcome-box">
+          <p className="welcome-text">Cross-train across all six gyms</p>
+          <p style={{ fontSize: '0.85rem', color: 'var(--clr-dim)', marginBottom: '8px' }}>
+            One adaptive session covering Decimals, Functions, Dot Products, Fractions, Linear Equations and Indices.
+            Questions are picked from the gyms you're <em>least</em> comfortable with, and each gym's difficulty
+            ramps up as your mastery rises.
+          </p>
+          <div style={{ margin: '14px 0' }}>{GYM_TYPES.map(renderMasteryRow)}</div>
+          <div className="question-count-row">
+            <label className="question-count-label">How many questions?</label>
+            <input className="answer-input question-count-input" type="text" value={numQuestions}
+              onChange={e => { const v = e.target.value; if (v === '' || /^\d+$/.test(v)) setNumQuestions(v) }} />
+          </div>
+          <div className="button-row">
+            <button onClick={startQuiz}>Start Workout</button>
+            {Object.keys(stats).length > 0 && (
+              <button onClick={resetStats} style={{ background: 'transparent', border: '1px solid var(--clr-text-soft)', color: 'var(--clr-text-soft)' }}>
+                Reset mastery
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {phase === 'quiz' && <>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.3rem' }}>
+          <div className="progress-pill center">Question {questionNumber}/{totalQ}</div>
+          {currentGym && <div className="progress-pill" style={{ background: 'var(--clr-accent)', color: '#fff' }}>{currentGym.name}</div>}
+          {currentDifficulty && <div className="progress-pill" style={{ background: ADAPT_COLORS[currentDifficulty], color: '#fff' }}>{currentDifficulty}</div>}
+        </div>
+        {question && <div style={{ textAlign: 'center' }}>
+          <div className="question-prompt" style={{ fontSize: '1.3rem', margin: '20px 0', lineHeight: '1.6' }}>{question.prompt}</div>
+          <div className="options-grid">
+            {question.options.map(opt => {
+              const isSelected = selectedOption === opt.option
+              const isCorrectOpt = revealed && correctOption === opt.option
+              const isWrongPick = revealed && isSelected && !isCorrect
+              return (
+                <button key={opt.option}
+                  className={`option-card ${isSelected ? 'selected' : ''} ${isCorrectOpt ? 'correct-option' : ''} ${isWrongPick ? 'wrong-option' : ''}`}
+                  onClick={() => !revealed && handleSelect(opt.option)}
+                  disabled={revealed}>
+                  <strong>{opt.option}.</strong> {opt.text}
+                </button>
+              )
+            })}
+          </div>
+        </div>}
+        {!question && loading && <div style={{ textAlign: 'center', padding: '24px', color: 'var(--clr-text-soft)' }}>Loading question…</div>}
+        {!question && !loading && loadError && (
+          <div style={{ textAlign: 'center', padding: '20px', color: 'var(--clr-wrong)', fontSize: '0.95rem' }}>
+            <div style={{ marginBottom: '10px' }}>{loadError}</div>
+            <button onClick={loadNext}>Retry</button>
+          </div>
+        )}
+        {renderFeedback(feedback, isCorrect)}
+        <div className="button-row">
+          {!revealed ? (
+            <button onClick={handleSolve} disabled={loading} style={{ background: 'transparent', border: '1px solid var(--clr-accent)', color: 'var(--clr-accent)' }}>Solve</button>
+          ) : (
+            <button onClick={advance}>{questionNumber >= totalQ ? 'Finish Workout' : 'Next Question'}</button>
+          )}
+        </div>
+        {results.length > 0 && <ResultsTable results={results} />}
+      </>}
+
+      {phase === 'finished' && (
+        <div className="welcome-box">
+          <p className="welcome-text">Workout complete!</p>
+          <p className="final-score">Final score: {score}/{totalQ}</p>
+          <div style={{ margin: '14px 0', textAlign: 'left' }}>
+            <div style={{ fontSize: '0.85rem', color: 'var(--clr-text-soft)', marginBottom: 6 }}>Updated mastery:</div>
+            {GYM_TYPES.map(renderMasteryRow)}
+          </div>
+          <ResultsTable results={results} />
+          <button onClick={() => setPhase('setup')}>Workout Again</button>
+        </div>
+      )}
+    </QuizLayout>
+  )
+}
+// ──────────────────────────── /Gym ─────────────────────────────
 
 const GSTApp = makeQuizApp({
   title: 'GST', subtitle: 'Goods & Services Tax', apiPath: 'gst-api',
