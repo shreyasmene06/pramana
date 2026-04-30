@@ -8317,6 +8317,210 @@ app.get('/indicesgym-api/question', (req, res) => {
 app.post('/indicesgym-api/check', express.json(), mcCheck);
 
 // ═══════════════════════════════════════════════════════════════════════════
+// POLYNOMIALS GYM (polygym-api)
+// ───────────────────────────────────────────────────────────────────────────
+// Progressive arithmetic → algebra ladder. The student starts with signed
+// single-digit multiplication and two-digit add/subtract, then climbs to
+// integer × monomial, addition of like terms, monomial × monomial (same or
+// different variables), and finally monomial squaring with small powers.
+//
+// HARD RULE: every multiplication that appears in any question reduces to
+// multiplying two single-digit numbers. Coefficients in multiplication
+// problems stay |c| ≤ 9. Addition-only problems are allowed two-digit
+// coefficients so the arithmetic stays interesting without violating the
+// single-digit-multiplication constraint.
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * fmtMono(coeff, variable, power): render a single monomial term such as
+ * 3x, −x, 5y², or just 4 (when power is 0). Handles the special cases of
+ * unit coefficient (no leading "1") and negative sign placement.
+ */
+function fmtMono(coeff, variable, power) {
+  if (coeff === 0) return '0';
+  const sup = (n) => String(n).split('').map(d => '⁰¹²³⁴⁵⁶⁷⁸⁹'[d]).join('');
+  const sign = coeff < 0 ? '−' : '';
+  const abs = Math.abs(coeff);
+  if (!variable || power === 0) return `${sign}${abs}`;
+  const coefPart = abs === 1 ? '' : String(abs);
+  const varPart = power === 1 ? variable : `${variable}${sup(power)}`;
+  return `${sign}${coefPart}${varPart}`;
+}
+
+/**
+ * fmtBinomial(c1, v1, c2, v2): render "ax ± by" with proper sign handling
+ * between the two terms. Used for collecting-like-terms answers when both
+ * terms survive (degenerate cases collapse to a single fmtMono).
+ */
+function fmtBinomial(c1, v1, c2, v2) {
+  if (c1 === 0 && c2 === 0) return '0';
+  if (c1 === 0) return fmtMono(c2, v2, 1);
+  if (c2 === 0) return fmtMono(c1, v1, 1);
+  const head = fmtMono(c1, v1, 1);
+  const tail = c2 < 0 ? `− ${fmtMono(-c2, v2, 1)}` : `+ ${fmtMono(c2, v2, 1)}`;
+  return `${head} ${tail}`;
+}
+
+/** Format a signed integer in parentheses when negative — for prompts. */
+function signedParen(n) { return n < 0 ? `(${n})` : String(n); }
+
+function polygymQuestion(difficulty) {
+  const id = `q-${Date.now()}-${Math.random()}`;
+  const vars = ['x', 'y', 'a', 'b', 'm', 'n'];
+  const pickVar = () => vars[randomInt(0, vars.length - 1)];
+  // Signed single-digit factor — guarantees |coeff| ∈ [1, 9] so any product
+  // involving two such factors stays within the 9-times-tables.
+  const sd = () => randomInt(1, 9) * (Math.random() < 0.5 ? -1 : 1);
+
+  // Difficulty mix. Easy is pure arithmetic (no variables yet); medium
+  // introduces a single variable; hard combines two variables and lets
+  // addition coefficients grow; extra-hard adds small powers (squaring)
+  // and three-term collect-like-terms problems.
+  const kinds = (difficulty === 'easy')
+    ? ['intMul', 'twoDigAdd', 'intMul', 'twoDigAdd']
+    : (difficulty === 'medium')
+    ? ['intTimesMono', 'monoAdd', 'intTimesMono', 'monoAdd', 'intMul']
+    : (difficulty === 'hard')
+    ? ['monoTimesMono', 'monoTimesMonoXY', 'monoBigAdd', 'monoTimesMono']
+    : ['monoSquare', 'monoTimesMonoXY', 'collectLikeTerms', 'monoSquare'];
+  const kind = kinds[randomInt(0, kinds.length - 1)];
+
+  let prompt, correctText, distractors;
+
+  if (kind === 'intMul') {
+    // Signed single-digit multiplication: (−7) × 4 = −28
+    const a = sd(), b = sd();
+    const ans = a * b;
+    prompt = `${signedParen(a)} × ${signedParen(b)} = ?`;
+    correctText = String(ans);
+    distractors = [String(-ans), String(ans + a), String(ans - b), String(a + b)];
+  } else if (kind === 'twoDigAdd') {
+    // Two-digit add/subtract with mixed signs: 23 + (−45) = −22
+    const a = randomInt(10, 99) * (Math.random() < 0.4 ? -1 : 1);
+    const b = randomInt(10, 99) * (Math.random() < 0.5 ? -1 : 1);
+    const ans = a + b;
+    const opPart = b < 0 ? `− ${Math.abs(b)}` : `+ ${b}`;
+    prompt = `${signedParen(a)} ${opPart} = ?`;
+    correctText = String(ans);
+    distractors = [String(-ans), String(ans + 1), String(ans - 1), String(a - b)];
+  } else if (kind === 'intTimesMono') {
+    // Integer × monomial: 3 × 4x = 12x. Both factors single-digit signed.
+    const k = sd(), c = sd();
+    const v = pickVar();
+    const ans = k * c;
+    prompt = `${signedParen(k)} × ${fmtMono(c, v, 1)} = ?`;
+    correctText = fmtMono(ans, v, 1);
+    distractors = [
+      fmtMono(-ans, v, 1),
+      fmtMono(ans, v, 2),
+      String(ans),                  // forgot the variable
+      fmtMono(k + c, v, 1),         // added instead of multiplied
+    ];
+  } else if (kind === 'monoAdd') {
+    // Like terms: 3x + 4x = 7x (single-digit coefficients).
+    const v = pickVar();
+    const a = sd(), b = sd();
+    const ans = a + b;
+    const opPart = b < 0 ? `− ${Math.abs(b)}${v}` : `+ ${b}${v}`;
+    prompt = `${fmtMono(a, v, 1)} ${opPart} = ?`;
+    correctText = fmtMono(ans, v, 1);
+    distractors = [
+      fmtMono(a * b, v, 1),         // multiplied instead of added
+      fmtMono(ans, v, 2),           // raised the power
+      fmtMono(-ans, v, 1),
+      String(ans),                  // forgot the variable
+    ];
+  } else if (kind === 'monoTimesMono') {
+    // Same variable: 3x × −4x = −12x² (still single-digit × single-digit).
+    const v = pickVar();
+    const a = sd(), b = sd();
+    const ans = a * b;
+    prompt = `${fmtMono(a, v, 1)} × ${fmtMono(b, v, 1)} = ?`;
+    correctText = fmtMono(ans, v, 2);
+    distractors = [
+      fmtMono(ans, v, 1),           // forgot to bump the power
+      fmtMono(-ans, v, 2),
+      fmtMono(a + b, v, 2),         // added coefficients
+      fmtMono(ans, v, 3),
+    ];
+  } else if (kind === 'monoTimesMonoXY') {
+    // Different variables: 3x × 4y = 12xy.
+    const v1 = pickVar();
+    let v2 = pickVar(); while (v2 === v1) v2 = pickVar();
+    const a = sd(), b = sd();
+    const ans = a * b;
+    const sortedVars = [v1, v2].sort().join('');
+    const sign = ans < 0 ? '−' : '';
+    const abs = Math.abs(ans);
+    const coefStr = abs === 1 ? '' : String(abs);
+    prompt = `${fmtMono(a, v1, 1)} × ${fmtMono(b, v2, 1)} = ?`;
+    correctText = `${sign}${coefStr}${sortedVars}`;
+    distractors = [
+      `${ans < 0 ? '' : '−'}${coefStr}${sortedVars}`,   // wrong sign
+      `${sign}${coefStr}${v1}`,                          // dropped second var
+      `${sign}${coefStr}${v2}`,                          // dropped first var
+      fmtMono(ans, v1, 2),                               // wrongly squared
+    ];
+  } else if (kind === 'monoBigAdd') {
+    // Pure addition with two-digit coefficients: 23x − 17x = 6x. No
+    // multiplication is involved, so the single-digit rule is preserved.
+    const v = pickVar();
+    const a = randomInt(10, 50) * (Math.random() < 0.4 ? -1 : 1);
+    const b = randomInt(10, 50) * (Math.random() < 0.5 ? -1 : 1);
+    const ans = a + b;
+    const opPart = b < 0 ? `− ${Math.abs(b)}${v}` : `+ ${b}${v}`;
+    prompt = `${fmtMono(a, v, 1)} ${opPart} = ?`;
+    correctText = fmtMono(ans, v, 1);
+    distractors = [
+      fmtMono(-ans, v, 1),
+      fmtMono(a - b, v, 1),
+      fmtMono(ans + 1, v, 1),
+      fmtMono(ans, v, 2),
+    ];
+  } else if (kind === 'monoSquare') {
+    // Small-power multiplication: 3x² × 4x = 12x³ (max total power 4).
+    const v = pickVar();
+    const a = sd(), b = sd();
+    const p1 = randomInt(1, 2), p2 = randomInt(1, 2);
+    const ans = a * b;
+    prompt = `${fmtMono(a, v, p1)} × ${fmtMono(b, v, p2)} = ?`;
+    correctText = fmtMono(ans, v, p1 + p2);
+    distractors = [
+      fmtMono(ans, v, Math.max(1, p1 * p2)),    // multiplied powers instead of adding
+      fmtMono(-ans, v, p1 + p2),
+      fmtMono(a + b, v, p1 + p2),
+      fmtMono(ans, v, Math.max(p1, p2)),
+    ];
+  } else {
+    // collectLikeTerms: ax + by − cx = (a − c)x + by. Three terms, only
+    // two of them like — student must regroup before adding.
+    const v1 = 'x', v2 = 'y';
+    const a = sd(), b = sd(), c = sd();
+    const xCoef = a - c;
+    const yCoef = b;
+    const part2 = b < 0 ? `− ${Math.abs(b)}${v2}` : `+ ${b}${v2}`;
+    const part3 = c < 0 ? `+ ${Math.abs(c)}${v1}` : `− ${c}${v1}`;
+    prompt = `${fmtMono(a, v1, 1)} ${part2} ${part3} = ?`;
+    correctText = fmtBinomial(xCoef, v1, yCoef, v2);
+    distractors = [
+      fmtBinomial(a + c, v1, yCoef, v2),         // added instead of subtracted
+      fmtBinomial(xCoef, v1, -yCoef, v2),
+      fmtBinomial(-xCoef, v1, yCoef, v2),
+      fmtBinomial(yCoef, v1, xCoef, v2),         // swapped variables
+    ];
+  }
+
+  const opts = buildOptions(correctText, distractors);
+  return { id, difficulty, prompt, kind, display: correctText, ...opts };
+}
+
+app.get('/polygym-api/question', (req, res) => {
+  const q = polygymQuestion(req.query.difficulty || 'easy');
+  res.json(q);
+});
+app.post('/polygym-api/check', express.json(), mcCheck);
+
+// ═══════════════════════════════════════════════════════════════════════════
 // 10. GST (gst-api)
 // ═══════════════════════════════════════════════════════════════════════════
 function gstQuestion(difficulty) {

@@ -28,8 +28,8 @@ import './App.css'
 const API = import.meta.env.VITE_API_BASE_URL || '';
 
 // App version — increment with each commit
-const TENALI_VERSION = '1.0.63'
-const TENALI_BUILD_DATE = '2026-04-30 09:12 IST'
+const TENALI_VERSION = '1.0.64'
+const TENALI_BUILD_DATE = '2026-04-30 09:47 IST'
 
 // Inject version badge into DOM once (appears on all routes)
 ;(() => {
@@ -5429,13 +5429,14 @@ function App() {
     tatsavit: TatsavitApp,         // Tatsavit (progressive math drill)
     randommix: RandomMixApp,       // Random Mix (adaptive)
     custom: CustomApp,             // Custom lesson builder
-    gym: GymApp,                   // Unified adaptive Gym — bundles all 6 below
+    gym: GymApp,                   // Unified adaptive Gym — bundles all 7 below
     gymdecimals: GymDecimalsApp,   // Gym Decimals — signed decimal multiplication (MCQ)
     funcgym: FuncGymApp,           // Functions Gym — polynomial evaluation (MCQ)
     dotprodgym: DotProdGymApp,     // DotProducts Gym — 2D/3D dot products (MCQ)
     fracaddgym: FracAddGymApp,     // Fractions-add-gym — add fractions (MCQ)
     lineqgym: LinEqGymApp,         // LinearEquations-Gym — solve linear equations (MCQ)
     indicesgym: IndicesGymApp,     // Indices-Gym — index laws (MCQ)
+    polygym: PolyGymApp,           // Polynomials Gym — arithmetic → monomial algebra (MCQ)
   }
 
   // Get the component to render (or null if mode not set)
@@ -5472,7 +5473,7 @@ function Home({ onSelect }) {
   const featuredApps = [
     { key: 'randommix', name: 'Random Mix', subtitle: 'Adaptive cross-topic quiz', color: 'featured' },
     { key: 'custom', name: 'Custom Lesson', subtitle: 'Build your own mixed quiz', color: 'featured' },
-    { key: 'gym', name: 'Gym', subtitle: 'Adaptive workout across all 6 gym puzzles', color: 'featured' },
+    { key: 'gym', name: 'Gym', subtitle: 'Adaptive workout across all 7 gym puzzles', color: 'featured' },
   ]
 
   // All regular quiz apps sorted alphabetically by name
@@ -5553,6 +5554,7 @@ function Home({ onSelect }) {
     { key: 'fracaddgym', name: 'Fractions-add-gym', subtitle: 'Add single-digit fractions (MCQ)', color: 'purple' },
     { key: 'lineqgym', name: 'LinearEquations-Gym', subtitle: 'Solve linear equations (MCQ)', color: 'blue' },
     { key: 'indicesgym', name: 'Indices-Gym', subtitle: 'Index laws (MCQ)', color: 'green' },
+    { key: 'polygym', name: 'Polynomials Gym', subtitle: 'Arithmetic → monomial algebra (MCQ)', color: 'blue' },
   ]
 
   // Combined list for search filtering
@@ -9582,12 +9584,28 @@ const IndicesGymApp = makeMCQuizApp({
   tip: 'Use a^k · a^l = a^(k+l), a^k ÷ a^l = a^(k−l), (a^k)^l = a^(k·l). Distractors swap the wrong rule.',
 })
 
+// Polynomials Gym — progressive ladder from signed integer arithmetic up
+// through monomial × monomial. All multiplications stay within the
+// 9-times-tables (single-digit factors); additions can use larger numbers.
+const PolyGymApp = makeMCQuizApp({
+  title: 'Polynomials Gym', subtitle: 'Arithmetic → monomial algebra (single-digit ×)',
+  apiPath: 'polygym-api',
+  adaptiveOnly: true,
+  diffLabels: {
+    easy: 'Easy — signed int × int / two-digit add',
+    medium: 'Medium — int × monomial / like-term add',
+    hard: 'Hard — monomial × monomial',
+    extrahard: 'Extra Hard — squaring & collect like terms',
+  },
+  tip: 'Every multiplication reduces to two single-digit numbers. Watch the signs and the powers.',
+})
+
 // ───────────────────────────────────────────────────────────────────────────
-// GYM — unified adaptive puzzle that draws from all 6 gym families.
+// GYM — unified adaptive puzzle that draws from all 7 gym families.
 // ───────────────────────────────────────────────────────────────────────────
 // Behaviour:
 //   - Adaptive only (no difficulty selector). Each question is sampled from
-//     one of the 6 gyms; the gym is picked by inverse-mastery weighting, so
+//     one of the 7 gyms; the gym is picked by inverse-mastery weighting, so
 //     the more comfortable you are with a gym, the less often it appears.
 //   - Difficulty for the chosen gym ramps up with that gym's running mastery
 //     score: easy → medium → hard → extrahard. It can also drop back if the
@@ -9603,6 +9621,7 @@ const GYM_PUZZLE_TYPES = [
   { key: 'fracaddgym',  name: 'Fractions',    api: 'fracaddgym-api' },
   { key: 'lineqgym',    name: 'Linear Eq.',   api: 'lineqgym-api' },
   { key: 'indicesgym',  name: 'Indices',      api: 'indicesgym-api' },
+  { key: 'polygym',     name: 'Polynomials',  api: 'polygym-api' },
 ]
 
 const GYM_STATS_KEY = 'tenali-gym-stats-v1'
@@ -9979,6 +9998,22 @@ function GymApp({ onBack }) {
   const resetStats = () => {
     saveGymStats({})
     setStats({})
+    // Also wipe the in-flight routing state so the next question starts
+    // fresh (no leftover streak, remediation lock, or queued skill).
+    streakRef.current = 0
+    lastCorrectRef.current = null
+    consecCorrectRef.current = 0
+    requestedGymRef.current = null
+    setRequestedKey(null)
+  }
+  /**
+   * confirmReset — guards resetStats() behind a confirm() so a misclick
+   * during a session can't accidentally wipe accumulated mastery.
+   */
+  const confirmReset = () => {
+    if (window.confirm('Reset all gym progress? This wipes mastery, streaks, and completed skills on this browser. It cannot be undone.')) {
+      resetStats()
+    }
   }
 
   // Helper for the mastery dashboard rows.
@@ -10080,26 +10115,26 @@ function GymApp({ onBack }) {
   }
 
   return (
-    <QuizLayout title="Gym" subtitle="Adaptive cross-gym workout — 6 puzzles, one session" onBack={onBack} timer={phase === 'quiz' ? timer : null}>
+    <QuizLayout title="Gym" subtitle="Adaptive cross-gym workout — 7 puzzles, one session" onBack={onBack} timer={phase === 'quiz' ? timer : null}>
       {phase === 'setup' && (
         <div className="welcome-box">
-          <p className="welcome-text">Cross-train across all six gyms</p>
+          <p className="welcome-text">Cross-train across all seven gyms</p>
           <p style={{ fontSize: '0.85rem', color: 'var(--clr-dim)', marginBottom: '8px' }}>
-            One adaptive session covering Decimals, Functions, Dot Products, Fractions, Linear Equations and Indices.
+            One adaptive session covering Decimals, Functions, Dot Products, Fractions, Linear Equations, Indices and Polynomials.
             Each skill's difficulty rises with your mastery. The router holds a skill for at least {GYM_MIN_STREAK} questions,
             stays on it after a mistake until you get {GYM_REMEDIATION_RUN} consecutive correct (so a stumble means
             another shot, not a switch), and then leans toward switching as the streak grows. Click <strong>Practice</strong>
             on any row to override the router and queue that skill next. A skill is marked done (✓) after {GYM_DONE_THRESHOLD}
-            correct extra-hard answers — the workout ends when all six are done.
+            correct extra-hard answers — the workout ends when all seven are done.
           </p>
           <div style={{ margin: '14px 0' }}>{GYM_PUZZLE_TYPES.map(renderMasteryRow)}</div>
           <div className="button-row">
             <button onClick={startQuiz}>Start Workout</button>
-            {Object.keys(stats).length > 0 && (
-              <button onClick={resetStats} style={{ background: 'transparent', border: '1px solid var(--clr-text-soft)', color: 'var(--clr-text-soft)' }}>
-                Reset mastery
-              </button>
-            )}
+            <button
+              onClick={confirmReset}
+              title="Wipe all locally-saved gym progress on this browser"
+              style={{ background: 'transparent', border: '1px solid var(--clr-text-soft)', color: 'var(--clr-text-soft)' }}
+            >Reset progress</button>
           </div>
         </div>
       )}
@@ -10114,8 +10149,40 @@ function GymApp({ onBack }) {
           </div>
         </div>
         {/* Live mastery dashboard — visible throughout the quiz so the student
-            can see which skills are still in play and which are done (✓). */}
-        <div style={{ margin: '6px 0 14px', padding: '8px 12px', border: '1px solid var(--clr-border)', borderRadius: 'var(--radius-sm)' }}>
+            can see which skills are still in play and which are done (✓).
+            The header carries a Reset progress link so the student can wipe
+            local progress at any time without leaving the workout. */}
+        <div style={{ margin: '6px 0 14px', padding: '10px 12px', border: '1px solid var(--clr-border)', borderRadius: 'var(--radius-sm)' }}>
+          <div style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            marginBottom: 8, paddingBottom: 6, borderBottom: '1px solid var(--clr-border)',
+          }}>
+            <span style={{
+              fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.8px',
+              color: 'var(--clr-text-soft)', textTransform: 'uppercase',
+            }}>Skills · saved on this browser</span>
+            <button
+              onClick={confirmReset}
+              title="Wipe all locally-saved gym progress"
+              style={{
+                padding: '3px 10px', fontSize: '0.7rem', fontWeight: 600,
+                letterSpacing: '0.4px', textTransform: 'uppercase',
+                background: 'transparent', color: 'var(--clr-text-soft)',
+                border: '1px solid var(--clr-border)', borderRadius: 'var(--radius-sm)',
+                cursor: 'pointer', transition: 'all 150ms ease',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = 'rgba(244,67,54,0.10)'
+                e.currentTarget.style.color = '#f44336'
+                e.currentTarget.style.borderColor = '#f44336'
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = 'transparent'
+                e.currentTarget.style.color = 'var(--clr-text-soft)'
+                e.currentTarget.style.borderColor = 'var(--clr-border)'
+              }}
+            >Reset progress</button>
+          </div>
           {GYM_PUZZLE_TYPES.map(renderMasteryRow)}
         </div>
         {question && <div style={{ textAlign: 'center' }}>
