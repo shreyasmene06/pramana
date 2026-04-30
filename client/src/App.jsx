@@ -28,8 +28,8 @@ import './App.css'
 const API = import.meta.env.VITE_API_BASE_URL || '';
 
 // App version — increment with each commit
-const TENALI_VERSION = '1.0.52'
-const TENALI_BUILD_DATE = '2026-04-30 07:58 IST'
+const TENALI_VERSION = '1.0.53'
+const TENALI_BUILD_DATE = '2026-04-30 08:40 IST'
 
 // Inject version badge into DOM once (appears on all routes)
 ;(() => {
@@ -9611,6 +9611,26 @@ const GYM_STATS_KEY = 'tenali-gym-stats-v1'
 const GYM_FAST_AVG_S = 6
 // Minimum sample size before mastery becomes meaningful.
 const GYM_MIN_SAMPLES = 4
+// Number of correct extrahard answers required to mark a skill as "done".
+// Once a skill is done it is removed from the question rotation and the UI
+// shows a tick mark next to it on the live mastery dashboard.
+const GYM_DONE_THRESHOLD = 5
+// Minimum consecutive questions the router will stay on a single gym before
+// it considers switching, and the absolute cap after which it always re-rolls.
+// Together these give the student a focused run on each skill (typically 3–6
+// questions) without context-switching every question.
+const GYM_MIN_STREAK = 3
+const GYM_MAX_STREAK = 6
+
+/**
+ * isGymDone(stat) — has the student demonstrated mastery of this skill?
+ * True when they've answered GYM_DONE_THRESHOLD or more questions correctly
+ * at the `extrahard` band. Done skills are skipped by pickNextGym so the
+ * student keeps focusing on the skills they haven't yet conquered.
+ */
+function isGymDone(stat) {
+  return !!(stat && (stat.extrahardCorrect || 0) >= GYM_DONE_THRESHOLD)
+}
 
 /** Load the per-gym stats blob from localStorage. */
 function loadGymStats() {
@@ -9651,36 +9671,59 @@ function gymDifficultyFor(mastery) {
 }
 
 /**
- * Pick the next gym to test. Each gym gets a weight = max(0.1, 1 − mastery)
- * so:
- *   • Untouched / weak gyms (mastery 0) get weight 1.
- *   • Mastered gyms (mastery 1) still get weight 0.1, so they re-appear
- *     occasionally for retention checks (we don't drop them entirely).
- * Returns the GYM_TYPES entry that was selected.
+ * Pick the next gym to test, balancing two goals:
+ *   1. Focus — give the student a sustained run on one skill rather than
+ *      whiplashing between puzzles every question.
+ *   2. Coverage — keep cycling through the skills they're weakest at.
+ *
+ * Done skills (see isGymDone) are never offered. If `prevKey` is supplied,
+ * the router prefers to stay on it for at least GYM_MIN_STREAK consecutive
+ * questions; between MIN and MAX it stays with high probability when the
+ * last answer was correct (and switches sooner on a wrong answer); past
+ * GYM_MAX_STREAK it always re-rolls. The re-roll is a weighted random over
+ * remaining (not-done) gyms with weight = max(0.1, 1 − mastery), so weak
+ * skills are favoured but mastered ones still re-appear occasionally for
+ * retention checks.
+ *
+ * Returns the chosen GYM_PUZZLE_TYPES entry, or null when every gym is done.
  */
-function pickNextGym(stats) {
-  const weights = GYM_PUZZLE_TYPES.map(g => Math.max(0.1, 1 - gymMastery(stats[g.key])))
+function pickNextGym(stats, prevKey, streakLen, lastCorrect) {
+  const candidates = GYM_PUZZLE_TYPES.filter(g => !isGymDone(stats[g.key]))
+  if (candidates.length === 0) return null
+  // Stickiness — prefer to stay on the previous gym while it's still active
+  // and the streak is short enough.
+  const prev = prevKey ? candidates.find(g => g.key === prevKey) : null
+  if (prev) {
+    if (streakLen < GYM_MIN_STREAK) return prev
+    if (streakLen < GYM_MAX_STREAK && lastCorrect && Math.random() < 0.7) return prev
+    if (streakLen < GYM_MAX_STREAK && !lastCorrect && Math.random() < 0.35) return prev
+  }
+  const weights = candidates.map(g => Math.max(0.1, 1 - gymMastery(stats[g.key])))
   const total = weights.reduce((a, b) => a + b, 0)
   let r = Math.random() * total
-  for (let i = 0; i < GYM_PUZZLE_TYPES.length; i++) {
+  for (let i = 0; i < candidates.length; i++) {
     r -= weights[i]
-    if (r <= 0) return GYM_PUZZLE_TYPES[i]
+    if (r <= 0) return candidates[i]
   }
-  return GYM_PUZZLE_TYPES[GYM_PUZZLE_TYPES.length - 1]
+  return candidates[candidates.length - 1]
 }
 
 /**
  * Update one gym's rolling stats with a new result. Returns a new stats blob
- * (immutable update) and persists it to localStorage as a side effect.
+ * (immutable update) and persists it to localStorage as a side effect. The
+ * `difficulty` arg lets us count correct extrahard answers separately, which
+ * powers the "skill done" criterion (see GYM_DONE_THRESHOLD).
  */
-function updateGymStat(stats, gymKey, correct, timeSec) {
-  const cur = stats[gymKey] || { correct: 0, total: 0, totalTime: 0 }
+function updateGymStat(stats, gymKey, correct, timeSec, difficulty) {
+  const cur = stats[gymKey] || { correct: 0, total: 0, totalTime: 0, extrahardCorrect: 0 }
+  const isExtraHardWin = correct && difficulty === 'extrahard'
   const next = {
     ...stats,
     [gymKey]: {
       correct: cur.correct + (correct ? 1 : 0),
       total: cur.total + 1,
       totalTime: cur.totalTime + timeSec,
+      extrahardCorrect: (cur.extrahardCorrect || 0) + (isExtraHardWin ? 1 : 0),
     },
   }
   saveGymStats(next)
@@ -9714,15 +9757,29 @@ function GymApp({ onBack }) {
   const advanceFnRef = useRef(null)
   const submittedRef = useRef(false)
   const advancedRef = useRef(false)
+  // Streak state for the gym-router. Refs (not React state) so loadNext sees
+  // the latest values without depending on render timing.
+  const streakRef = useRef(0)
+  const lastCorrectRef = useRef(null)
 
   /**
-   * loadNext(): pick a gym (inverse-mastery weighted), fetch a question at
-   * the gym's mastery-derived difficulty, and reset per-question state.
+   * loadNext(): pick a gym (with streak-based stickiness, skipping any
+   * skills the student has already finished), fetch a question at that gym's
+   * mastery-derived difficulty, and reset per-question state. If every skill
+   * is done, ends the workout early.
    */
   const loadNext = async () => {
     setLoading(true); setLoadError('')
-    const gym = pickNextGym(stats)
+    const gym = pickNextGym(stats, currentGym?.key, streakRef.current, lastCorrectRef.current)
+    if (!gym) {
+      // All six skills are done — end the workout regardless of question count.
+      setLoading(false)
+      setPhase('finished')
+      return
+    }
     const difficulty = gymDifficultyFor(gymMastery(stats[gym.key]))
+    // Update streak: reset to 1 on a switch, increment when staying.
+    streakRef.current = currentGym && gym.key === currentGym.key ? streakRef.current + 1 : 1
     setCurrentGym(gym)
     setCurrentDifficulty(difficulty)
     try {
@@ -9750,6 +9807,10 @@ function GymApp({ onBack }) {
     setTotalQ(t); setScore(0); setResults([]); setQuestionNumber(1)
     setPhase('quiz')
     submittedRef.current = false; advancedRef.current = false
+    // Fresh routing state for the new session.
+    streakRef.current = 0
+    lastCorrectRef.current = null
+    setCurrentGym(null)
   }
 
   // Load a fresh question whenever questionNumber advances (during quiz).
@@ -9818,7 +9879,8 @@ function GymApp({ onBack }) {
         time: timeTaken,
       }])
       // Update mastery for the gym this question came from.
-      setStats(prev => updateGymStat(prev, currentGym.key, data.correct, timeTaken))
+      setStats(prev => updateGymStat(prev, currentGym.key, data.correct, timeTaken, currentDifficulty))
+      lastCorrectRef.current = !!data.correct
     } catch (e) {
       submittedRef.current = false
       console.error('Failed to check Gym answer:', e)
@@ -9848,7 +9910,8 @@ function GymApp({ onBack }) {
         time: 0,
       }])
       // A "solve" still counts as an attempt, but credited as incorrect for mastery.
-      setStats(prev => updateGymStat(prev, currentGym.key, false, 0))
+      setStats(prev => updateGymStat(prev, currentGym.key, false, 0, currentDifficulty))
+      lastCorrectRef.current = false
     } catch (e) {
       submittedRef.current = false
       console.error('Failed to solve Gym question:', e)
@@ -9870,16 +9933,30 @@ function GymApp({ onBack }) {
     const acc = stat && stat.total ? Math.round((stat.correct / stat.total) * 100) : 0
     const avg = stat && stat.total ? (stat.totalTime / stat.total).toFixed(1) : '—'
     const colour = `hsl(${Math.round(mastery * 120)}, 60%, 45%)`
+    const done = isGymDone(stat)
+    const isCurrent = currentGym && currentGym.key === g.key && phase === 'quiz'
     return (
-      <div key={g.key} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.85rem', padding: '4px 0' }}>
-        <span style={{ minWidth: 110, fontWeight: 500 }}>{g.name}</span>
+      <div key={g.key} style={{
+        display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.85rem', padding: '4px 0',
+        opacity: done ? 0.85 : 1,
+        background: isCurrent ? 'var(--clr-accent-soft, rgba(255,165,0,0.08))' : 'transparent',
+        borderRadius: 4,
+      }}>
+        <span style={{ minWidth: 18, textAlign: 'center', color: done ? '#4caf50' : 'var(--clr-text-soft)', fontWeight: 700 }}>
+          {done ? '✓' : (isCurrent ? '▸' : ' ')}
+        </span>
+        <span style={{ minWidth: 100, fontWeight: 500, textDecoration: done ? 'line-through' : 'none' }}>{g.name}</span>
         <div style={{ flex: 1, height: 8, background: 'var(--clr-bg-soft, rgba(0,0,0,0.08))', borderRadius: 4, overflow: 'hidden' }}>
-          <div style={{ width: `${pct}%`, height: '100%', background: colour, transition: 'width 250ms ease' }} />
+          <div style={{ width: `${pct}%`, height: '100%', background: done ? '#4caf50' : colour, transition: 'width 250ms ease' }} />
         </div>
-        <span style={{ minWidth: 38, textAlign: 'right', color: colour, fontWeight: 600 }}>{pct}%</span>
-        <span className="progress-pill" style={{ background: ADAPT_COLORS[diff], color: '#fff', fontSize: '0.72rem', padding: '2px 8px' }}>{diff}</span>
-        <span style={{ minWidth: 100, color: 'var(--clr-text-soft)', fontSize: '0.78rem' }}>
-          {samples ? `${acc}% · ${avg}s · n=${samples}` : '— new —'}
+        <span style={{ minWidth: 38, textAlign: 'right', color: done ? '#4caf50' : colour, fontWeight: 600 }}>{pct}%</span>
+        {done ? (
+          <span className="progress-pill" style={{ background: '#4caf50', color: '#fff', fontSize: '0.72rem', padding: '2px 8px' }}>done</span>
+        ) : (
+          <span className="progress-pill" style={{ background: ADAPT_COLORS[diff], color: '#fff', fontSize: '0.72rem', padding: '2px 8px' }}>{diff}</span>
+        )}
+        <span style={{ minWidth: 110, color: 'var(--clr-text-soft)', fontSize: '0.78rem' }}>
+          {samples ? `${acc}% · ${avg}s · n=${samples}${(stat?.extrahardCorrect || 0) ? ` · X✓ ${stat.extrahardCorrect}/${GYM_DONE_THRESHOLD}` : ''}` : '— new —'}
         </span>
       </div>
     )
@@ -9893,7 +9970,9 @@ function GymApp({ onBack }) {
           <p style={{ fontSize: '0.85rem', color: 'var(--clr-dim)', marginBottom: '8px' }}>
             One adaptive session covering Decimals, Functions, Dot Products, Fractions, Linear Equations and Indices.
             Questions are picked from the gyms you're <em>least</em> comfortable with, and each gym's difficulty
-            ramps up as your mastery rises.
+            ramps up as your mastery rises. The router stays on one skill for a few questions before switching,
+            and a skill is marked done (✓) once you've nailed {GYM_DONE_THRESHOLD} extra-hard questions on it —
+            the workout ends when all six are done.
           </p>
           <div style={{ margin: '14px 0' }}>{GYM_PUZZLE_TYPES.map(renderMasteryRow)}</div>
           <div className="question-count-row">
@@ -9917,6 +9996,14 @@ function GymApp({ onBack }) {
           <div className="progress-pill center">Question {questionNumber}/{totalQ}</div>
           {currentGym && <div className="progress-pill" style={{ background: 'var(--clr-accent)', color: '#fff' }}>{currentGym.name}</div>}
           {currentDifficulty && <div className="progress-pill" style={{ background: ADAPT_COLORS[currentDifficulty], color: '#fff' }}>{currentDifficulty}</div>}
+          <div className="progress-pill" style={{ background: '#4caf50', color: '#fff' }}>
+            ✓ {GYM_PUZZLE_TYPES.filter(g => isGymDone(stats[g.key])).length}/{GYM_PUZZLE_TYPES.length}
+          </div>
+        </div>
+        {/* Live mastery dashboard — visible throughout the quiz so the student
+            can see which skills are still in play and which are done (✓). */}
+        <div style={{ margin: '6px 0 14px', padding: '8px 12px', border: '1px solid var(--clr-border)', borderRadius: 'var(--radius-sm)' }}>
+          {GYM_PUZZLE_TYPES.map(renderMasteryRow)}
         </div>
         {question && <div style={{ textAlign: 'center' }}>
           <div className="question-prompt" style={{ fontSize: '1.3rem', margin: '8px 0 4px', lineHeight: '1.4' }}>{question.prompt}</div>
