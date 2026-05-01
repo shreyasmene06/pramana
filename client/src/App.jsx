@@ -28,8 +28,8 @@ import './App.css'
 const API = import.meta.env.VITE_API_BASE_URL || '';
 
 // App version — increment with each commit
-const TENALI_VERSION = '1.0.68'
-const TENALI_BUILD_DATE = '2026-05-01 10:52 IST'
+const TENALI_VERSION = '1.0.69'
+const TENALI_BUILD_DATE = '2026-05-01 11:03 IST'
 
 // Inject version badge into DOM once (appears on all routes)
 ;(() => {
@@ -5884,6 +5884,65 @@ function ch5_loadProgress() {
 }
 function ch5_saveProgress(p) { try { localStorage.setItem(CH5_PROGRESS_KEY, JSON.stringify(p)) } catch {} }
 
+// --- Custom math renderer for Chapter5 ----------------------------------
+// Beautiful stacked fractions, vertically centred (the global MathFrac uses
+// a baseline-offset that makes fractions sit too low for our taste here).
+// Also supports \times, \div, \approx, \le, \ge, \to, \$, etc.
+function Ch5Frac({ num, den }) {
+  return (
+    <span style={{
+      display: 'inline-flex', flexDirection: 'column', alignItems: 'center',
+      verticalAlign: 'middle', margin: '0 0.18em', lineHeight: 1.05,
+      fontSize: '0.95em',
+    }}>
+      <span style={{ padding: '0 0.4em 0.05em', borderBottom: '1.6px solid currentColor' }}>{num}</span>
+      <span style={{ padding: '0.05em 0.4em 0' }}>{den}</span>
+    </span>
+  )
+}
+// Pre-substitute LaTeX-like operator macros into Unicode glyphs so they
+// render properly when we hand off to the parser.
+function ch5_subOps(s) {
+  return String(s)
+    .replace(/\\times/g, '×').replace(/\\div/g, '÷')
+    .replace(/\\approx/g, '≈').replace(/\\to\b/g, '→')
+    .replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
+    .replace(/\\cdot/g, '·').replace(/\\pm/g, '±')
+    .replace(/\\\$/g, '$').replace(/\\%/g, '%')
+}
+// Recursive parser: handles \frac{NUM}{DEN} (with nesting) and ^N/^-N.
+function ch5RenderMath(text) {
+  if (text == null) return null
+  const src = ch5_subOps(text)
+  const out = []
+  let i = 0, buf = ''
+  const flush = () => { if (buf) { out.push(buf); buf = '' } }
+  while (i < src.length) {
+    if (src.startsWith('\\frac{', i)) {
+      flush()
+      let j = i + 6, depth = 1
+      const ns = j
+      while (j < src.length) { if (src[j] === '{') depth++; else if (src[j] === '}') { depth--; if (depth === 0) break } j++ }
+      const numStr = src.slice(ns, j); j++
+      if (src[j] !== '{') { buf += src.slice(i, j); i = j; continue }
+      j++; depth = 1
+      const ds = j
+      while (j < src.length) { if (src[j] === '{') depth++; else if (src[j] === '}') { depth--; if (depth === 0) break } j++ }
+      const denStr = src.slice(ds, j); j++
+      out.push(<Ch5Frac key={`f${out.length}`} num={ch5RenderMath(numStr)} den={ch5RenderMath(denStr)} />)
+      i = j
+    } else if (src[i] === '^') {
+      const m = src.slice(i).match(/^\^(-?\d+)/)
+      if (m) { flush(); out.push(<sup key={`s${out.length}`} style={{ fontSize: '0.72em', verticalAlign: 'super' }}>{m[1]}</sup>); i += m[0].length }
+      else { buf += src[i]; i++ }
+    } else { buf += src[i]; i++ }
+  }
+  flush()
+  return out
+}
+
+const CH5_AUTO_ADVANCE_MS = 5000
+
 function Chapter5App({ onBack }) {
   const [progress, setProgress] = useState(ch5_loadProgress)
   const [activeId, setActiveId] = useState(null)
@@ -5893,7 +5952,10 @@ function Chapter5App({ onBack }) {
   const [fillInput, setFillInput] = useState('')
   const [revealed, setRevealed] = useState(false)
   const [isCorrect, setIsCorrect] = useState(false)
+  const [autoCountdown, setAutoCountdown] = useState(0)  // seconds remaining before auto-advance
   const inputRef = useRef(null)
+  const autoTimerRef = useRef(null)
+  const advanceRef = useRef(() => {})
 
   const lesson = activeId ? CH5_LESSONS.find(l => l.id === activeId) : null
   const currentQ = lesson ? lesson.questions[qIdx] : null
@@ -5940,7 +6002,15 @@ function Chapter5App({ onBack }) {
     setSelectedIdx(displayIdx); setIsCorrect(ok); setRevealed(true)
   }
 
+  // Cancel any pending auto-advance timer (called whenever we leave the
+  // current revealed state for any reason — manual advance, navigation, etc.)
+  const cancelAutoAdvance = () => {
+    if (autoTimerRef.current) { clearInterval(autoTimerRef.current); autoTimerRef.current = null }
+    setAutoCountdown(0)
+  }
+
   const advance = () => {
+    cancelAutoAdvance()
     const next = qIdx + 1
     if (!lesson) return
     if (next >= lesson.questions.length) {
@@ -5952,8 +6022,10 @@ function Chapter5App({ onBack }) {
       setProgress(p => ({ ...p, [activeId]: { ...(p[activeId] || {}), teachSeen: true, qIdx: next } }))
     }
   }
+  advanceRef.current = advance
 
   const backToOverview = () => {
+    cancelAutoAdvance()
     setActiveId(null); setPhase('teach'); setQIdx(0)
     setSelectedIdx(null); setFillInput(''); setRevealed(false); setIsCorrect(false)
   }
@@ -5964,12 +6036,31 @@ function Chapter5App({ onBack }) {
     backToOverview()
   }
 
-  // Keyboard: 1..9 picks MCQ option, Enter advances after reveal
+  // Auto-advance: once the answer is revealed, count down from 5s and call
+  // advance() if the user does nothing. Any keystroke or click cancels.
+  useEffect(() => {
+    if (phase !== 'practice' || !revealed) { cancelAutoAdvance(); return }
+    const total = Math.round(CH5_AUTO_ADVANCE_MS / 1000)
+    setAutoCountdown(total)
+    autoTimerRef.current = setInterval(() => {
+      setAutoCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(autoTimerRef.current); autoTimerRef.current = null
+          advanceRef.current()
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+    return () => { if (autoTimerRef.current) { clearInterval(autoTimerRef.current); autoTimerRef.current = null } }
+  }, [phase, revealed, qIdx, activeId])
+
+  // Keyboard: 1..9 picks an MCQ option; Enter submits a fill or advances on reveal
   useEffect(() => {
     if (phase !== 'practice' || !currentQ) return
     const onKey = (e) => {
       if (revealed) {
-        if (e.key === 'Enter') { e.preventDefault(); advance() }
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); advance() }
         return
       }
       if (currentQ.kind === 'mcq') {
@@ -6048,14 +6139,14 @@ function Chapter5App({ onBack }) {
         <h2 style={{ marginBottom: 4 }}>{lesson.title}</h2>
         <h3 style={{ color: 'var(--clr-accent, #6cf)', marginTop: 16 }}>{lesson.teach.heading}</h3>
         {lesson.teach.body.map((para, i) => (
-          <p key={i} style={{ lineHeight: 1.7, marginBottom: 10, fontSize: '1rem' }}>{renderMath(para)}</p>
+          <p key={i} style={{ lineHeight: 1.7, marginBottom: 10, fontSize: '1rem' }}>{ch5RenderMath(para)}</p>
         ))}
         <div style={{
           marginTop: 14, padding: 14, borderRadius: 8,
           background: 'rgba(108,206,255,0.08)', border: '1px solid rgba(108,206,255,0.25)',
           fontSize: '1rem', lineHeight: 1.7,
         }}>
-          <strong>Worked example: </strong>{renderMath(lesson.teach.example)}
+          <strong>Worked example: </strong>{ch5RenderMath(lesson.teach.example)}
         </div>
         {lesson.qFormat && <p style={{ marginTop: 14, fontSize: '0.9rem', opacity: 0.8 }}><em>Note:</em> {lesson.qFormat}</p>}
         <button onClick={acknowledgeTeach} style={{
@@ -6109,11 +6200,12 @@ function Chapter5App({ onBack }) {
       </div>
 
       <div style={{
-        padding: '18px 20px', borderRadius: 10, background: 'var(--clr-surface, #1c1c1f)',
+        padding: '22px 24px', borderRadius: 10, background: 'var(--clr-surface, #1c1c1f)',
         border: '1px solid var(--clr-border, #333)', marginBottom: 16,
-        fontSize: '1.2rem', lineHeight: 1.6,
+        fontSize: '1.25rem', lineHeight: 2.1, textAlign: 'center',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 80,
       }}>
-        {renderMath(currentQ.prompt)}
+        <span>{ch5RenderMath(currentQ.prompt)}</span>
       </div>
 
       {currentQ.kind === 'mcq' ? (
@@ -6132,10 +6224,16 @@ function Chapter5App({ onBack }) {
                 style={{
                   borderColor: isCorrectOpt ? 'var(--clr-correct, #2ea043)' : isWrongPick ? 'var(--clr-wrong, #f85149)' : undefined,
                   background: isCorrectOpt ? 'rgba(46,160,67,0.15)' : isWrongPick ? 'rgba(248,81,73,0.15)' : undefined,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  position: 'relative', padding: '18px 24px', minHeight: 64,
+                  fontSize: '1.1rem', lineHeight: 1.9,
                 }}
               >
-                <strong style={{ marginRight: 10, opacity: 0.85 }}>{CH5_OPTION_LABEL[displayIdx]}.</strong>
-                <span>{renderMath(opt)}</span>
+                <span style={{
+                  position: 'absolute', left: 18, top: '50%', transform: 'translateY(-50%)',
+                  fontWeight: 700, opacity: 0.6, fontSize: '0.95rem',
+                }}>{CH5_OPTION_LABEL[displayIdx]}.</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center' }}>{ch5RenderMath(opt)}</span>
               </button>
             )
           })}
@@ -6151,57 +6249,58 @@ function Chapter5App({ onBack }) {
             placeholder="Your answer…"
             autoComplete="off"
             style={{
-              width: '100%', padding: '12px 14px', fontSize: '1.1rem', borderRadius: 8,
-              border: '1px solid var(--clr-border, #555)',
+              width: '100%', padding: '14px 16px', fontSize: '1.15rem', borderRadius: 8,
+              border: '1px solid var(--clr-border, #555)', textAlign: 'center',
               background: revealed ? 'rgba(255,255,255,0.04)' : 'var(--clr-surface, #1c1c1f)',
               color: 'var(--clr-text)', boxSizing: 'border-box',
             }}
           />
-          <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
-            {!revealed ? (
+          {!revealed && (
+            <div style={{ display: 'flex', gap: 8, marginTop: 12, justifyContent: 'center' }}>
               <button onClick={submitFill} disabled={!fillInput.trim()} style={{
-                padding: '8px 18px', borderRadius: 6, background: 'var(--clr-accent, #2ea043)',
+                padding: '10px 22px', borderRadius: 6, background: 'var(--clr-accent, #2ea043)',
                 color: 'white', border: 'none', cursor: 'pointer', fontSize: '0.95rem',
                 opacity: fillInput.trim() ? 1 : 0.5,
               }}>Check</button>
-            ) : (
-              <button onClick={advance} style={{
-                padding: '8px 18px', borderRadius: 6, background: 'var(--clr-accent, #2ea043)',
-                color: 'white', border: 'none', cursor: 'pointer', fontSize: '0.95rem',
-              }}>{qIdx + 1 === lesson.questions.length ? 'Finish lesson →' : 'Next question →'}</button>
-            )}
-          </div>
+            </div>
+          )}
         </>
       )}
 
       {revealed && (
-        <div style={{
-          marginTop: 16, padding: 14, borderRadius: 8,
-          background: isCorrect ? 'rgba(46,160,67,0.15)' : 'rgba(248,81,73,0.15)',
-          border: `1px solid ${isCorrect ? 'rgba(46,160,67,0.45)' : 'rgba(248,81,73,0.45)'}`,
-          fontSize: '0.98rem', lineHeight: 1.6,
-        }}>
-          <strong>{isCorrect ? '✅ Correct!' : '❌ Not quite.'}</strong>
-          {currentQ.kind === 'mcq' ? (
-            <div style={{ marginTop: 6 }}>
-              <strong>Answer:</strong> {renderMath(currentQ.options[currentQ.correct])}
+        <>
+          <div style={{
+            marginTop: 16, padding: 16, borderRadius: 8,
+            background: isCorrect ? 'rgba(46,160,67,0.15)' : 'rgba(248,81,73,0.15)',
+            border: `1px solid ${isCorrect ? 'rgba(46,160,67,0.45)' : 'rgba(248,81,73,0.45)'}`,
+            fontSize: '1rem', lineHeight: 1.9,
+          }}>
+            <strong>{isCorrect ? '✅ Correct!' : '❌ Not quite.'}</strong>
+            <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+              <strong>Answer:</strong>
+              <span>{currentQ.kind === 'mcq'
+                ? ch5RenderMath(currentQ.options[currentQ.correct])
+                : ch5RenderMath(String(currentQ.answer))}</span>
             </div>
-          ) : (
-            <div style={{ marginTop: 6 }}>
-              <strong>Answer:</strong> {renderMath(String(currentQ.answer))}
-            </div>
-          )}
-          {currentQ.solution && (
-            <div style={{ marginTop: 6, opacity: 0.9 }}>
-              <strong>Working:</strong> {renderMath(currentQ.solution)}
-            </div>
-          )}
-          {currentQ.kind === 'mcq' && (
-            <div style={{ marginTop: 10, fontSize: '0.85rem', opacity: 0.7 }}>
-              Press <kbd>Enter</kbd> for the next question.
-            </div>
-          )}
-        </div>
+            {currentQ.solution && (
+              <div style={{ marginTop: 8, opacity: 0.9, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+                <strong>Working:</strong>
+                <span>{ch5RenderMath(currentQ.solution)}</span>
+              </div>
+            )}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 14, justifyContent: 'center' }}>
+            <button onClick={advance} style={{
+              padding: '12px 28px', borderRadius: 8, background: 'var(--clr-accent, #2ea043)',
+              color: 'white', border: 'none', cursor: 'pointer', fontSize: '1rem', fontWeight: 600,
+            }}>
+              {qIdx + 1 === lesson.questions.length ? 'Finish lesson →' : 'Next →'}
+            </button>
+            <span style={{ fontSize: '0.85rem', opacity: 0.65 }}>
+              auto-advance in {autoCountdown}s · or press <kbd style={{ padding: '1px 6px', border: '1px solid var(--clr-border, #555)', borderRadius: 4, fontSize: '0.78rem' }}>Enter</kbd>
+            </span>
+          </div>
+        </>
       )}
     </div>
   )
