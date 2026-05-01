@@ -28,8 +28,8 @@ import './App.css'
 const API = import.meta.env.VITE_API_BASE_URL || '';
 
 // App version — increment with each commit
-const TENALI_VERSION = '1.0.77'
-const TENALI_BUILD_DATE = '2026-05-01 21:48 IST'
+const TENALI_VERSION = '1.0.78'
+const TENALI_BUILD_DATE = '2026-05-02 00:22 IST'
 
 // Inject version badge into DOM once (appears on all routes)
 ;(() => {
@@ -7288,6 +7288,1341 @@ function Chapter6App({ onBack }) {
   )
 }
 
+/* =====================================================================
+ *  Chapter7App — Cambridge IGCSE Chapter 7 (Perimeter, Area and Volume)
+ *
+ *  Mounted at /chapter7. Same UX as Chapter5App / Chapter6App: ordered
+ *  chain of lessons, every one unlocked from the start, slider to jump
+ *  questions, MCQ with 1-9 keys + fill-in fallbacks, 5s auto-advance,
+ *  completed lessons go green, wrong answers re-queued after a gap.
+ *  See Tenali/skills/igcse-chapter/SKILL.md for the full pattern.
+ * ===================================================================== */
+
+const CH7_OPTION_LABEL = ['1','2','3','4','5','6','7','8','9']
+
+function ch7_seededShuffle(n, key) {
+  let h = 2166136261
+  for (let i = 0; i < key.length; i++) { h ^= key.charCodeAt(i); h = Math.imul(h, 16777619) }
+  const rand = () => { h = Math.imul(h ^ (h >>> 15), 2246822507); h = Math.imul(h ^ (h >>> 13), 3266489909); return ((h ^= h >>> 16) >>> 0) / 4294967295 }
+  const arr = Array.from({ length: n }, (_, i) => i)
+  for (let i = n - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]] }
+  return arr
+}
+
+function ch7_gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { [a, b] = [b, a % b] } return a || 1 }
+function ch7_reduce(n, d) {
+  if (d === 0) return null
+  if (d < 0) { n = -n; d = -d }
+  const g = ch7_gcd(n, d)
+  return { n: n / g, d: d / g }
+}
+function ch7_parseFrac(raw) {
+  if (raw == null) return null
+  let s = String(raw).trim().replace(/\\frac\{(-?\d+)\}\{(-?\d+)\}/g, '$1/$2').replace(/\s+/g, ' ').replace(/–/g, '-')
+  if (!s) return null
+  const mixed = s.match(/^(-?)(\d+)\s+(\d+)\s*\/\s*(\d+)$/)
+  if (mixed) {
+    const sign = mixed[1] === '-' ? -1 : 1
+    const w = +mixed[2], n = +mixed[3], d = +mixed[4]
+    if (d === 0) return null
+    return ch7_reduce(sign * (w * d + n), d)
+  }
+  const frac = s.match(/^(-?\d+)\s*\/\s*(-?\d+)$/)
+  if (frac) {
+    const n = +frac[1], d = +frac[2]
+    if (d === 0) return null
+    return ch7_reduce(n, d)
+  }
+  const num = Number(s)
+  if (Number.isFinite(num)) {
+    if (Number.isInteger(num)) return { n: num, d: 1 }
+    const sign = num < 0 ? -1 : 1
+    const decimals = (s.split('.')[1] || '').length
+    const denom = Math.pow(10, decimals)
+    return ch7_reduce(sign * Math.round(Math.abs(num) * denom), denom)
+  }
+  return null
+}
+function ch7_fracEqual(a, b) { return a && b && a.n === b.n && a.d === b.d }
+function ch7_normalizeNumStr(s) {
+  return String(s).trim().replace(/[$,\s%]/g, '').replace(/–/g, '-')
+}
+function ch7_numEqual(user, expected, tol) {
+  const u = parseFloat(ch7_normalizeNumStr(user))
+  if (!Number.isFinite(u)) return false
+  const t = tol != null ? tol : Math.max(0.005, Math.abs(expected) * 0.005)
+  return Math.abs(u - expected) <= t
+}
+
+function ch7_checkFill(q, raw) {
+  if (!raw || !raw.trim()) return false
+  switch (q.kind) {
+    case 'fill-num': return ch7_numEqual(raw, q.answer, q.tol)
+    case 'fill-frac': {
+      const u = ch7_parseFrac(raw)
+      const e = ch7_parseFrac(q.answer)
+      return ch7_fracEqual(u, e)
+    }
+    case 'fill-text': return raw.trim().toLowerCase() === String(q.answer).trim().toLowerCase()
+    default: return false
+  }
+}
+
+// --- Lesson catalogue ---------------------------------------------------
+// Cambridge IGCSE Chapter 7 — Perimeter, Area and Volume
+// Sections covered: 7.1 (perimeter & area in 2D, including circles, arcs,
+// sectors), 7.2 (3D objects, nets), 7.3 (surface areas & volumes of solids,
+// prisms, cylinders, pyramids, cones, spheres). See uploads PDF p. 206-239.
+const CH7_LESSONS = [
+  // ───────────────────── L1: Rectangles, squares, parallelograms ─────────
+  {
+    id: 'L1',
+    title: 'Lesson 1 · Rectangles, squares & parallelograms',
+    teach: {
+      heading: 'Area = base \\times height',
+      body: [
+        'A QUADRILATERAL with two pairs of parallel sides — a rectangle, square, parallelogram, or rhombus — has area A = b \\times h, where b is the base and h is the PERPENDICULAR height (not the slanted side).',
+        'For a square, b = h, so A = b^2.',
+        'For a rectangle with length \\ell and width w, A = \\ell \\times w.',
+        'PERIMETER is just the total length around the outside. For a rectangle, P = 2(\\ell + w). For a square, P = 4b.',
+        'Always check the units: if lengths are in cm, area is in cm^2; if lengths are in m, area is in m^2.',
+      ],
+      example: 'A parallelogram has base 12 cm and perpendicular height 5 cm. Area = 12 \\times 5 = 60 cm^2.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'Area of a rectangle 8 cm by 5 cm?',
+        options: ['40 cm^2', '13 cm^2', '26 cm^2', '80 cm^2'], correct: 0,
+        solution: 'A = 8 \\times 5 = 40.' },
+      { kind: 'mcq', prompt: 'Area of a square of side 9 cm?',
+        options: ['81 cm^2', '36 cm^2', '18 cm^2', '90 cm^2'], correct: 0,
+        solution: 'A = 9^2 = 81.' },
+      { kind: 'mcq', prompt: 'Perimeter of a rectangle 7 cm by 4 cm?',
+        options: ['22 cm', '28 cm', '11 cm', '14 cm'], correct: 0,
+        solution: 'P = 2(7+4) = 22.' },
+      { kind: 'mcq', prompt: 'A parallelogram has base 10 m and perpendicular height 6 m. Area?',
+        options: ['60 m^2', '32 m^2', '16 m^2', '120 m^2'], correct: 0,
+        solution: 'A = bh = 10 \\times 6 = 60.' },
+      { kind: 'mcq', prompt: 'A rhombus has base 12 cm and perpendicular height 8 cm. Area?',
+        options: ['96 cm^2', '40 cm^2', '20 cm^2', '48 cm^2'], correct: 0,
+        solution: 'Same formula as parallelogram: 12 \\times 8 = 96.' },
+      { kind: 'mcq', prompt: 'Perimeter of a square with area 49 m^2?',
+        options: ['28 m', '14 m', '49 m', '7 m'], correct: 0,
+        solution: 'Side = \\sqrt{49} = 7; perimeter = 4 \\times 7 = 28.' },
+      { kind: 'fill-num', prompt: 'Area of a rectangle 15 cm by 12 cm (in cm^2)?', answer: 180,
+        solution: '15 \\times 12 = 180.' },
+      { kind: 'fill-num', prompt: 'Area of a square of side 11 m (in m^2)?', answer: 121,
+        solution: '11^2 = 121.' },
+      { kind: 'mcq', prompt: 'A parallelogram has base 7.5 cm and perpendicular height 4 cm. Area?',
+        options: ['30 cm^2', '11.5 cm^2', '23 cm^2', '15 cm^2'], correct: 0,
+        solution: '7.5 \\times 4 = 30.' },
+      { kind: 'fill-num', prompt: 'Area of a rectangle 2.5 m by 4 m (in m^2)?', answer: 10,
+        solution: '2.5 \\times 4 = 10.' },
+      { kind: 'mcq', prompt: 'Perimeter of a parallelogram with sides 9 cm and 5 cm?',
+        options: ['28 cm', '14 cm', '45 cm', '23 cm'], correct: 0,
+        solution: 'P = 2(9 + 5) = 28. (Both pairs of sides count.)' },
+    ],
+  },
+
+  // ───────────────────── L2: Triangles and trapeziums ───────────────────
+  {
+    id: 'L2',
+    title: 'Lesson 2 · Triangles & trapeziums',
+    teach: {
+      heading: 'Half-base-times-height — and the trapezium average',
+      body: [
+        'A triangle has area A = \\frac{1}{2} b h, where h is the perpendicular height from the base to the opposite vertex.',
+        'A trapezium has two parallel sides of length a and b, and perpendicular distance h between them. Its area is A = \\frac{1}{2}(a + b) h — the AVERAGE of the parallel sides times the height.',
+        'In every formula, h is measured PERPENDICULAR to the base, never along the slanted edge.',
+        'Tip: if the triangle is right-angled, the two legs are the base and the height — no extra work needed.',
+      ],
+      example: 'Triangle with base 8 cm and perpendicular height 6 cm: A = \\frac{1}{2} \\times 8 \\times 6 = 24 cm^2. Trapezium with parallel sides 4 and 10 cm, height 5 cm: A = \\frac{1}{2}(4 + 10) \\times 5 = 35 cm^2.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'Area of a triangle with base 10 cm, perpendicular height 6 cm?',
+        options: ['30 cm^2', '60 cm^2', '16 cm^2', '15 cm^2'], correct: 0,
+        solution: '\\frac{1}{2} \\times 10 \\times 6 = 30.' },
+      { kind: 'mcq', prompt: 'Area of a triangle with base 7 m, perpendicular height 4 m?',
+        options: ['14 m^2', '28 m^2', '11 m^2', '7 m^2'], correct: 0,
+        solution: '\\frac{1}{2} \\times 7 \\times 4 = 14.' },
+      { kind: 'mcq', prompt: 'A right-angled triangle has legs 5 cm and 12 cm. Its area is …',
+        options: ['30 cm^2', '60 cm^2', '17 cm^2', '13 cm^2'], correct: 0,
+        solution: 'Use the legs as base and height: \\frac{1}{2} \\times 5 \\times 12 = 30.' },
+      { kind: 'mcq', prompt: 'Trapezium, parallel sides 6 cm and 10 cm, perpendicular height 4 cm. Area?',
+        options: ['32 cm^2', '24 cm^2', '40 cm^2', '64 cm^2'], correct: 0,
+        solution: '\\frac{1}{2}(6+10) \\times 4 = 32.' },
+      { kind: 'mcq', prompt: 'Trapezium, parallel sides 5 m and 9 m, height 3 m. Area?',
+        options: ['21 m^2', '14 m^2', '27 m^2', '42 m^2'], correct: 0,
+        solution: '\\frac{1}{2}(5+9) \\times 3 = 21.' },
+      { kind: 'fill-num', prompt: 'Area of a triangle with base 14 cm and perpendicular height 5 cm (in cm^2)?', answer: 35,
+        solution: '\\frac{1}{2} \\times 14 \\times 5 = 35.' },
+      { kind: 'fill-num', prompt: 'Area of a trapezium with parallel sides 8 cm and 12 cm, height 6 cm (in cm^2)?', answer: 60,
+        solution: '\\frac{1}{2}(8+12) \\times 6 = 60.' },
+      { kind: 'mcq', prompt: 'A trapezium has parallel sides 4y and 3y+1, perpendicular height 2. Which expression gives its area?',
+        options: ['7y + 1', '14y + 2', '\\frac{7y+1}{2}', '4y(3y+1)'], correct: 0,
+        solution: '\\frac{1}{2}(4y + 3y + 1) \\times 2 = (7y + 1).' },
+      { kind: 'mcq', prompt: 'A triangle has area 24 cm^2 and base 8 cm. What is its perpendicular height?',
+        options: ['6 cm', '3 cm', '12 cm', '16 cm'], correct: 0,
+        solution: 'h = \\frac{2A}{b} = \\frac{48}{8} = 6.' },
+      { kind: 'fill-num', prompt: 'Triangle area is 50 cm^2 and base is 20 cm. Find height in cm.', answer: 5,
+        solution: 'h = \\frac{2 \\times 50}{20} = 5.' },
+      { kind: 'mcq', prompt: 'A trapezium has parallel sides of length 7 cm and 11 cm and an isosceles triangle with base 4 cm and height 5 cm sitting on it. Total area?',
+        options: ['Need the trapezium height — not enough info', '36 cm^2', '50 cm^2', '20 cm^2'], correct: 0,
+        solution: 'You need the trapezium\\u2019s perpendicular height to find its area; only the triangle (10 cm^2) is fully determined.' },
+    ],
+  },
+
+  // ───────────────────── L3: Composite 2D shapes ────────────────────────
+  {
+    id: 'L3',
+    title: 'Lesson 3 · Composite 2D shapes',
+    teach: {
+      heading: 'Split, find each piece, then add (or subtract)',
+      body: [
+        'Most exam shapes are not single rectangles or triangles. They are COMPOSITE — built from simpler shapes glued together, or with smaller shapes cut out.',
+        'Strategy: draw light lines to split the shape into rectangles, triangles, trapeziums, or semicircles whose areas you already know. Find each piece and ADD them.',
+        'If a piece is REMOVED (a hole), find the area of the whole and SUBTRACT the area of the hole.',
+        'Always label the dimensions you actually need — the textbook often gives more numbers than you need.',
+      ],
+      example: 'An L-shape made of an 8 \\times 3 rectangle on top of a 5 \\times 4 rectangle: area = 8 \\times 3 + 5 \\times 4 = 24 + 20 = 44 cm^2.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'A rectangle 10 by 4 has a 3 by 2 rectangle removed from one corner. Remaining area?',
+        options: ['34', '40', '46', '24'], correct: 0,
+        solution: '40 - 6 = 34.' },
+      { kind: 'mcq', prompt: 'A house-shape made of a 6 by 4 rectangle with a triangle of base 6, height 3 sitting on top. Total area?',
+        options: ['33', '24', '39', '27'], correct: 0,
+        solution: 'Rect: 24. Triangle: \\frac{1}{2} \\times 6 \\times 3 = 9. Total 33.' },
+      { kind: 'mcq', prompt: 'L-shape: split into two rectangles 5 by 2 and 3 by 7. Total area?',
+        options: ['31', '17', '24', '38'], correct: 0,
+        solution: '10 + 21 = 31.' },
+      { kind: 'mcq', prompt: 'A 12 by 8 rectangle with a 4 by 3 rectangle cut out. Area?',
+        options: ['84', '96', '108', '92'], correct: 0,
+        solution: '96 - 12 = 84.' },
+      { kind: 'fill-num', prompt: 'A rectangle 9 by 6 has a triangle of base 6, height 4 cut from one side. Remaining area?', answer: 42,
+        solution: '54 - 12 = 42.' },
+      { kind: 'mcq', prompt: 'An arrow made of a 7 by 3 rectangle with an isosceles triangle on the right of base 3 and height 4. Total area?',
+        options: ['27', '21', '24', '31'], correct: 0,
+        solution: '21 + \\frac{1}{2} \\times 3 \\times 4 = 21 + 6 = 27.' },
+      { kind: 'mcq', prompt: 'A trapezium with parallel sides 8 and 12, height 5, has a triangle of base 4, height 3 cut out. Area left?',
+        options: ['44', '50', '56', '38'], correct: 0,
+        solution: 'Trap = \\frac{1}{2}(8+12) \\times 5 = 50. Tri = 6. 50 - 6 = 44.' },
+      { kind: 'mcq', prompt: 'Two identical rectangles 5 by 2 share one edge to form an L-shape. Total area?',
+        options: ['20', '10', '25', '14'], correct: 0,
+        solution: '5 \\times 2 + 5 \\times 2 = 20.' },
+      { kind: 'mcq', prompt: 'A frame: outer rectangle 14 by 10, inner rectangle 12 by 8 cut out (a picture frame). Frame area?',
+        options: ['44', '140', '96', '36'], correct: 0,
+        solution: '140 - 96 = 44.' },
+      { kind: 'fill-num', prompt: 'A square of side 10 cm has a smaller square of side 6 cm cut out. Remaining area in cm^2?', answer: 64,
+        solution: '100 - 36 = 64.' },
+    ],
+  },
+
+  // ───────────────────── L4: Find unknown lengths from area ─────────────
+  {
+    id: 'L4',
+    title: 'Lesson 4 · Find unknown lengths from area',
+    teach: {
+      heading: 'Rearrange the area formula',
+      body: [
+        'When a question gives you the AREA and asks for an unknown side, write down the area formula, substitute the values you know, and rearrange to make the unknown the subject.',
+        'Rectangle: A = bh \\to h = \\frac{A}{b}.',
+        'Triangle: A = \\frac{1}{2} b h \\to h = \\frac{2A}{b} (or b = \\frac{2A}{h}).',
+        'Trapezium: A = \\frac{1}{2}(a + b) h \\to h = \\frac{2A}{a+b}.',
+        'For a square or a side of a circle, you may need a square root: A = b^2 \\to b = \\sqrt{A}.',
+      ],
+      example: 'A triangle has area 24 cm^2 and base 8 cm. h = \\frac{2 \\times 24}{8} = 6 cm.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'A rectangle has area 24 cm^2 and width 4 cm. What is its length?',
+        options: ['6 cm', '12 cm', '20 cm', '5 cm'], correct: 0,
+        solution: '\\ell = \\frac{24}{4} = 6.' },
+      { kind: 'mcq', prompt: 'A triangle has area 30 cm^2 and base 10 cm. What is its perpendicular height?',
+        options: ['6 cm', '3 cm', '12 cm', '5 cm'], correct: 0,
+        solution: 'h = \\frac{2 \\times 30}{10} = 6.' },
+      { kind: 'mcq', prompt: 'A square has area 144 cm^2. What is its perimeter?',
+        options: ['48 cm', '12 cm', '36 cm', '24 cm'], correct: 0,
+        solution: 'side = \\sqrt{144} = 12; P = 4 \\times 12 = 48.' },
+      { kind: 'mcq', prompt: 'A parallelogram has area 56 cm^2 and base 7 cm. Perpendicular height?',
+        options: ['8 cm', '4 cm', '14 cm', '49 cm'], correct: 0,
+        solution: 'h = \\frac{56}{7} = 8.' },
+      { kind: 'fill-num', prompt: 'A rectangle has area 200 m^2 and length 25 m. Width in m?', answer: 8,
+        solution: '\\frac{200}{25} = 8.' },
+      { kind: 'fill-num', prompt: 'A triangle has area 24 cm^2 and perpendicular height 6 cm. Base in cm?', answer: 8,
+        solution: 'b = \\frac{2 \\times 24}{6} = 8.' },
+      { kind: 'mcq', prompt: 'A trapezium has area 36 cm^2 and parallel sides 5 cm and 7 cm. Height?',
+        options: ['6 cm', '12 cm', '3 cm', '4 cm'], correct: 0,
+        solution: 'h = \\frac{2 \\times 36}{5+7} = \\frac{72}{12} = 6.' },
+      { kind: 'mcq', prompt: 'A square has area 81 m^2. Side length?',
+        options: ['9 m', '40.5 m', '20.25 m', '18 m'], correct: 0,
+        solution: '\\sqrt{81} = 9.' },
+      { kind: 'fill-num', prompt: 'A rectangle is three times as long as it is wide and has area 243 cm^2. Find its WIDTH in cm.', answer: 9,
+        solution: 'w \\times 3w = 243 \\to 3w^2 = 243 \\to w^2 = 81 \\to w = 9.' },
+      { kind: 'fill-num', prompt: 'And from the same rectangle, find its PERIMETER in cm.', answer: 72,
+        solution: 'w = 9, length = 27, P = 2(9+27) = 72.' },
+    ],
+  },
+
+  // ───────────────────── L5: Circumference of a circle ──────────────────
+  {
+    id: 'L5',
+    title: 'Lesson 5 · Circumference of a circle',
+    teach: {
+      heading: 'C = \\pi d = 2 \\pi r',
+      body: [
+        'The CIRCUMFERENCE is the distance around the outside of a circle (its perimeter).',
+        'For every circle, the ratio (circumference) / (diameter) is the same number — the constant \\pi (about 3.14159…).',
+        'So C = \\pi d, and since d = 2r, equivalently C = 2 \\pi r.',
+        'When a question asks for a decimal answer, use the \\pi key on your calculator (don\\u2019t round \\pi to 3.14 too early).',
+      ],
+      example: 'A circle has diameter 8 cm. C = \\pi \\times 8 \\approx 25.13 cm.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'Circumference of a circle with diameter 10 cm? (\\pi \\approx 3.14)',
+        options: ['31.4 cm', '78.5 cm', '15.7 cm', '62.8 cm'], correct: 0,
+        solution: 'C = \\pi d = 3.14 \\times 10 = 31.4.' },
+      { kind: 'mcq', prompt: 'Circumference of a circle with radius 5 cm? (\\pi \\approx 3.14)',
+        options: ['31.4 cm', '15.7 cm', '78.5 cm', '25 cm'], correct: 0,
+        solution: 'C = 2 \\pi r = 2 \\times 3.14 \\times 5 = 31.4.' },
+      { kind: 'mcq', prompt: 'A circle has radius 7 m. Approximate circumference (1 d.p., \\pi \\approx 3.14)?',
+        options: ['44.0 m', '21.98 m', '49 m', '14 m'], correct: 0,
+        solution: '2 \\pi r \\approx 2 \\times 3.14 \\times 7 = 43.96 \\approx 44.0.' },
+      { kind: 'mcq', prompt: 'A circle has diameter 4 cm. Circumference to 3 s.f.?',
+        options: ['12.6 cm', '6.28 cm', '25.1 cm', '50.3 cm'], correct: 0,
+        solution: '\\pi \\times 4 \\approx 12.57 \\to 12.6 cm.' },
+      { kind: 'mcq', prompt: 'A wheel has radius 30 cm. How far does it travel in one full turn? (3 s.f.)',
+        options: ['188 cm', '94.2 cm', '283 cm', '60 cm'], correct: 0,
+        solution: 'One turn = circumference = 2 \\pi \\times 30 \\approx 188.5 cm.' },
+      { kind: 'fill-num', prompt: 'Circumference of a circle of diameter 14 cm in cm to 1 d.p. (use \\pi \\approx 3.14159).', answer: 44.0, tol: 0.1,
+        solution: 'C = \\pi \\times 14 \\approx 43.98 \\to 44.0 cm.' },
+      { kind: 'fill-num', prompt: 'Circumference of a circle of radius 9 cm in cm to 1 d.p.', answer: 56.5, tol: 0.1,
+        solution: '2 \\pi \\times 9 \\approx 56.55.' },
+      { kind: 'mcq', prompt: 'A circular pond has circumference 18.84 m. What is its diameter (\\pi \\approx 3.14)?',
+        options: ['6 m', '3 m', '9 m', '12 m'], correct: 0,
+        solution: 'd = \\frac{C}{\\pi} = \\frac{18.84}{3.14} = 6.' },
+      { kind: 'mcq', prompt: 'A circular running track has diameter 100 m. How far is one lap to 3 s.f.?',
+        options: ['314 m', '628 m', '157 m', '100 m'], correct: 0,
+        solution: '\\pi \\times 100 = 314.159… \\to 314 m.' },
+      { kind: 'fill-num', prompt: 'A bicycle wheel has diameter 70 cm. Distance travelled in one revolution in cm to nearest integer?', answer: 220, tol: 1,
+        solution: '\\pi \\times 70 \\approx 219.91 \\to 220 cm.' },
+    ],
+  },
+
+  // ───────────────────── L6: Area of a circle ──────────────────────────
+  {
+    id: 'L6',
+    title: 'Lesson 6 · Area of a circle',
+    teach: {
+      heading: 'A = \\pi r^2',
+      body: [
+        'The AREA of a circle is A = \\pi r^2, where r is the radius.',
+        'If you are told the diameter d, first halve it: r = \\frac{d}{2}, then square.',
+        'BODMAS: square the radius BEFORE multiplying by \\pi (the bracket isn\\u2019t there in the formula, but the squaring still happens first).',
+        'Watch the units: if r is in cm, area is in cm^2.',
+      ],
+      example: 'Circle with radius 5 cm. A = \\pi \\times 5^2 = 25 \\pi \\approx 78.5 cm^2.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'Area of a circle with radius 4 cm to 3 s.f.?',
+        options: ['50.3 cm^2', '25.1 cm^2', '12.6 cm^2', '16 cm^2'], correct: 0,
+        solution: '\\pi \\times 4^2 = 16 \\pi \\approx 50.27.' },
+      { kind: 'mcq', prompt: 'Area of a circle with diameter 10 cm to 3 s.f.?',
+        options: ['78.5 cm^2', '31.4 cm^2', '157 cm^2', '100 cm^2'], correct: 0,
+        solution: 'r = 5; \\pi \\times 25 \\approx 78.54.' },
+      { kind: 'mcq', prompt: 'Area of a circle with radius 7 m to 3 s.f.?',
+        options: ['154 m^2', '44.0 m^2', '21.99 m^2', '49 m^2'], correct: 0,
+        solution: '\\pi \\times 49 \\approx 153.94.' },
+      { kind: 'mcq', prompt: 'Area of a circle with diameter 6 cm to 3 s.f.?',
+        options: ['28.3 cm^2', '18.85 cm^2', '113 cm^2', '36 cm^2'], correct: 0,
+        solution: 'r = 3; \\pi \\times 9 \\approx 28.27.' },
+      { kind: 'fill-num', prompt: 'Area of a circle with radius 2 cm in cm^2 to 2 d.p. (use \\pi \\approx 3.14159).', answer: 12.57, tol: 0.05,
+        solution: '\\pi \\times 4 \\approx 12.566.' },
+      { kind: 'fill-num', prompt: 'Area of a circle with diameter 16 cm in cm^2 to 1 d.p.', answer: 201.1, tol: 0.5,
+        solution: 'r = 8; \\pi \\times 64 \\approx 201.06.' },
+      { kind: 'mcq', prompt: 'A circle has area 50.27 cm^2. Approximate radius (\\pi \\approx 3.14)?',
+        options: ['4 cm', '8 cm', '2 cm', '16 cm'], correct: 0,
+        solution: 'r = \\sqrt{\\frac{A}{\\pi}} = \\sqrt{16} = 4.' },
+      { kind: 'mcq', prompt: 'Circle area = 113.1 cm^2. Approximate diameter (\\pi \\approx 3.14)?',
+        options: ['12 cm', '6 cm', '36 cm', '24 cm'], correct: 0,
+        solution: 'r = \\sqrt{\\frac{113.1}{3.14}} = \\sqrt{36} = 6; d = 12.' },
+      { kind: 'mcq', prompt: 'A circular table has radius 1.2 m. Area in m^2 to 2 d.p.?',
+        options: ['4.52', '7.54', '3.77', '2.26'], correct: 0,
+        solution: '\\pi \\times 1.44 \\approx 4.524.' },
+      { kind: 'fill-num', prompt: 'Area of a circle with radius 11 cm in cm^2 to nearest integer?', answer: 380, tol: 1,
+        solution: '\\pi \\times 121 \\approx 380.13.' },
+    ],
+  },
+
+  // ───────────────────── L7: Exact answers as multiples of π ───────────
+  {
+    id: 'L7',
+    title: 'Lesson 7 · Exact answers as multiples of \\pi',
+    teach: {
+      heading: 'Leave \\pi unevaluated for an EXACT answer',
+      body: [
+        '\\pi is an irrational number — its decimal goes on forever without repeating. Any answer you compute by typing it into a calculator is APPROXIMATE.',
+        'When a question asks for the answer in TERMS of \\pi (or as a multiple of \\pi), do not press the \\pi button. Instead, leave \\pi as a symbol.',
+        'Circumference: C = 2 \\pi r. Area: A = \\pi r^2.',
+        'Examples: a circle with r = 3 has area 9 \\pi (not 28.27…) and circumference 6 \\pi.',
+        'To recover the radius from a multiple-of-\\pi area: if A = k \\pi then r^2 = k, so r = \\sqrt{k}.',
+      ],
+      example: 'Circle with diameter 10. C = 10 \\pi cm. r = 5, so A = 25 \\pi cm^2.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'Area of a circle with radius 6 cm in terms of \\pi?',
+        options: ['36 \\pi cm^2', '12 \\pi cm^2', '6 \\pi cm^2', '18 \\pi cm^2'], correct: 0,
+        solution: '\\pi \\times 6^2 = 36 \\pi.' },
+      { kind: 'mcq', prompt: 'Circumference of a circle with diameter 12 cm in terms of \\pi?',
+        options: ['12 \\pi cm', '6 \\pi cm', '24 \\pi cm', '144 \\pi cm'], correct: 0,
+        solution: '\\pi \\times 12 = 12 \\pi.' },
+      { kind: 'mcq', prompt: 'Area of a circle with diameter 10 cm in terms of \\pi?',
+        options: ['25 \\pi cm^2', '10 \\pi cm^2', '100 \\pi cm^2', '5 \\pi cm^2'], correct: 0,
+        solution: 'r = 5; \\pi \\times 25 = 25 \\pi.' },
+      { kind: 'mcq', prompt: 'Circumference of a circle with radius 4 mm in terms of \\pi?',
+        options: ['8 \\pi mm', '4 \\pi mm', '16 \\pi mm', '2 \\pi mm'], correct: 0,
+        solution: '2 \\pi r = 8 \\pi.' },
+      { kind: 'mcq', prompt: 'A circle has area 81 \\pi cm^2. What is its radius?',
+        options: ['9 cm', '40.5 cm', '81 cm', '3 cm'], correct: 0,
+        solution: 'r^2 = 81 \\to r = 9.' },
+      { kind: 'mcq', prompt: 'A circle has circumference 16 \\pi m. What is its radius?',
+        options: ['8 m', '4 m', '16 m', '32 m'], correct: 0,
+        solution: '2 \\pi r = 16 \\pi \\to r = 8.' },
+      { kind: 'mcq', prompt: 'A circle has area 49 \\pi cm^2. What is its diameter?',
+        options: ['14 cm', '7 cm', '24.5 cm', '49 cm'], correct: 0,
+        solution: 'r^2 = 49, r = 7, d = 14.' },
+      { kind: 'mcq', prompt: 'A semicircle has diameter 10 cm. Area in terms of \\pi?',
+        options: ['12.5 \\pi cm^2', '25 \\pi cm^2', '5 \\pi cm^2', '50 \\pi cm^2'], correct: 0,
+        solution: 'Half of a 25 \\pi circle: \\frac{25 \\pi}{2} = 12.5 \\pi.' },
+      { kind: 'mcq', prompt: 'A semicircle has diameter 10 cm. PERIMETER in terms of \\pi?',
+        options: ['(5 \\pi + 10) cm', '5 \\pi cm', '10 \\pi cm', '15 \\pi cm'], correct: 0,
+        solution: 'HALF the circumference (= 5 \\pi) PLUS the diameter (= 10).' },
+      { kind: 'fill-num', prompt: 'A circle has area 100 \\pi cm^2. Numerical value of its radius in cm?', answer: 10,
+        solution: 'r = \\sqrt{100} = 10.' },
+    ],
+  },
+
+  // ───────────────────── L8: Arcs and sectors ──────────────────────────
+  {
+    id: 'L8',
+    title: 'Lesson 8 · Arcs & sectors',
+    teach: {
+      heading: 'A SECTOR is a pizza slice; an ARC is its curved edge',
+      body: [
+        'A SECTOR of a circle is the region bounded by two radii and an arc — like a pizza slice. The angle between the two radii is \\theta.',
+        'The sector takes up \\frac{\\theta}{360} of the WHOLE circle. So sector area = \\frac{\\theta}{360} \\times \\pi r^2.',
+        'The ARC is just the curved edge of the sector. Arc length = \\frac{\\theta}{360} \\times 2 \\pi r.',
+        'Special cases: \\theta = 90^\\circ gives a quarter (\\frac{1}{4}) of the circle. \\theta = 180^\\circ gives a SEMICIRCLE (\\frac{1}{2}).',
+        'PERIMETER of a sector = arc length + 2r (the two straight radii).',
+      ],
+      example: 'A sector of radius 6 cm and angle 60^\\circ. Sector area = \\frac{60}{360} \\times \\pi \\times 36 = 6 \\pi cm^2. Arc length = \\frac{60}{360} \\times 12 \\pi = 2 \\pi cm.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'A quarter circle of radius 8 cm. Area to 3 s.f.?',
+        options: ['50.3 cm^2', '25.1 cm^2', '12.6 cm^2', '201 cm^2'], correct: 0,
+        solution: '\\frac{1}{4} \\times \\pi \\times 64 \\approx 50.27.' },
+      { kind: 'mcq', prompt: 'A semicircle of radius 5 cm. Area in terms of \\pi?',
+        options: ['12.5 \\pi cm^2', '25 \\pi cm^2', '5 \\pi cm^2', '6.25 \\pi cm^2'], correct: 0,
+        solution: '\\frac{1}{2} \\times 25 \\pi = 12.5 \\pi.' },
+      { kind: 'mcq', prompt: 'A sector of radius 10 cm and angle 90^\\circ. Arc length in terms of \\pi?',
+        options: ['5 \\pi cm', '10 \\pi cm', '\\frac{5}{2} \\pi cm', '20 \\pi cm'], correct: 0,
+        solution: '\\frac{90}{360} \\times 20 \\pi = 5 \\pi.' },
+      { kind: 'mcq', prompt: 'A sector of radius 12 cm and angle 30^\\circ. Area in terms of \\pi?',
+        options: ['12 \\pi cm^2', '24 \\pi cm^2', '6 \\pi cm^2', '144 \\pi cm^2'], correct: 0,
+        solution: '\\frac{30}{360} \\times 144 \\pi = 12 \\pi.' },
+      { kind: 'mcq', prompt: 'A sector of radius 6 cm and angle 60^\\circ. Arc length in terms of \\pi?',
+        options: ['2 \\pi cm', '6 \\pi cm', '12 \\pi cm', '\\pi cm'], correct: 0,
+        solution: '\\frac{60}{360} \\times 12 \\pi = 2 \\pi.' },
+      { kind: 'fill-num', prompt: 'A semicircle has radius 4 cm. Its area in cm^2 to 1 d.p.?', answer: 25.1, tol: 0.1,
+        solution: '\\frac{1}{2} \\pi \\times 16 \\approx 25.13.' },
+      { kind: 'fill-num', prompt: 'A quarter circle has radius 6 cm. Its arc length in cm to 1 d.p.?', answer: 9.4, tol: 0.1,
+        solution: '\\frac{1}{4} \\times 2 \\pi \\times 6 = 3 \\pi \\approx 9.425.' },
+      { kind: 'mcq', prompt: 'A sector has angle 120^\\circ and radius 9 cm. Sector area in terms of \\pi?',
+        options: ['27 \\pi cm^2', '54 \\pi cm^2', '9 \\pi cm^2', '81 \\pi cm^2'], correct: 0,
+        solution: '\\frac{120}{360} \\times 81 \\pi = 27 \\pi.' },
+      { kind: 'mcq', prompt: 'A sector of radius 5 cm and angle 72^\\circ. Arc length in terms of \\pi?',
+        options: ['2 \\pi cm', '\\pi cm', '5 \\pi cm', '\\frac{5}{2} \\pi cm'], correct: 0,
+        solution: '\\frac{72}{360} \\times 10 \\pi = 2 \\pi.' },
+      { kind: 'mcq', prompt: 'PERIMETER of a quarter circle of radius 4 cm in terms of \\pi?',
+        options: ['(2 \\pi + 8) cm', '(2 \\pi + 4) cm', '(4 \\pi + 8) cm', '8 \\pi cm'], correct: 0,
+        solution: 'Arc = \\frac{1}{4} \\times 8 \\pi = 2 \\pi; plus two radii of 4 each.' },
+    ],
+  },
+
+  // ───────────────────── L9: Composite shapes with arcs ────────────────
+  {
+    id: 'L9',
+    title: 'Lesson 9 · Composite shapes with arcs',
+    teach: {
+      heading: 'Mix circles, semicircles and rectangles freely',
+      body: [
+        'Many shapes combine straight edges with circular arcs — a window with a semicircular top, a stadium with two semicircular ends, a quadrant cut from a square.',
+        'Strategy is identical to before: split into pieces whose AREA you know (rectangle, triangle, sector), find each, then ADD or SUBTRACT.',
+        'Be careful with PERIMETER: when two pieces share an edge, that shared edge is INSIDE the shape and does NOT count toward the perimeter.',
+        'Tip: a SEMICIRCLE on the end of a rectangle replaces the short side — its arc adds to the perimeter, but the diameter does not.',
+      ],
+      example: 'A rectangle 10 by 6 with a semicircle of diameter 6 on one short side. Area = 60 + \\frac{1}{2} \\pi \\times 3^2 = 60 + 4.5 \\pi cm^2. Perimeter = 10 + 6 + 10 + \\pi \\times 3 = 26 + 3 \\pi cm.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'A square of side 8 cm has a quarter circle of radius 8 cm cut from one corner. Area left in terms of \\pi?',
+        options: ['(64 - 16 \\pi) cm^2', '(64 - 64 \\pi) cm^2', '(64 - 8 \\pi) cm^2', '(64 + 16 \\pi) cm^2'], correct: 0,
+        solution: '64 - \\frac{1}{4} \\times 64 \\pi = 64 - 16 \\pi.' },
+      { kind: 'mcq', prompt: 'A semicircle of diameter 10 cm sits on top of a rectangle 10 by 4 cm. Total area in terms of \\pi?',
+        options: ['(40 + 12.5 \\pi) cm^2', '(40 + 25 \\pi) cm^2', '(40 + 5 \\pi) cm^2', '(40 + 10 \\pi) cm^2'], correct: 0,
+        solution: 'Rect 40; semicircle radius 5, area \\frac{1}{2} \\pi \\times 25 = 12.5 \\pi.' },
+      { kind: 'mcq', prompt: 'A circle of radius 3 cm is cut from a square of side 8 cm. Area left to 3 s.f.?',
+        options: ['35.7 cm^2', '64 cm^2', '28.3 cm^2', '92.3 cm^2'], correct: 0,
+        solution: '64 - \\pi \\times 9 \\approx 64 - 28.274 = 35.726.' },
+      { kind: 'mcq', prompt: 'A running track: rectangle 80 m by 60 m with a semicircle of diameter 60 m on each short end. Total length around (perimeter) to 3 s.f.?',
+        options: ['(160 + 60 \\pi) m', '(160 + 30 \\pi) m', '(140 + 60 \\pi) m', '(280 + 60 \\pi) m'], correct: 0,
+        solution: 'Two long sides: 160. Two semicircles join into one full circle of d = 60: \\pi \\times 60 = 60 \\pi.' },
+      { kind: 'mcq', prompt: 'A semicircle of radius 4 cm is cut from a rectangle 10 cm by 8 cm. Area left in terms of \\pi?',
+        options: ['(80 - 8 \\pi) cm^2', '(80 - 16 \\pi) cm^2', '(80 - 4 \\pi) cm^2', '(80 - 2 \\pi) cm^2'], correct: 0,
+        solution: '80 - \\frac{1}{2} \\pi \\times 16 = 80 - 8 \\pi.' },
+      { kind: 'mcq', prompt: 'A 12 cm by 12 cm square has a circle of radius 6 cm inscribed (touching all four sides). Area outside the circle but inside the square?',
+        options: ['(144 - 36 \\pi) cm^2', '(144 - 12 \\pi) cm^2', '(144 - 6 \\pi) cm^2', '36 \\pi cm^2'], correct: 0,
+        solution: '144 - \\pi \\times 36.' },
+      { kind: 'mcq', prompt: 'A shape is a square of side 8 cm with a quarter circle of radius 8 in one corner ADDED. Total area in terms of \\pi?',
+        options: ['(64 + 16 \\pi) cm^2', '(64 - 16 \\pi) cm^2', '(64 + 8 \\pi) cm^2', '(64 + 64 \\pi) cm^2'], correct: 0,
+        solution: '64 + \\frac{1}{4} \\pi \\times 64 = 64 + 16 \\pi.' },
+      { kind: 'fill-num', prompt: 'A rectangle 12 cm by 8 cm has a circle of radius 2 cm cut out. Area left to 2 d.p.?', answer: 83.43, tol: 0.1,
+        solution: '96 - 4 \\pi \\approx 83.43.' },
+      { kind: 'mcq', prompt: 'A figure is a semicircle of radius 5 cm sitting on top of a square of side 10 cm. PERIMETER in terms of \\pi?',
+        options: ['(30 + 5 \\pi) cm', '(40 + 5 \\pi) cm', '(20 + 10 \\pi) cm', '(30 + 10 \\pi) cm'], correct: 0,
+        solution: 'Three sides of square (10+10+10) plus the semicircle\\u2019s arc \\pi \\times 5 = 5 \\pi.' },
+      { kind: 'mcq', prompt: 'Two identical semicircles of radius 3 cm are joined to make one full circle. Total area?',
+        options: ['9 \\pi cm^2', '6 \\pi cm^2', '18 \\pi cm^2', '\\frac{9}{2} \\pi cm^2'], correct: 0,
+        solution: 'TWO halves = a whole circle, area \\pi \\times 9 = 9 \\pi.' },
+    ],
+  },
+
+  // ───────────────────── L10: Word problems — circles, arcs ────────────
+  {
+    id: 'L10',
+    title: 'Lesson 10 · Word problems · circles & sectors',
+    teach: {
+      heading: 'Reading the situation, picking the formula',
+      body: [
+        'Real-world circle questions usually hand you a description and a few numbers. Your job is to (1) draw or imagine the shape, (2) decide which dimension is the radius (or diameter, or arc length, or sector angle), and (3) pick the right formula.',
+        'A wheel ROLLING one full turn covers a distance equal to its CIRCUMFERENCE. If it turns N times, it covers N \\times C.',
+        'A sector with a small angle (think of a slice of cake or a fan) uses sector area = \\frac{\\theta}{360} \\times \\pi r^2.',
+        'A circular boundary on a flag, pond, or sign uses circumference = \\pi d.',
+        'Always re-read the question to check whether the answer should be exact (in \\pi) or a decimal to a stated number of significant figures.',
+      ],
+      example: 'A pizza has diameter 30 cm. Its area is \\pi \\times 15^2 = 225 \\pi \\approx 707 cm^2.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'A circular pond has diameter 4 m. A 1-m-wide path runs around its outside. Area of the PATH in terms of \\pi?',
+        options: ['5 \\pi m^2', '4 \\pi m^2', '\\pi m^2', '9 \\pi m^2'], correct: 0,
+        solution: 'Outer radius 3, inner radius 2. \\pi(3^2 - 2^2) = \\pi(9-4) = 5 \\pi.' },
+      { kind: 'mcq', prompt: 'A car wheel has diameter 60 cm. How many full turns does it make over 100 metres? (3 s.f.)',
+        options: ['53.1', '167', '300', '1.67'], correct: 0,
+        solution: 'C = \\pi \\times 0.6 = 1.885 m. 100 / 1.885 \\approx 53.05.' },
+      { kind: 'mcq', prompt: 'A piece of rope is wound 15 times around a cylindrical pipe of diameter 50 cm. Length of rope in metres to 3 s.f.?',
+        options: ['23.6 m', '7.85 m', '47.1 m', '78.5 m'], correct: 0,
+        solution: '15 \\times \\pi \\times 0.5 = 7.5 \\pi \\approx 23.56 m.' },
+      { kind: 'mcq', prompt: 'A pizza of radius 12 cm is cut into 8 equal slices. Area of one slice in terms of \\pi?',
+        options: ['18 \\pi cm^2', '12 \\pi cm^2', '9 \\pi cm^2', '24 \\pi cm^2'], correct: 0,
+        solution: '\\frac{1}{8} \\times \\pi \\times 144 = 18 \\pi.' },
+      { kind: 'mcq', prompt: 'A circular cake has area 254 cm^2 (to 3 s.f.). Approximate radius (\\pi \\approx 3.14)?',
+        options: ['9 cm', '4.5 cm', '18 cm', '12 cm'], correct: 0,
+        solution: 'r = \\sqrt{254/\\pi} \\approx \\sqrt{80.9} \\approx 9 cm.' },
+      { kind: 'mcq', prompt: 'A sector of a disc of radius 1.2 m subtends an angle of 40^\\circ at the centre. Area to 2 d.p.?',
+        options: ['0.50 m^2', '1.51 m^2', '0.84 m^2', '0.25 m^2'], correct: 0,
+        solution: '\\frac{40}{360} \\times \\pi \\times 1.44 = \\frac{1}{9} \\times 4.5239 \\approx 0.503.' },
+      { kind: 'mcq', prompt: '16 identical circles fit in a square sheet 0.4 m on a side (4 by 4 grid). Each circle has the largest possible diameter. Diameter of each circle?',
+        options: ['0.10 m', '0.05 m', '0.40 m', '0.20 m'], correct: 0,
+        solution: '0.4 / 4 = 0.1 m.' },
+      { kind: 'mcq', prompt: '… (continued) Total area of the 16 circles in m^2 to 3 s.f.?',
+        options: ['0.126 m^2', '0.0314 m^2', '0.503 m^2', '0.0628 m^2'], correct: 0,
+        solution: '16 \\times \\pi \\times 0.05^2 = 0.04 \\pi \\approx 0.1257.' },
+      { kind: 'mcq', prompt: 'A circular drain cover has diameter 60 cm. Cost of paint is $2 per 100 cm^2. Approximate cost to paint one face? (\\pi \\approx 3.14)',
+        options: ['$56.55', '$5.66', '$28.27', '$11.31'], correct: 0,
+        solution: 'A = \\pi \\times 30^2 \\approx 2827.4 cm^2; cost = 28.274 \\times $2 \\approx $56.55.' },
+      { kind: 'mcq', prompt: 'A beach umbrella is made of 8 identical sectors of radius 1.2 m and angle 40^\\circ each, joined to form an octagon-shaped fan top. Total area to 2 d.p.?',
+        options: ['4.02 m^2', '0.50 m^2', '4.52 m^2', '0.16 m^2'], correct: 0,
+        solution: 'Each sector \\approx 0.503 m^2; 8 \\times 0.503 \\approx 4.02 m^2 (covers \\frac{8 \\times 40}{360} = \\frac{8}{9} of a circle).' },
+    ],
+  },
+
+  // ───────────────────── L11: Nets of 3D solids ────────────────────────
+  {
+    id: 'L11',
+    title: 'Lesson 11 · Nets of 3D solids',
+    teach: {
+      heading: 'A NET is a flat-pack version of a 3D solid',
+      body: [
+        'A NET is a 2D shape that can be folded along the dotted edges to make a 3D solid. Its total area equals the SURFACE AREA of that solid.',
+        'The net of a CUBOID has 6 rectangles: top and bottom (same), front and back (same), left and right (same).',
+        'The net of a CYLINDER has two circles (the two ends) plus one rectangle whose length equals the cylinder\\u2019s circumference and whose width equals its height.',
+        'The net of a TRIANGULAR PRISM has two triangles (the ends) and three rectangles (the sides).',
+        'When you imagine folding a net, edges that touch each other after folding must be the SAME length. Use this to spot wrong nets.',
+      ],
+      example: 'A cuboid 5 by 3 by 2 has 6 faces: two 5x3, two 5x2, two 3x2. Net surface area = 2(15) + 2(10) + 2(6) = 62 cm^2.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'How many faces does a cuboid have?',
+        options: ['6', '4', '8', '12'], correct: 0,
+        solution: 'Top, bottom, front, back, left, right.' },
+      { kind: 'mcq', prompt: 'How many EDGES does a cube have?',
+        options: ['12', '8', '6', '24'], correct: 0,
+        solution: 'A cube: 12 edges, 6 faces, 8 vertices.' },
+      { kind: 'mcq', prompt: 'The net of a cylinder is made of …',
+        options: ['Two circles and one rectangle', 'Two circles and two rectangles', 'One circle and one rectangle', 'Three rectangles'], correct: 0,
+        solution: 'Top + bottom (circles) + curved surface (a rectangle when unrolled).' },
+      { kind: 'mcq', prompt: 'A triangular prism has cross-section a triangle. Its net has …',
+        options: ['Two triangles and three rectangles', 'Three triangles and two rectangles', 'Six triangles', 'Two triangles and one rectangle'], correct: 0,
+        solution: 'Two triangular ends + three rectangles for the three side faces.' },
+      { kind: 'mcq', prompt: 'A cylinder has radius 5 cm and height 12 cm. The rectangle in its net has dimensions …',
+        options: ['10 \\pi cm by 12 cm', '5 \\pi cm by 12 cm', '5 cm by 12 cm', '10 cm by 12 cm'], correct: 0,
+        solution: 'Length = circumference = 2 \\pi r = 10 \\pi; width = height = 12.' },
+      { kind: 'mcq', prompt: 'A cube has surface area 96 cm^2. What is the side length?',
+        options: ['4 cm', '6 cm', '16 cm', '8 cm'], correct: 0,
+        solution: '6 a^2 = 96 \\to a^2 = 16 \\to a = 4.' },
+      { kind: 'mcq', prompt: 'A square-based pyramid has 4 triangular faces and 1 square face. Its net has …',
+        options: ['Four triangles around one square', 'Three triangles around one square', 'Five triangles', 'Four squares around a triangle'], correct: 0,
+        solution: 'One base square + four triangular faces.' },
+      { kind: 'mcq', prompt: 'A regular tetrahedron has 4 equilateral-triangle faces. Net?',
+        options: ['Four equilateral triangles joined edge to edge', 'Three triangles in a row', 'A square and four triangles', 'Six triangles'], correct: 0,
+        solution: 'Just the four faces unfolded.' },
+      { kind: 'mcq', prompt: 'A cuboid has dimensions 4 cm, 3 cm, 2 cm. Its surface area in cm^2?',
+        options: ['52', '24', '36', '60'], correct: 0,
+        solution: '2(4 \\times 3 + 4 \\times 2 + 3 \\times 2) = 2(12+8+6) = 52.' },
+      { kind: 'mcq', prompt: 'Which of the following is NOT the net of any cube? (A) cross-shape with 4 in a row + 2 on opposite sides; (B) 6 squares in a single 3-by-2 rectangle.',
+        options: ['B', 'A', 'Both are valid', 'Neither is valid'], correct: 0,
+        solution: 'Six squares laid out 3-by-2 do not fold into a cube — opposite sides overlap. The cross fold works.' },
+    ],
+  },
+
+  // ───────────────────── L12: Cuboids and prisms ───────────────────────
+  {
+    id: 'L12',
+    title: 'Lesson 12 · Cuboids & prisms',
+    teach: {
+      heading: 'Volume = cross-section \\times length',
+      body: [
+        'A PRISM is a solid with the same cross-section all the way along its length. A cuboid is a special prism with a rectangular cross-section.',
+        'Volume of a prism = area of cross-section \\times length.',
+        'Cuboid: V = \\ell \\times w \\times h.',
+        'Surface area = (perimeter of cross-section \\times length) + (2 \\times area of cross-section). For a cuboid this is 2(\\ell w + \\ell h + w h).',
+        'Watch units: cm^3 for cm-lengths, m^3 for m-lengths.',
+      ],
+      example: 'Cuboid 5 by 3 by 2 cm. V = 30 cm^3. SA = 2(15 + 10 + 6) = 62 cm^2.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'Volume of a cuboid 4 cm by 3 cm by 2 cm?',
+        options: ['24 cm^3', '9 cm^3', '12 cm^3', '48 cm^3'], correct: 0,
+        solution: '4 \\times 3 \\times 2 = 24.' },
+      { kind: 'mcq', prompt: 'Volume of a cube of side 5 cm?',
+        options: ['125 cm^3', '25 cm^3', '15 cm^3', '75 cm^3'], correct: 0,
+        solution: '5^3 = 125.' },
+      { kind: 'mcq', prompt: 'Surface area of a cube of side 4 m?',
+        options: ['96 m^2', '16 m^2', '64 m^2', '24 m^2'], correct: 0,
+        solution: '6 \\times 16 = 96.' },
+      { kind: 'mcq', prompt: 'Cuboid: length 8 cm, width 5 cm, height 3 cm. Surface area?',
+        options: ['158 cm^2', '120 cm^2', '79 cm^2', '46 cm^2'], correct: 0,
+        solution: '2(40 + 24 + 15) = 158.' },
+      { kind: 'mcq', prompt: 'A triangular prism has a right-triangle cross-section with legs 3 cm and 4 cm. Length 10 cm. Volume?',
+        options: ['60 cm^3', '120 cm^3', '30 cm^3', '90 cm^3'], correct: 0,
+        solution: 'Cross-section area = \\frac{1}{2} \\times 3 \\times 4 = 6. V = 6 \\times 10 = 60.' },
+      { kind: 'fill-num', prompt: 'Volume in cm^3 of a cuboid 12 cm by 4 cm by 5 cm?', answer: 240,
+        solution: '12 \\times 4 \\times 5 = 240.' },
+      { kind: 'fill-num', prompt: 'Volume in cm^3 of a triangular prism with cross-section a triangle of base 6 cm, height 4 cm, and length 9 cm?', answer: 108,
+        solution: 'Cross = 12; V = 12 \\times 9 = 108.' },
+      { kind: 'mcq', prompt: 'A rectangular crate measures 1.2 m by 0.5 m by 2.5 m. Volume in m^3?',
+        options: ['1.5', '0.6', '4.2', '0.15'], correct: 0,
+        solution: '1.2 \\times 0.5 \\times 2.5 = 1.5.' },
+      { kind: 'mcq', prompt: 'A storage room is 20 m by 8 m by 8 m. Number of 1 m by 0.5 m by 2.5 m boxes that fit (assuming perfect packing)?',
+        options: ['1024', '512', '2048', '256'], correct: 0,
+        solution: 'Room: 1280 m^3. Box: 1.25 m^3. 1280/1.25 = 1024.' },
+      { kind: 'mcq', prompt: 'A pencil case is a triangular prism: cross-section equilateral triangle of side 6 cm (area \\approx 15.59 cm^2), length 20 cm. Volume to 3 s.f.?',
+        options: ['312 cm^3', '120 cm^3', '156 cm^3', '624 cm^3'], correct: 0,
+        solution: '15.59 \\times 20 \\approx 311.8 \\to 312.' },
+    ],
+  },
+
+  // ───────────────────── L13: Cylinders ────────────────────────────────
+  {
+    id: 'L13',
+    title: 'Lesson 13 · Cylinders',
+    teach: {
+      heading: 'V = \\pi r^2 h, curved SA = 2 \\pi r h',
+      body: [
+        'A CYLINDER is a prism with a CIRCULAR cross-section. So volume = area of cross-section \\times length = \\pi r^2 h.',
+        'When you unroll the curved surface, you get a rectangle whose length is the circumference (2 \\pi r) and whose height is h. So curved surface area = 2 \\pi r h.',
+        'TOTAL surface area (closed at both ends) = 2 \\pi r h + 2 \\pi r^2 (the two end discs add 2 \\pi r^2).',
+        'For an OPEN-TOPPED cylinder (e.g. a glass), the top disc is missing, so SA = 2 \\pi r h + \\pi r^2.',
+      ],
+      example: 'Cylinder r = 3 cm, h = 10 cm. V = \\pi \\times 9 \\times 10 = 90 \\pi cm^3 \\approx 282.7 cm^3. Curved SA = 2 \\pi \\times 3 \\times 10 = 60 \\pi cm^2 \\approx 188.5 cm^2.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'Volume of a cylinder r = 2 cm, h = 5 cm in terms of \\pi?',
+        options: ['20 \\pi cm^3', '10 \\pi cm^3', '40 \\pi cm^3', '4 \\pi cm^3'], correct: 0,
+        solution: '\\pi \\times 4 \\times 5 = 20 \\pi.' },
+      { kind: 'mcq', prompt: 'Volume of a cylinder r = 4 cm, h = 10 cm to 3 s.f.?',
+        options: ['503 cm^3', '251 cm^3', '160 cm^3', '125 cm^3'], correct: 0,
+        solution: '\\pi \\times 16 \\times 10 = 160 \\pi \\approx 502.65.' },
+      { kind: 'mcq', prompt: 'Curved SA of a cylinder r = 3 cm, h = 8 cm in terms of \\pi?',
+        options: ['48 \\pi cm^2', '24 \\pi cm^2', '72 \\pi cm^2', '9 \\pi cm^2'], correct: 0,
+        solution: '2 \\pi \\times 3 \\times 8 = 48 \\pi.' },
+      { kind: 'mcq', prompt: 'TOTAL SA of a closed cylinder r = 3 cm, h = 8 cm in terms of \\pi?',
+        options: ['66 \\pi cm^2', '48 \\pi cm^2', '57 \\pi cm^2', '90 \\pi cm^2'], correct: 0,
+        solution: '2 \\pi r h + 2 \\pi r^2 = 48 \\pi + 18 \\pi = 66 \\pi.' },
+      { kind: 'mcq', prompt: 'A cylindrical drain has diameter 1.2 m and length 30 m. Volume in m^3 to 3 s.f.?',
+        options: ['33.9 m^3', '113 m^3', '11.3 m^3', '67.9 m^3'], correct: 0,
+        solution: 'r = 0.6; V = \\pi \\times 0.36 \\times 30 \\approx 33.93.' },
+      { kind: 'fill-num', prompt: 'Volume of a cylinder r = 5 cm, h = 14 cm to 3 s.f. in cm^3?', answer: 1100, tol: 5,
+        solution: '\\pi \\times 25 \\times 14 = 350 \\pi \\approx 1099.6 \\to 1100.' },
+      { kind: 'mcq', prompt: 'A cylindrical tank has radius 1.5 m and height 4 m. How many litres of water does it hold? (1 m^3 = 1000 L)',
+        options: ['28 274 L', '2 827 L', '18 850 L', '6 283 L'], correct: 0,
+        solution: 'V = \\pi \\times 2.25 \\times 4 \\approx 28.274 m^3 = 28 274 L.' },
+      { kind: 'mcq', prompt: 'A 32 cm long cardboard cylinder has radius 2.5 cm. CURVED surface area in cm^2 to 3 s.f.?',
+        options: ['503', '251', '628', '160'], correct: 0,
+        solution: '2 \\pi \\times 2.5 \\times 32 = 160 \\pi \\approx 502.65.' },
+      { kind: 'mcq', prompt: 'A clock case is a cuboid 8 cm by 6 cm by 6 cm with a cylindrical hole of r = 2 cm running through it (length 8 cm). Volume of glass to 3 s.f.?',
+        options: ['188 cm^3', '288 cm^3', '100 cm^3', '212 cm^3'], correct: 0,
+        solution: '8 \\times 6 \\times 6 - \\pi \\times 4 \\times 8 = 288 - 100.53 = 187.5.' },
+      { kind: 'fill-num', prompt: 'A cylinder has volume 200 \\pi cm^3 and radius 5 cm. Find its height in cm.', answer: 8,
+        solution: '\\pi \\times 25 \\times h = 200 \\pi \\to h = 8.' },
+    ],
+  },
+
+  // ───────────────────── L14: Pyramids ────────────────────────────────
+  {
+    id: 'L14',
+    title: 'Lesson 14 · Pyramids',
+    teach: {
+      heading: 'V = \\frac{1}{3} \\times base area \\times perpendicular height',
+      body: [
+        'A PYRAMID has a polygon base and triangular faces meeting at a point called the APEX.',
+        'Volume of any pyramid = \\frac{1}{3} \\times (area of base) \\times (perpendicular height from apex to base).',
+        'Be careful: PERPENDICULAR height is the straight-down distance from the apex to the base, NOT the slant length along a face.',
+        'Surface area = base area + sum of triangular-face areas. Each triangular face uses the SLANT height (along the face), not the perpendicular height.',
+      ],
+      example: 'Square-based pyramid with base side 6 cm and perpendicular height 9 cm. V = \\frac{1}{3} \\times 36 \\times 9 = 108 cm^3.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'Volume of a pyramid with square base side 6 cm and perpendicular height 5 cm?',
+        options: ['60 cm^3', '180 cm^3', '30 cm^3', '120 cm^3'], correct: 0,
+        solution: '\\frac{1}{3} \\times 36 \\times 5 = 60.' },
+      { kind: 'mcq', prompt: 'Volume of a pyramid with rectangular base 4 cm by 3 cm and perpendicular height 9 cm?',
+        options: ['36 cm^3', '108 cm^3', '12 cm^3', '72 cm^3'], correct: 0,
+        solution: '\\frac{1}{3} \\times 12 \\times 9 = 36.' },
+      { kind: 'mcq', prompt: 'A pyramid has square base side 10 cm and volume 100 cm^3. Perpendicular height?',
+        options: ['3 cm', '10 cm', '1 cm', '30 cm'], correct: 0,
+        solution: 'h = \\frac{3V}{base} = \\frac{300}{100} = 3.' },
+      { kind: 'mcq', prompt: 'A pyramid has triangular base of area 18 cm^2 and perpendicular height 7 cm. Volume?',
+        options: ['42 cm^3', '126 cm^3', '21 cm^3', '12.6 cm^3'], correct: 0,
+        solution: '\\frac{1}{3} \\times 18 \\times 7 = 42.' },
+      { kind: 'mcq', prompt: 'The Great Pyramid of Giza has a square base of side 230 m and perpendicular height 138.5 m. Original volume to 3 s.f.?',
+        options: ['2 440 000 m^3', '7 320 000 m^3', '813 000 m^3', '4 880 000 m^3'], correct: 0,
+        solution: '\\frac{1}{3} \\times 230^2 \\times 138.5 = \\frac{1}{3} \\times 52900 \\times 138.5 \\approx 2 442 716.' },
+      { kind: 'fill-num', prompt: 'Volume in cm^3 of a square-based pyramid, base side 9 cm, perpendicular height 12 cm.', answer: 324,
+        solution: '\\frac{1}{3} \\times 81 \\times 12 = 324.' },
+      { kind: 'mcq', prompt: 'A square-based pyramid with base side 4 cm and slant height 5 cm. Total surface area (incl. base)?',
+        options: ['56 cm^2', '40 cm^2', '36 cm^2', '64 cm^2'], correct: 0,
+        solution: 'Base 16 + 4 triangles each \\frac{1}{2} \\times 4 \\times 5 = 10. Total 16 + 40 = 56.' },
+      { kind: 'mcq', prompt: 'A pyramid with regular hexagonal base of area 60 cm^2 and perpendicular height 10 cm. Volume?',
+        options: ['200 cm^3', '600 cm^3', '300 cm^3', '60 cm^3'], correct: 0,
+        solution: '\\frac{1}{3} \\times 60 \\times 10 = 200.' },
+      { kind: 'mcq', prompt: 'A pyramid is cut PARALLEL to its base half-way up; the bottom piece is called a FRUSTUM. The frustum\\u2019s volume equals the WHOLE pyramid minus …',
+        options: ['the small upper pyramid', 'half the original pyramid', 'twice the upper pyramid', 'the apex point'], correct: 0,
+        solution: 'V_{frustum} = V_{whole} - V_{upper}.' },
+      { kind: 'fill-num', prompt: 'A pyramid of height 6 cm and square base 12 cm is cut in half parallel to its base; the upper pyramid has half the height (3 cm) and base side 6 cm. VOLUME of the FRUSTUM in cm^3?', answer: 252,
+        solution: 'V_{whole} = \\frac{1}{3} \\times 144 \\times 6 = 288. V_{upper} = \\frac{1}{3} \\times 36 \\times 3 = 36. Frustum = 288 - 36 = 252.' },
+    ],
+  },
+
+  // ───────────────────── L15: Cones and spheres ────────────────────────
+  {
+    id: 'L15',
+    title: 'Lesson 15 · Cones & spheres',
+    teach: {
+      heading: 'Cone V = \\frac{1}{3} \\pi r^2 h,  Sphere V = \\frac{4}{3} \\pi r^3',
+      body: [
+        'A CONE is a pyramid with a circular base. Its volume is therefore V = \\frac{1}{3} \\pi r^2 h.',
+        'Curved surface area of a cone = \\pi r l, where l is the SLANT height (along the slope, not the perpendicular height). Total SA = \\pi r l + \\pi r^2 (curved + base).',
+        'The slant, perpendicular height, and radius form a right triangle: l^2 = r^2 + h^2 (Pythagoras).',
+        'A SPHERE has volume V = \\frac{4}{3} \\pi r^3 and surface area SA = 4 \\pi r^2.',
+        'A HEMISPHERE is half a sphere: V = \\frac{2}{3} \\pi r^3 and curved surface area = 2 \\pi r^2.',
+      ],
+      example: 'A cone with r = 3 cm, h = 4 cm. Slant l = \\sqrt{9 + 16} = 5. V = \\frac{1}{3} \\pi \\times 9 \\times 4 = 12 \\pi \\approx 37.7 cm^3. Curved SA = \\pi \\times 3 \\times 5 = 15 \\pi cm^2.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'Volume of a cone with r = 3 cm, h = 5 cm in terms of \\pi?',
+        options: ['15 \\pi cm^3', '45 \\pi cm^3', '5 \\pi cm^3', '9 \\pi cm^3'], correct: 0,
+        solution: '\\frac{1}{3} \\pi \\times 9 \\times 5 = 15 \\pi.' },
+      { kind: 'mcq', prompt: 'Volume of a sphere of radius 3 cm in terms of \\pi?',
+        options: ['36 \\pi cm^3', '12 \\pi cm^3', '27 \\pi cm^3', '108 \\pi cm^3'], correct: 0,
+        solution: '\\frac{4}{3} \\pi \\times 27 = 36 \\pi.' },
+      { kind: 'mcq', prompt: 'Surface area of a sphere of radius 5 cm in terms of \\pi?',
+        options: ['100 \\pi cm^2', '25 \\pi cm^2', '50 \\pi cm^2', '4 \\pi cm^2'], correct: 0,
+        solution: '4 \\pi r^2 = 100 \\pi.' },
+      { kind: 'mcq', prompt: 'A cone has r = 6 cm and slant length 10 cm. Curved surface area in terms of \\pi?',
+        options: ['60 \\pi cm^2', '36 \\pi cm^2', '120 \\pi cm^2', '96 \\pi cm^2'], correct: 0,
+        solution: '\\pi r l = 60 \\pi.' },
+      { kind: 'mcq', prompt: 'A cone has r = 6 cm and perpendicular height 8 cm. SLANT height?',
+        options: ['10 cm', '14 cm', '12 cm', '7 cm'], correct: 0,
+        solution: '\\sqrt{36 + 64} = \\sqrt{100} = 10.' },
+      { kind: 'mcq', prompt: 'Volume of a hemisphere of radius 3 cm in terms of \\pi?',
+        options: ['18 \\pi cm^3', '36 \\pi cm^3', '9 \\pi cm^3', '12 \\pi cm^3'], correct: 0,
+        solution: '\\frac{2}{3} \\pi \\times 27 = 18 \\pi.' },
+      { kind: 'mcq', prompt: 'A beach ball has radius 20 cm. Surface area in cm^2 to 3 s.f.?',
+        options: ['5030', '1260', '33500', '2010'], correct: 0,
+        solution: '4 \\pi \\times 400 = 1600 \\pi \\approx 5026.55.' },
+      { kind: 'fill-num', prompt: 'Volume of a sphere of radius 6 cm in cm^3 to 3 s.f.', answer: 905, tol: 5,
+        solution: '\\frac{4}{3} \\pi \\times 216 = 288 \\pi \\approx 904.78.' },
+      { kind: 'mcq', prompt: 'A solid cone has r = 5 cm and slant height 13 cm. TOTAL SA in terms of \\pi?',
+        options: ['90 \\pi cm^2', '65 \\pi cm^2', '25 \\pi cm^2', '169 \\pi cm^2'], correct: 0,
+        solution: '\\pi r l + \\pi r^2 = 65 \\pi + 25 \\pi = 90 \\pi.' },
+      { kind: 'fill-num', prompt: 'Surface area of a SPHERE of radius 7 cm in cm^2 to 3 s.f.', answer: 616, tol: 2,
+        solution: '4 \\pi \\times 49 = 196 \\pi \\approx 615.75.' },
+    ],
+  },
+
+  // ───────────────────── L16: Composite solids & word problems ─────────
+  {
+    id: 'L16',
+    title: 'Lesson 16 · Composite solids · word problems',
+    teach: {
+      heading: 'Add and subtract whole-solid volumes',
+      body: [
+        'Real solids combine simpler shapes — a rocket is a cylinder with a cone on top; a toy is a hemisphere joined to a cone; a paperweight is a cuboid with a prism cut out.',
+        'Strategy: identify each component, find its volume (or surface area), then ADD the components that are present and SUBTRACT the parts that are removed.',
+        'WATER DISPLACEMENT trick: a solid object dropped into a cylinder of water raises the water level. The extra volume = volume of solid = \\pi r^2 \\times \\Delta h, where r is the cylinder radius and \\Delta h is the rise.',
+        'For PARTIALLY-FILLED containers, compute volume of the empty space the same way you compute volume of the fluid — both are just chunks of the container.',
+      ],
+      example: 'A rocket is a cylinder of r = 2, h = 10 with a cone of r = 2, h = 3 on top. V = \\pi \\times 4 \\times 10 + \\frac{1}{3} \\pi \\times 4 \\times 3 = 40 \\pi + 4 \\pi = 44 \\pi cm^3.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'A toy is a hemisphere of radius 3 cm joined to a cone of base r = 3 cm and h = 4 cm. Volume in terms of \\pi?',
+        options: ['30 \\pi cm^3', '36 \\pi cm^3', '12 \\pi cm^3', '54 \\pi cm^3'], correct: 0,
+        solution: 'Hem: \\frac{2}{3} \\pi \\times 27 = 18 \\pi. Cone: \\frac{1}{3} \\pi \\times 9 \\times 4 = 12 \\pi. Total 30 \\pi.' },
+      { kind: 'mcq', prompt: 'A solid is a cylinder of r = 5 cm and h = 8 cm with a hemisphere of r = 5 cm cut from one end. Volume in terms of \\pi?',
+        options: ['\\frac{350}{3} \\pi cm^3', '200 \\pi cm^3', '\\frac{250}{3} \\pi cm^3', '300 \\pi cm^3'], correct: 0,
+        solution: '\\pi \\times 25 \\times 8 - \\frac{2}{3} \\pi \\times 125 = 200 \\pi - \\frac{250}{3} \\pi = \\frac{350}{3} \\pi.' },
+      { kind: 'mcq', prompt: 'A metal ball of radius 2 cm is dropped into a cylinder of radius 5 cm partly filled with water. The water rises by how many cm? (3 s.f.)',
+        options: ['0.427 cm', '1.07 cm', '0.213 cm', '4.19 cm'], correct: 0,
+        solution: '\\Delta h = \\frac{V_{ball}}{\\pi r^2} = \\frac{(4/3) \\pi \\times 8}{\\pi \\times 25} = \\frac{32}{75} \\approx 0.427.' },
+      { kind: 'mcq', prompt: 'A rocket = cylinder (r = 2, h = 10) + cone (r = 2, h = 6) on top. Volume in cm^3 in terms of \\pi?',
+        options: ['48 \\pi', '40 \\pi', '64 \\pi', '24 \\pi'], correct: 0,
+        solution: 'Cyl: 40 \\pi. Cone: \\frac{1}{3} \\pi \\times 4 \\times 6 = 8 \\pi. Total 48 \\pi.' },
+      { kind: 'mcq', prompt: 'A wooden paperweight is a cuboid 8 cm by 6 cm by 4 cm with a triangular prism cut out (cross-section a right triangle of legs 3 cm and 4 cm, length 6 cm). Volume left to 3 s.f.?',
+        options: ['156 cm^3', '192 cm^3', '108 cm^3', '228 cm^3'], correct: 0,
+        solution: '8 \\times 6 \\times 4 - \\frac{1}{2} \\times 3 \\times 4 \\times 6 = 192 - 36 = 156.' },
+      { kind: 'mcq', prompt: 'The Earth is approximately a sphere of diameter 12 800 km. Approximate volume in km^3 to 3 s.f.?',
+        options: ['1.10 \\times 10^{12}', '1.10 \\times 10^{11}', '8.78 \\times 10^{11}', '5.36 \\times 10^9'], correct: 0,
+        solution: 'r = 6400; V = \\frac{4}{3} \\pi r^3 \\approx 1.0986 \\times 10^{12}.' },
+      { kind: 'mcq', prompt: 'A cylindrical rainwater tank is 1.5 m tall with diameter 1.4 m. How many litres can it hold (to 3 s.f.)? (1 m^3 = 1000 L)',
+        options: ['2 310 L', '925 L', '4 620 L', '1 540 L'], correct: 0,
+        solution: 'V = \\pi \\times 0.7^2 \\times 1.5 = 0.735 \\pi \\approx 2.309 m^3 = 2 309 L \\approx 2 310 L.' },
+      { kind: 'mcq', prompt: 'A cone of radius 3 cm and height 4 cm and a sphere of radius r have the same volume. Find r in cm to 3 s.f.',
+        options: ['2.08 cm', '3.00 cm', '1.44 cm', '4.36 cm'], correct: 0,
+        solution: '\\frac{4}{3} \\pi r^3 = \\frac{1}{3} \\pi \\times 9 \\times 4 = 12 \\pi \\to r^3 = 9 \\to r \\approx 2.08.' },
+      { kind: 'mcq', prompt: 'A frustum: pyramid of height 6 with square base side 12 cut by a plane parallel to base, removing the top pyramid of height 4 with square base side 8. Volume of FRUSTUM?',
+        options: ['203 cm^3', '288 cm^3', '85.3 cm^3', '160 cm^3'], correct: 0,
+        solution: 'V_{whole} = \\frac{1}{3} \\times 144 \\times 6 = 288. V_{upper} = \\frac{1}{3} \\times 64 \\times 4 = 85.33. Frustum = 288 - 85.33 = 202.67.' },
+      { kind: 'mcq', prompt: 'A glass pyramid ornament has a regular hexagonal base of area 41.57 cm^2 and perpendicular height 20 cm. Volume to 3 s.f.?',
+        options: ['277 cm^3', '831 cm^3', '139 cm^3', '415 cm^3'], correct: 0,
+        solution: '\\frac{1}{3} \\times 41.57 \\times 20 \\approx 277.1.' },
+    ],
+  },
+]
+
+const CH7_PROGRESS_KEY = 'tenali-chapter7-progress'
+function ch7_loadProgress() {
+  try { return JSON.parse(localStorage.getItem(CH7_PROGRESS_KEY) || '{}') || {} } catch { return {} }
+}
+function ch7_saveProgress(p) { try { localStorage.setItem(CH7_PROGRESS_KEY, JSON.stringify(p)) } catch {} }
+
+// --- Custom math renderer for Chapter 7 ----------------------------------
+// Beautiful stacked fractions, vertically centred. Same as ch5/ch6.
+function Ch7Frac({ num, den }) {
+  return (
+    <span style={{
+      display: 'inline-flex', flexDirection: 'column', alignItems: 'center',
+      verticalAlign: 'middle', margin: '0 0.18em', lineHeight: 1.05,
+      fontSize: '0.95em',
+    }}>
+      <span style={{ padding: '0 0.4em 0.05em', borderBottom: '1.6px solid currentColor' }}>{num}</span>
+      <span style={{ padding: '0.05em 0.4em 0' }}>{den}</span>
+    </span>
+  )
+}
+function ch7_subOps(s) {
+  return String(s)
+    .replace(/\\times/g, '×').replace(/\\div/g, '÷')
+    .replace(/\\approx/g, '≈').replace(/\\to\b/g, '→')
+    .replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
+    .replace(/\\cdot/g, '·').replace(/\\pm/g, '±')
+    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ')
+    .replace(/\\sqrt\{([^{}]+)\}/g, '√($1)')
+    .replace(/\\sqrt(\d+)/g, '√$1')
+    .replace(/\\ell\b/g, 'ℓ')
+    .replace(/\\circ/g, '°')
+    .replace(/\\u2113/g, 'ℓ')
+    .replace(/\\u00b0/g, '°')
+    .replace(/\\u2019/g, '’')
+    .replace(/\\\$/g, '$').replace(/\\%/g, '%')
+}
+function ch7RenderMath(text) {
+  if (text == null) return null
+  const src = ch7_subOps(text)
+  const out = []
+  let i = 0, buf = ''
+  const flush = () => { if (buf) { out.push(buf); buf = '' } }
+  while (i < src.length) {
+    if (src.startsWith('\\frac{', i)) {
+      flush()
+      let j = i + 6, depth = 1
+      const ns = j
+      while (j < src.length) { if (src[j] === '{') depth++; else if (src[j] === '}') { depth--; if (depth === 0) break } j++ }
+      const numStr = src.slice(ns, j); j++
+      if (src[j] !== '{') { buf += src.slice(i, j); i = j; continue }
+      j++; depth = 1
+      const ds = j
+      while (j < src.length) { if (src[j] === '{') depth++; else if (src[j] === '}') { depth--; if (depth === 0) break } j++ }
+      const denStr = src.slice(ds, j); j++
+      out.push(<Ch7Frac key={`f${out.length}`} num={ch7RenderMath(numStr)} den={ch7RenderMath(denStr)} />)
+      i = j
+    } else if (src[i] === '^') {
+      const m = src.slice(i).match(/^\^(-?\d+)/)
+      if (m) { flush(); out.push(<sup key={`s${out.length}`} style={{ fontSize: '0.72em', verticalAlign: 'super' }}>{m[1]}</sup>); i += m[0].length }
+      else { buf += src[i]; i++ }
+    } else { buf += src[i]; i++ }
+  }
+  flush()
+  return out
+}
+
+const CH7_AUTO_ADVANCE_MS = 5000
+const CH7_RETRY_GAP = 4
+
+function Chapter7App({ onBack }) {
+  const [progress, setProgress] = useState(ch7_loadProgress)
+  const [activeId, setActiveId] = useState(null)
+  const [phase, setPhase] = useState('teach')
+  const [qIdx, setQIdx] = useState(0)
+  const [playList, setPlayList] = useState([])
+  const [lastWrongSrc, setLastWrongSrc] = useState(null)
+  const [selectedIdx, setSelectedIdx] = useState(null)
+  const [fillInput, setFillInput] = useState('')
+  const [revealed, setRevealed] = useState(false)
+  const [isCorrect, setIsCorrect] = useState(false)
+  const [autoCountdown, setAutoCountdown] = useState(0)
+  const inputRef = useRef(null)
+  const autoTimerRef = useRef(null)
+  const advanceRef = useRef(() => {})
+
+  const lesson = activeId ? CH7_LESSONS.find(l => l.id === activeId) : null
+  const currentSourceIdx = playList[qIdx]
+  const currentQ = lesson && currentSourceIdx != null ? lesson.questions[currentSourceIdx] : null
+  const isRetry = useMemo(() => {
+    if (currentSourceIdx == null) return false
+    return playList.slice(0, qIdx).includes(currentSourceIdx)
+  }, [playList, qIdx, currentSourceIdx])
+
+  const optionOrder = useMemo(() => {
+    if (!currentQ || currentQ.kind !== 'mcq') return []
+    return ch7_seededShuffle(currentQ.options.length, `${activeId}-${qIdx}-${currentSourceIdx}-${currentQ.prompt}`)
+  }, [activeId, qIdx, currentSourceIdx, currentQ])
+  const correctDisplayIdx = useMemo(() => optionOrder.indexOf(currentQ?.correct ?? -1), [optionOrder, currentQ])
+
+  useEffect(() => { ch7_saveProgress(progress) }, [progress])
+
+  useEffect(() => {
+    if (phase !== 'practice' || revealed) return
+    if (currentQ?.kind?.startsWith('fill') && inputRef.current) inputRef.current.focus()
+  }, [phase, qIdx, revealed, currentQ])
+
+  const startLesson = (id) => {
+    setActiveId(id)
+    const lessonRef = CH7_LESSONS.find(l => l.id === id)
+    const initial = Array.from({ length: lessonRef.questions.length }, (_, i) => i)
+    setPlayList(initial)
+    setLastWrongSrc(null)
+    const p = progress[id] || {}
+    if (p.teachSeen) { setPhase('practice'); setQIdx(p.qIdx || 0) }
+    else { setPhase('teach'); setQIdx(0) }
+    setSelectedIdx(null); setFillInput(''); setRevealed(false); setIsCorrect(false)
+  }
+
+  const acknowledgeTeach = () => {
+    setProgress(p => ({ ...p, [activeId]: { ...(p[activeId] || {}), teachSeen: true, qIdx: 0 } }))
+    setPhase('practice'); setQIdx(0)
+    setSelectedIdx(null); setFillInput(''); setRevealed(false); setIsCorrect(false)
+    setLastWrongSrc(null)
+  }
+
+  const submitFill = () => {
+    if (!currentQ) return
+    if (revealed) { advance(); return }
+    const ok = ch7_checkFill(currentQ, fillInput)
+    setIsCorrect(ok); setRevealed(true)
+    setLastWrongSrc(ok ? null : currentSourceIdx)
+  }
+
+  const pickMcq = (displayIdx) => {
+    if (!currentQ || revealed || currentQ.kind !== 'mcq') return
+    const optSourceIdx = optionOrder[displayIdx]
+    const ok = optSourceIdx === currentQ.correct
+    setSelectedIdx(displayIdx); setIsCorrect(ok); setRevealed(true)
+    setLastWrongSrc(ok ? null : currentSourceIdx)
+  }
+
+  const cancelAutoAdvance = () => {
+    if (autoTimerRef.current) { clearInterval(autoTimerRef.current); autoTimerRef.current = null }
+    setAutoCountdown(0)
+  }
+
+  const advance = () => {
+    cancelAutoAdvance()
+    if (!lesson) return
+    let workingList = playList
+    if (lastWrongSrc != null) {
+      const insertAt = Math.min(qIdx + CH7_RETRY_GAP, playList.length)
+      workingList = [...playList.slice(0, insertAt), lastWrongSrc, ...playList.slice(insertAt)]
+      setPlayList(workingList)
+      setLastWrongSrc(null)
+    }
+    const next = qIdx + 1
+    if (next >= workingList.length) {
+      setProgress(p => ({ ...p, [activeId]: { ...(p[activeId] || {}), teachSeen: true, qIdx: lesson.questions.length, completed: true } }))
+      setPhase('done')
+    } else {
+      setQIdx(next)
+      setSelectedIdx(null); setFillInput(''); setRevealed(false); setIsCorrect(false)
+      setProgress(p => ({ ...p, [activeId]: { ...(p[activeId] || {}), teachSeen: true, qIdx: Math.min(lesson.questions.length, next) } }))
+    }
+  }
+  advanceRef.current = advance
+
+  const jumpToQuestion = (i) => {
+    cancelAutoAdvance()
+    if (!lesson) return
+    const clamped = Math.max(0, Math.min(playList.length - 1, i))
+    setQIdx(clamped); setLastWrongSrc(null)
+    setSelectedIdx(null); setFillInput(''); setRevealed(false); setIsCorrect(false)
+    setProgress(p => {
+      const cur = p[activeId] || {}
+      const saved = Math.max(cur.qIdx || 0, Math.min(lesson.questions.length, clamped))
+      return { ...p, [activeId]: { ...cur, teachSeen: true, qIdx: saved } }
+    })
+  }
+
+  const backToOverview = () => {
+    cancelAutoAdvance()
+    setActiveId(null); setPhase('teach'); setQIdx(0)
+    setSelectedIdx(null); setFillInput(''); setRevealed(false); setIsCorrect(false)
+  }
+
+  const resetAll = () => {
+    if (!confirm('Reset all Chapter 7 progress?')) return
+    setProgress({}); ch7_saveProgress({})
+    backToOverview()
+  }
+
+  useEffect(() => {
+    if (phase !== 'practice' || !revealed) { cancelAutoAdvance(); return }
+    const total = Math.round(CH7_AUTO_ADVANCE_MS / 1000)
+    setAutoCountdown(total)
+    autoTimerRef.current = setInterval(() => {
+      setAutoCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(autoTimerRef.current); autoTimerRef.current = null
+          advanceRef.current()
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+    return () => { if (autoTimerRef.current) { clearInterval(autoTimerRef.current); autoTimerRef.current = null } }
+  }, [phase, revealed, qIdx, activeId])
+
+  useEffect(() => {
+    if (phase !== 'practice' || !currentQ) return
+    const onKey = (e) => {
+      if (revealed) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); advance() }
+        return
+      }
+      if (currentQ.kind === 'mcq') {
+        const k = e.key
+        if (/^[1-9]$/.test(k)) {
+          const i = parseInt(k, 10) - 1
+          if (i < currentQ.options.length) { e.preventDefault(); pickMcq(i) }
+        }
+      } else if (currentQ.kind?.startsWith('fill')) {
+        if (e.key === 'Enter') { e.preventDefault(); submitFill() }
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [phase, qIdx, revealed, currentQ, fillInput, optionOrder])
+
+  // ────────── Overview ──────────
+  if (!activeId) {
+    const total = CH7_LESSONS.length
+    const done = CH7_LESSONS.filter(l => progress[l.id]?.completed).length
+    return (
+      <div style={{ maxWidth: 760, margin: '0 auto', padding: '1.5rem 1rem', color: 'var(--clr-text)' }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 16 }}>
+          <button className="back-button" onClick={onBack}>← Home</button>
+          <button className="back-button" style={{ marginLeft: 'auto' }} onClick={resetAll}>Reset progress</button>
+        </div>
+        <h1 style={{ marginBottom: 4 }}>Chapter 7 — Perimeter, Area & Volume</h1>
+        <p className="subtitle" style={{ marginTop: 0 }}>
+          Cambridge IGCSE Mathematics · {done}/{total} lessons complete
+        </p>
+        <p style={{ opacity: 0.85, marginTop: 8 }}>
+          Pick the next lesson. Each one starts with a short explanation, then a stream of multiple-choice and fill-in-the-blank
+          questions — easy warm-ups first, then the actual chapter exercise problems.
+        </p>
+        <ol style={{ listStyle: 'none', padding: 0, marginTop: 16 }}>
+          {CH7_LESSONS.map((l) => {
+            const p = progress[l.id] || {}
+            const completed = p.completed
+            const inProg = !completed && (p.teachSeen || (p.qIdx || 0) > 0)
+            return (
+              <li key={l.id} style={{ marginBottom: 8 }}>
+                <button
+                  onClick={() => startLesson(l.id)}
+                  style={{
+                    width: '100%', textAlign: 'left', padding: '12px 14px',
+                    borderRadius: 10,
+                    borderLeft: completed ? '4px solid #2ea043' : inProg ? '4px solid #388bfd' : '1px solid var(--clr-border, #444)',
+                    borderTop: '1px solid ' + (completed ? '#2ea043' : 'var(--clr-border, #444)'),
+                    borderRight: '1px solid ' + (completed ? '#2ea043' : 'var(--clr-border, #444)'),
+                    borderBottom: '1px solid ' + (completed ? '#2ea043' : 'var(--clr-border, #444)'),
+                    background: completed
+                      ? 'linear-gradient(90deg, rgba(46,160,67,0.32) 0%, rgba(46,160,67,0.18) 100%)'
+                      : inProg ? 'rgba(56,139,253,0.10)' : 'var(--clr-surface, #1c1c1f)',
+                    color: completed ? '#a6f0b6' : 'var(--clr-text)',
+                    fontWeight: completed ? 600 : 400,
+                    cursor: 'pointer', fontSize: '0.95rem',
+                    boxShadow: completed ? '0 0 0 1px rgba(46,160,67,0.35) inset' : 'none',
+                  }}
+                >
+                  <span style={{ marginRight: 8 }}>{completed ? '✅' : inProg ? '▶' : '○'}</span>
+                  {l.title}
+                  {completed && (
+                    <span style={{
+                      float: 'right', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.5px',
+                      color: '#fff', background: '#2ea043', padding: '2px 8px', borderRadius: 10,
+                    }}>DONE</span>
+                  )}
+                  {p.qIdx > 0 && !completed && (
+                    <span style={{ float: 'right', fontSize: '0.8rem', opacity: 0.7 }}>{p.qIdx}/{l.questions.length}</span>
+                  )}
+                </button>
+              </li>
+            )
+          })}
+        </ol>
+      </div>
+    )
+  }
+
+  // ────────── Teach ──────────
+  if (phase === 'teach') {
+    return (
+      <div style={{ maxWidth: 720, margin: '0 auto', padding: '1.5rem 1rem', color: 'var(--clr-text)' }}>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+          <button className="back-button" onClick={backToOverview}>← Lessons</button>
+        </div>
+        <h2 style={{ marginBottom: 4 }}>{lesson.title}</h2>
+        <h3 style={{ color: 'var(--clr-accent, #6cf)', marginTop: 16 }}>{ch7RenderMath(lesson.teach.heading)}</h3>
+        {lesson.teach.body.map((para, i) => (
+          <p key={i} style={{ lineHeight: 1.7, marginBottom: 10, fontSize: '1rem' }}>{ch7RenderMath(para)}</p>
+        ))}
+        <div style={{
+          marginTop: 14, padding: 14, borderRadius: 8,
+          background: 'rgba(108,206,255,0.08)', border: '1px solid rgba(108,206,255,0.25)',
+          fontSize: '1rem', lineHeight: 1.7,
+        }}>
+          <strong>Worked example: </strong>{ch7RenderMath(lesson.teach.example)}
+        </div>
+        {lesson.qFormat && <p style={{ marginTop: 14, fontSize: '0.9rem', opacity: 0.8 }}><em>Note:</em> {lesson.qFormat}</p>}
+        <button onClick={acknowledgeTeach} style={{
+          marginTop: 18, padding: '10px 18px', borderRadius: 8, fontSize: '1rem',
+          background: 'var(--clr-accent, #2ea043)', color: 'white', border: 'none', cursor: 'pointer',
+        }}>I've got it — start questions →</button>
+      </div>
+    )
+  }
+
+  // ────────── Done ──────────
+  if (phase === 'done') {
+    const idx = CH7_LESSONS.findIndex(l => l.id === activeId)
+    const next = CH7_LESSONS[idx + 1]
+    return (
+      <div style={{ maxWidth: 720, margin: '0 auto', padding: '1.5rem 1rem', color: 'var(--clr-text)' }}>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+          <button className="back-button" onClick={backToOverview}>← Lessons</button>
+        </div>
+        <h2>🎉 Lesson complete</h2>
+        <p>You finished <strong>{lesson.title}</strong>.</p>
+        {next ? (
+          <button onClick={() => startLesson(next.id)} style={{
+            marginTop: 12, padding: '10px 18px', borderRadius: 8, fontSize: '1rem',
+            background: 'var(--clr-accent, #2ea043)', color: 'white', border: 'none', cursor: 'pointer',
+          }}>Next: {next.title} →</button>
+        ) : (
+          <p style={{ marginTop: 16, fontSize: '1.05rem' }}>🎓 You've completed every lesson in Chapter 7.</p>
+        )}
+        <button onClick={backToOverview} style={{
+          marginTop: 12, marginLeft: 8, padding: '10px 18px', borderRadius: 8,
+          background: 'transparent', color: 'var(--clr-text)', border: '1px solid var(--clr-border, #555)', cursor: 'pointer',
+        }}>Back to lessons</button>
+      </div>
+    )
+  }
+
+  // ────────── Practice ──────────
+  const sliderMax = Math.max(1, playList.length)
+  return (
+    <div style={{ maxWidth: 720, margin: '0 auto', padding: '1.5rem 1rem', color: 'var(--clr-text)' }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 12, alignItems: 'center' }}>
+        <button className="back-button" onClick={backToOverview}>← Lessons</button>
+        <button className="back-button" onClick={() => setPhase('teach')}>📖 Re-read teach</button>
+        <span style={{ marginLeft: 'auto', fontSize: '0.85rem', opacity: 0.75 }}>
+          Question {qIdx + 1} / {sliderMax}
+          {sliderMax > lesson.questions.length && (
+            <span style={{ marginLeft: 6, color: '#f0a020' }}>· {sliderMax - lesson.questions.length} retry queued</span>
+          )}
+        </span>
+      </div>
+      <h3 style={{ marginBottom: 8 }}>{lesson.title}</h3>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
+        <span style={{ fontSize: '0.78rem', opacity: 0.65, minWidth: 18, textAlign: 'right' }}>1</span>
+        <input
+          type="range"
+          min={1}
+          max={sliderMax}
+          value={qIdx + 1}
+          onChange={e => jumpToQuestion(parseInt(e.target.value, 10) - 1)}
+          aria-label="Jump to question"
+          style={{
+            flex: 1, accentColor: 'var(--clr-accent, #2ea043)',
+            cursor: 'pointer', height: 22,
+          }}
+        />
+        <span style={{ fontSize: '0.78rem', opacity: 0.65, minWidth: 22 }}>{sliderMax}</span>
+      </div>
+
+      <div style={{
+        padding: '22px 24px', borderRadius: 10, background: 'var(--clr-surface, #1c1c1f)',
+        border: '1px solid var(--clr-border, #333)', marginBottom: 16,
+        fontSize: '1.25rem', lineHeight: 2.1, textAlign: 'center',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 80,
+        position: 'relative',
+      }}>
+        {isRetry && (
+          <span style={{
+            position: 'absolute', top: 8, right: 12, fontSize: '0.7rem', fontWeight: 700,
+            letterSpacing: '0.5px', color: '#f0a020', background: 'rgba(240,160,32,0.15)',
+            border: '1px solid rgba(240,160,32,0.45)', padding: '2px 8px', borderRadius: 10,
+          }}>↻ RETRY</span>
+        )}
+        <span>{ch7RenderMath(currentQ.prompt)}</span>
+      </div>
+
+      {currentQ.kind === 'mcq' ? (
+        <div className="options-list">
+          {optionOrder.map((srcIdx, displayIdx) => {
+            const opt = currentQ.options[srcIdx]
+            const isSelected = selectedIdx === displayIdx
+            const isCorrectOpt = revealed && correctDisplayIdx === displayIdx
+            const isWrongPick = revealed && isSelected && !isCorrect
+            return (
+              <button
+                key={displayIdx}
+                className={`option-card ${isSelected ? 'selected' : ''} ${isCorrectOpt ? 'correct-option' : ''} ${isWrongPick ? 'wrong-option' : ''}`}
+                onClick={() => pickMcq(displayIdx)}
+                disabled={revealed}
+                style={{
+                  borderColor: isCorrectOpt ? 'var(--clr-correct, #2ea043)' : isWrongPick ? 'var(--clr-wrong, #f85149)' : undefined,
+                  background: isCorrectOpt ? 'rgba(46,160,67,0.15)' : isWrongPick ? 'rgba(248,81,73,0.15)' : undefined,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  position: 'relative', padding: '18px 24px', minHeight: 64,
+                  fontSize: '1.1rem', lineHeight: 1.9,
+                }}
+              >
+                <span style={{
+                  position: 'absolute', left: 18, top: '50%', transform: 'translateY(-50%)',
+                  fontWeight: 700, opacity: 0.6, fontSize: '0.95rem',
+                }}>{CH7_OPTION_LABEL[displayIdx]}.</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center' }}>{ch7RenderMath(opt)}</span>
+              </button>
+            )
+          })}
+        </div>
+      ) : (
+        <>
+          <input
+            ref={inputRef}
+            type="text"
+            value={fillInput}
+            onChange={e => setFillInput(e.target.value)}
+            disabled={revealed}
+            placeholder="Your answer…"
+            autoComplete="off"
+            style={{
+              width: '100%', padding: '14px 16px', fontSize: '1.15rem', borderRadius: 8,
+              border: '1px solid var(--clr-border, #555)', textAlign: 'center',
+              background: revealed ? 'rgba(255,255,255,0.04)' : 'var(--clr-surface, #1c1c1f)',
+              color: 'var(--clr-text)', boxSizing: 'border-box',
+            }}
+          />
+          {!revealed && (
+            <div style={{ display: 'flex', gap: 8, marginTop: 12, justifyContent: 'center' }}>
+              <button onClick={submitFill} disabled={!fillInput.trim()} style={{
+                padding: '10px 22px', borderRadius: 6, background: 'var(--clr-accent, #2ea043)',
+                color: 'white', border: 'none', cursor: 'pointer', fontSize: '0.95rem',
+                opacity: fillInput.trim() ? 1 : 0.5,
+              }}>Check</button>
+            </div>
+          )}
+        </>
+      )}
+
+      {revealed && (
+        <>
+          <div style={{
+            marginTop: 16, padding: 16, borderRadius: 8,
+            background: isCorrect ? 'rgba(46,160,67,0.15)' : 'rgba(248,81,73,0.15)',
+            border: `1px solid ${isCorrect ? 'rgba(46,160,67,0.45)' : 'rgba(248,81,73,0.45)'}`,
+            fontSize: '1rem', lineHeight: 1.9,
+          }}>
+            <strong>{isCorrect ? '✅ Correct!' : '❌ Not quite.'}</strong>
+            <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+              <strong>Answer:</strong>
+              <span>{currentQ.kind === 'mcq'
+                ? ch7RenderMath(currentQ.options[currentQ.correct])
+                : ch7RenderMath(String(currentQ.answer))}</span>
+            </div>
+            {currentQ.solution && (
+              <div style={{ marginTop: 8, opacity: 0.9, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+                <strong>Working:</strong>
+                <span>{ch7RenderMath(currentQ.solution)}</span>
+              </div>
+            )}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 14, justifyContent: 'center' }}>
+            <button onClick={advance} style={{
+              padding: '12px 28px', borderRadius: 8, background: 'var(--clr-accent, #2ea043)',
+              color: 'white', border: 'none', cursor: 'pointer', fontSize: '1rem', fontWeight: 600,
+            }}>
+              {qIdx + 1 === lesson.questions.length ? 'Finish lesson →' : 'Next →'}
+            </button>
+            <span style={{ fontSize: '0.85rem', opacity: 0.65 }}>
+              auto-advance in {autoCountdown}s · or press <kbd style={{ padding: '1px 6px', border: '1px solid var(--clr-border, #555)', borderRadius: 4, fontSize: '0.78rem' }}>Enter</kbd>
+            </span>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 function App() {
   // Currently selected quiz mode (null = home menu, or key like 'gk', 'addition', etc.)
   const [mode, setMode] = useState(null)
@@ -7419,6 +8754,18 @@ function App() {
           {theme === 'dark' ? '☀️' : '🌙'}
         </button>
         <Chapter6App onBack={() => { window.location.href = '/' }} />
+      </>
+    )
+  }
+
+  // Route: /chapter7 → Cambridge IGCSE Chapter 7 (Perimeter, Area and Volume)
+  if (pathname === '/chapter7') {
+    return (
+      <>
+        <button className="theme-toggle" onClick={toggleTheme} title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
+          {theme === 'dark' ? '☀️' : '🌙'}
+        </button>
+        <Chapter7App onBack={() => { window.location.href = '/' }} />
       </>
     )
   }
