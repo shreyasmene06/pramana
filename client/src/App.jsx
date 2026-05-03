@@ -8377,6 +8377,86 @@ const Bridge25App = makeBridgeApp({
   nextHref: '/chapter5', nextLabel: 'On to Lesson 15',
 })
 
+// ─── Bridge 26 — × ÷ in Standard Form ─────────────────────────────────
+function generateBridge26Question() {
+  const isMultiply = Math.random() < 0.55
+  const a = bridge_pick([2, 3, 4, 5, 6, 8, 1.5, 2.5, 3.5, 4.5])
+  const b = bridge_pick([2, 4, 5, 8, 1.5, 2, 3, 4])
+  const m = bridge_randInt(-5, 8)
+  const n = bridge_randInt(-5, 8)
+  let resA, resN
+  if (isMultiply) {
+    resA = a * b
+    resN = m + n
+  } else {
+    if (a === 0 || b === 0) return generateBridge26Question()
+    resA = a / b
+    resN = m - n
+  }
+  // Normalise: 1 ≤ resA < 10
+  while (resA >= 10) { resA = resA / 10; resN += 1 }
+  while (resA < 1 && resA > 0) { resA = resA * 10; resN -= 1 }
+  resA = Math.round(resA * 1e6) / 1e6
+  const op = isMultiply ? '×' : '÷'
+  const prompt = `(${a}×10^${m})  ${op}  (${b}×10^${n})`
+  const correctStr = `${resA}×10^${resN}`
+  const answerKey = `txt:${correctStr}`
+  const dist = []
+  const tryAdd = (s) => {
+    const k = `txt:${s}`
+    if (k === answerKey || dist.find(x => x.key === k)) return
+    dist.push({ seg: [s], key: k })
+  }
+  // Distractors target classic mistakes:
+  // - multiplied/divided indices instead of adding/subtracting
+  if (isMultiply) tryAdd(`${resA}×10^${m * n}`)
+  else tryAdd(`${resA}×10^${Math.round(m / Math.max(1, n))}`)
+  // wrong direction on indices
+  tryAdd(`${resA}×10^${isMultiply ? m - n : m + n}`)
+  // un-normalised result
+  if (Math.abs(a * b) >= 10 && isMultiply) tryAdd(`${a * b}×10^${m + n}`)
+  // ratio mistake
+  if (!isMultiply) tryAdd(`${b / a}×10^${m - n}`)
+  while (dist.length < 3) {
+    tryAdd(`${bridge_randInt(1, 9)}×10^${bridge_randInt(-9, 9)}`)
+  }
+  const { options, correctIndex } = bridge_buildSegOptions([correctStr], answerKey, dist)
+  return { prompt, options, correctIndex,
+           explanation: isMultiply
+             ? `Multiply the front numbers (${a} × ${b} = ${a * b}) and ADD the indices (${m} + ${n} = ${m + n}).  Tidy: result = ${correctStr}.`
+             : `Divide the front numbers (${a} ÷ ${b} = ${a / b}) and SUBTRACT the indices (${m} − ${n} = ${m - n}).  Tidy: result = ${correctStr}.` }
+}
+
+function Lesson16ProgressionStrip({ current }) {
+  const nodes = [
+    { id: 'lesson15', label: 'Lesson 15', sub: 'Standard Form',     href: '/chapter5', done: ch5LessonDone('L15') },
+    { id: 'bridge26', label: 'Bridge 26', sub: '× ÷ in Std Form',   href: '/bridge26' },
+    { id: 'lesson16', label: 'Lesson 16', sub: '× ÷ Standard Form', href: '/chapter5' },
+  ]
+  return renderProgressionStrip('Lesson 16 — Prerequisite Path', nodes, current)
+}
+
+const Bridge26App = makeBridgeApp({
+  id: 'bridge26', currentNode: 'bridge26', StripComponent: Lesson16ProgressionStrip,
+  title: 'Bridge 26 · Multiply / Divide in Standard Form',
+  subtitle: 'Multiply and divide numbers in a × 10ⁿ form.',
+  intro: 'When numbers are in standard form, you can multiply or divide them piece-by-piece — handle the front numbers and the powers of 10 separately, then tidy up so the front number is between 1 and 10.',
+  teach: {
+    rule: ['Multiply:  (a × 10ᵐ) × (b × 10ⁿ) = (a × b) × 10^(m+n).  ADD the indices.   Divide:  (a × 10ᵐ) ÷ (b × 10ⁿ) = (a ÷ b) × 10^(m−n).  SUBTRACT the indices.   Tidy at the end: if the front number ≥ 10, divide by 10 and add 1 to the index; if < 1, multiply by 10 and subtract 1.'],
+    example: {
+      setup: '(3 × 10⁵) × (2 × 10³)',
+      steps: [
+        'Front numbers: 3 × 2 = 6.',
+        'Indices: 5 + 3 = 8.',
+        '6 is already between 1 and 10 — no tidying needed.',
+      ],
+      answer: '6 × 10⁸.',
+    },
+  },
+  generator: generateBridge26Question,
+  nextHref: '/chapter5', nextLabel: 'On to Lesson 16',
+})
+
 function Chapter5App({ onBack }) {
   const [progress, setProgress] = useState(ch5_loadProgress)
   const [activeId, setActiveId] = useState(null)
@@ -8642,6 +8722,7 @@ function Chapter5App({ onBack }) {
         {activeId === 'L13' && <Lesson13ProgressionStrip current="lesson13" />}
         {activeId === 'L14' && <Lesson14ProgressionStrip current="lesson14" />}
         {activeId === 'L15' && <Lesson15ProgressionStrip current="lesson15" />}
+        {activeId === 'L16' && <Lesson16ProgressionStrip current="lesson16" />}
         <h2 style={{ marginBottom: 4 }}>{ch5RenderMath(lesson.title)}</h2>
         <h3 style={{ color: 'var(--clr-accent, #6cf)', marginTop: 16 }}>{lesson.teach.heading}</h3>
         {lesson.teach.body.map((para, i) => (
@@ -8687,6 +8768,7 @@ function Chapter5App({ onBack }) {
         {activeId === 'L13' && <Lesson13ProgressionStrip current="lesson13" />}
         {activeId === 'L14' && <Lesson14ProgressionStrip current="lesson14" />}
         {activeId === 'L15' && <Lesson15ProgressionStrip current="lesson15" />}
+        {activeId === 'L16' && <Lesson16ProgressionStrip current="lesson16" />}
         <h2>🎉 Lesson complete</h2>
         <p>You finished <strong>{ch5RenderMath(lesson.title)}</strong>.</p>
         {next ? (
@@ -8734,6 +8816,7 @@ function Chapter5App({ onBack }) {
       {activeId === 'L13' && <Lesson13ProgressionStrip current="lesson13" />}
       {activeId === 'L14' && <Lesson14ProgressionStrip current="lesson14" />}
       {activeId === 'L15' && <Lesson15ProgressionStrip current="lesson15" />}
+      {activeId === 'L16' && <Lesson16ProgressionStrip current="lesson16" />}
       <h3 style={{ marginBottom: 8 }}>{ch5RenderMath(lesson.title)}</h3>
       {/* Question slider — drag to jump to any question in the play sequence */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
@@ -35456,6 +35539,7 @@ function App() {
   if (pathname === '/bridge23') return (<><button className="theme-toggle" onClick={toggleTheme}>{theme === 'dark' ? '☀️' : '🌙'}</button><div className="app-shell"><div className="card"><AuthGate><Bridge23App onBack={() => { window.location.href = '/chapter5' }} /></AuthGate></div></div></>)
   if (pathname === '/bridge24') return (<><button className="theme-toggle" onClick={toggleTheme}>{theme === 'dark' ? '☀️' : '🌙'}</button><div className="app-shell"><div className="card"><AuthGate><Bridge24App onBack={() => { window.location.href = '/chapter5' }} /></AuthGate></div></div></>)
   if (pathname === '/bridge25') return (<><button className="theme-toggle" onClick={toggleTheme}>{theme === 'dark' ? '☀️' : '🌙'}</button><div className="app-shell"><div className="card"><AuthGate><Bridge25App onBack={() => { window.location.href = '/chapter5' }} /></AuthGate></div></div></>)
+  if (pathname === '/bridge26') return (<><button className="theme-toggle" onClick={toggleTheme}>{theme === 'dark' ? '☀️' : '🌙'}</button><div className="app-shell"><div className="card"><AuthGate><Bridge26App onBack={() => { window.location.href = '/chapter5' }} /></AuthGate></div></div></>)
 
   // Route: /chapter1 → Cambridge IGCSE Chapter 1 (Reviewing Number Concepts)
   if (pathname === '/chapter1') {
