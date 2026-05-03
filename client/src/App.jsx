@@ -7924,6 +7924,65 @@ const Bridge18App = makeBridgeApp({
   nextHref: '/chapter5', nextLabel: 'On to Lesson 8',
 })
 
+// ─── Bridge 19 — X% of Y ──────────────────────────────────────────────
+function generateBridge19Question() {
+  // Build (percent, Y) so the answer is a clean decimal (≤ 2 dp).
+  // Percent pool & Y range tuned so answer is one of: integer, .5, .25, .125 step.
+  const pPool = [5, 10, 12.5, 20, 25, 30, 40, 50, 60, 75, 80, 90, 100, 120, 150, 7.5, 2.5]
+  const percent = bridge_pick(pPool)
+  const yPool = [40, 50, 60, 80, 100, 120, 200, 240, 300, 400, 500, 600, 800, 1000]
+  const Y = bridge_pick(yPool)
+  const answer = (percent / 100) * Y
+  const answerKey = `num:${answer}`
+  const prompt = `${percent}% of ${Y}`
+  const dist = []
+  const tryAdd = (v) => {
+    if (typeof v !== 'number' || !isFinite(v) || v < 0) return
+    const k = `num:${v}`
+    if (k === answerKey || dist.find(x => x.key === k)) return
+    dist.push({ seg: [String(v)], key: k })
+  }
+  tryAdd(percent * Y)            // forgot to divide by 100
+  tryAdd((percent / 10) * Y)     // wrong divisor
+  tryAdd(answer * 10)            // power-of-10 slip
+  tryAdd(answer / 10)
+  tryAdd(percent + Y)            // added
+  tryAdd(Y - answer)             // the "other" portion
+  while (dist.length < 3) tryAdd(bridge_randInt(1, Math.round(Y) || 100))
+  const { options, correctIndex } = bridge_buildSegOptions([String(answer)], answerKey, dist)
+  return { prompt, options, correctIndex,
+           explanation: `${percent}% as a decimal is ${percent / 100}.   ${percent / 100} × ${Y} = ${answer}.` }
+}
+
+function Lesson9ProgressionStrip({ current }) {
+  const nodes = [
+    { id: 'lesson8',  label: 'Lesson 8',  sub: '% ↔ Frac ↔ Decimal',   href: '/chapter5', done: ch5LessonDone('L8') },
+    { id: 'bridge19', label: 'Bridge 19', sub: 'X% of Y',              href: '/bridge19' },
+    { id: 'lesson9',  label: 'Lesson 9',  sub: '% of an Amount',       href: '/chapter5' },
+  ]
+  return renderProgressionStrip('Lesson 9 — Prerequisite Path', nodes, current)
+}
+
+const Bridge19App = makeBridgeApp({
+  id: 'bridge19', currentNode: 'bridge19', StripComponent: Lesson9ProgressionStrip,
+  title: 'Bridge 19 · X% of Y',
+  subtitle: 'Find a percentage of a given amount.',
+  intro: 'Combines Bridge 17 (% → decimal) and Bridge 6 (multiply): convert the percent to a decimal, then multiply by the amount.',
+  teach: {
+    rule: 'Step 1: turn the percent into a decimal (divide by 100).   Step 2: multiply that decimal by the amount.   Quick mental shortcuts:  10% = ÷10,  1% = ÷100,  50% = ÷2,  25% = ÷4,  20% = ÷5.',
+    example: {
+      setup: '5% of 300',
+      steps: [
+        '5% as a decimal is 0.05.',
+        '0.05 × 300 = 15.   (Or quicker: 1% of 300 = 3, so 5% = 15.)',
+      ],
+      answer: '5% of 300 = 15.',
+    },
+  },
+  generator: generateBridge19Question,
+  nextHref: '/chapter5', nextLabel: 'On to Lesson 9',
+})
+
 function Chapter5App({ onBack }) {
   const [progress, setProgress] = useState(ch5_loadProgress)
   const [activeId, setActiveId] = useState(null)
@@ -8182,6 +8241,7 @@ function Chapter5App({ onBack }) {
         {activeId === 'L6' && <Lesson6ProgressionStrip current="lesson6" />}
         {activeId === 'L7' && <Lesson7ProgressionStrip current="lesson7" />}
         {activeId === 'L8' && <Lesson8ProgressionStrip current="lesson8" />}
+        {activeId === 'L9' && <Lesson9ProgressionStrip current="lesson9" />}
         <h2 style={{ marginBottom: 4 }}>{ch5RenderMath(lesson.title)}</h2>
         <h3 style={{ color: 'var(--clr-accent, #6cf)', marginTop: 16 }}>{lesson.teach.heading}</h3>
         {lesson.teach.body.map((para, i) => (
@@ -8220,6 +8280,7 @@ function Chapter5App({ onBack }) {
         {activeId === 'L6' && <Lesson6ProgressionStrip current="lesson6" />}
         {activeId === 'L7' && <Lesson7ProgressionStrip current="lesson7" />}
         {activeId === 'L8' && <Lesson8ProgressionStrip current="lesson8" />}
+        {activeId === 'L9' && <Lesson9ProgressionStrip current="lesson9" />}
         <h2>🎉 Lesson complete</h2>
         <p>You finished <strong>{ch5RenderMath(lesson.title)}</strong>.</p>
         {next ? (
@@ -8260,6 +8321,7 @@ function Chapter5App({ onBack }) {
       {activeId === 'L6' && <Lesson6ProgressionStrip current="lesson6" />}
       {activeId === 'L7' && <Lesson7ProgressionStrip current="lesson7" />}
       {activeId === 'L8' && <Lesson8ProgressionStrip current="lesson8" />}
+      {activeId === 'L9' && <Lesson9ProgressionStrip current="lesson9" />}
       <h3 style={{ marginBottom: 8 }}>{ch5RenderMath(lesson.title)}</h3>
       {/* Question slider — drag to jump to any question in the play sequence */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
@@ -34975,6 +35037,7 @@ function App() {
   if (pathname === '/bridge16') return (<><button className="theme-toggle" onClick={toggleTheme}>{theme === 'dark' ? '☀️' : '🌙'}</button><div className="app-shell"><div className="card"><AuthGate><Bridge16App onBack={() => { window.location.href = '/chapter5' }} /></AuthGate></div></div></>)
   if (pathname === '/bridge17') return (<><button className="theme-toggle" onClick={toggleTheme}>{theme === 'dark' ? '☀️' : '🌙'}</button><div className="app-shell"><div className="card"><AuthGate><Bridge17App onBack={() => { window.location.href = '/chapter5' }} /></AuthGate></div></div></>)
   if (pathname === '/bridge18') return (<><button className="theme-toggle" onClick={toggleTheme}>{theme === 'dark' ? '☀️' : '🌙'}</button><div className="app-shell"><div className="card"><AuthGate><Bridge18App onBack={() => { window.location.href = '/chapter5' }} /></AuthGate></div></div></>)
+  if (pathname === '/bridge19') return (<><button className="theme-toggle" onClick={toggleTheme}>{theme === 'dark' ? '☀️' : '🌙'}</button><div className="app-shell"><div className="card"><AuthGate><Bridge19App onBack={() => { window.location.href = '/chapter5' }} /></AuthGate></div></div></>)
 
   // Route: /chapter1 → Cambridge IGCSE Chapter 1 (Reviewing Number Concepts)
   if (pathname === '/chapter1') {
