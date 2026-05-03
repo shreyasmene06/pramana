@@ -7413,6 +7413,196 @@ const Bridge12App = makeBridgeApp({
   nextHref: '/chapter5', nextLabel: 'On to Lesson 4',
 })
 
+// ─── Bridge 13 — Reciprocals ──────────────────────────────────────────
+function generateBridge13Question() {
+  const isFraction = Math.random() < 0.6
+  if (isFraction) {
+    const { p, q } = bridge_pickSimplestFraction(9)
+    const prompt = ['What is the reciprocal of  ', { frac: [p, q] }, '?']
+    const answerKey = `frac:${q}/${p}`
+    const dist = []
+    const tryAdd = (n, d) => {
+      if (!Number.isInteger(n) || !Number.isInteger(d) || n <= 0 || d <= 0) return
+      const k = `frac:${n}/${d}`
+      if (k === answerKey || dist.find(x => x.key === k)) return
+      dist.push({ seg: [{ frac: [n, d] }], key: k })
+    }
+    tryAdd(p, q)        // same fraction (trap — students sometimes don't flip)
+    tryAdd(q + 1, p)
+    tryAdd(q, p + 1)
+    if (q > 1) tryAdd(q - 1, p)
+    const { options, correctIndex } = bridge_buildSegOptions([{ frac: [q, p] }], answerKey, dist)
+    return { prompt, options, correctIndex,
+             explanation: ['Flip the fraction upside down: ', { frac: [p, q] }, ' → ', { frac: [q, p] }, '.'] }
+  } else {
+    const w = bridge_randInt(2, 12)
+    const prompt = `What is the reciprocal of  ${w}?`
+    const answerKey = `frac:1/${w}`
+    const dist = []
+    const tryAdd = (n, d) => {
+      if (!Number.isInteger(n) || !Number.isInteger(d) || n <= 0 || d <= 0) return
+      const k = `frac:${n}/${d}`
+      if (k === answerKey || dist.find(x => x.key === k)) return
+      dist.push({ seg: [{ frac: [n, d] }], key: k })
+    }
+    tryAdd(w, 1)
+    tryAdd(w, w)
+    tryAdd(1, w + 1)
+    tryAdd(2, w)
+    const { options, correctIndex } = bridge_buildSegOptions([{ frac: [1, w] }], answerKey, dist)
+    return { prompt, options, correctIndex,
+             explanation: [`Treat ${w} as `, { frac: [w, 1] }, '.  Flip it: ', { frac: [1, w] }, '.'] }
+  }
+}
+
+// ─── Bridge 14 — Divide Fractions (Keep-Change-Flip) ──────────────────
+function generateBridge14Question() {
+  const v = Math.random()
+  if (v < 0.5) {
+    // f1 ÷ f2
+    const f1 = bridge_pickSimplestFraction(7)
+    const f2 = bridge_pickSimplestFraction(7)
+    const num = f1.p * f2.q
+    const den = f1.q * f2.p
+    const g = bridge_gcd(num, den)
+    const sn = num / g, sd = den / g
+    const prompt = [{ frac: [f1.p, f1.q] }, '  ÷  ', { frac: [f2.p, f2.q] }]
+    const answerKey = `frac:${sn}/${sd}`
+    const dist = []
+    const tryAdd = (n, d) => {
+      if (!Number.isInteger(n) || !Number.isInteger(d) || n <= 0 || d <= 0) return
+      const k = `frac:${n}/${d}`
+      if (k === answerKey || dist.find(x => x.key === k)) return
+      dist.push({ seg: [{ frac: [n, d] }], key: k })
+    }
+    tryAdd(f1.p * f2.p, f1.q * f2.q)  // multiplied without flipping (classic mistake)
+    tryAdd(f2.q * f1.p, f2.p * f1.q)  // flipped first instead of second (same result accidentally — covered above)
+    if (num !== sn || den !== sd) tryAdd(num, den)  // unsimplified
+    tryAdd(sd, sn)                                  // flipped answer
+    const { options, correctIndex } = bridge_buildSegOptions([{ frac: [sn, sd] }], answerKey, dist)
+    return { prompt, options, correctIndex,
+             explanation: ['Keep the first, flip the second, multiply: ', { frac: [f1.p, f1.q] }, ' × ', { frac: [f2.q, f2.p] }, ' = ', { frac: [num, den] }, num !== sn ? [' = ', { frac: [sn, sd] }] : '', '.'] }
+  } else if (v < 0.75) {
+    // mixed ÷ mixed (or mixed ÷ fraction)
+    const w1 = bridge_randInt(1, 4)
+    const f1 = bridge_pickSimplestFraction(5)
+    const w2 = bridge_randInt(1, 4)
+    const f2 = bridge_pickSimplestFraction(5)
+    const a = w1 * f1.q + f1.p, b = f1.q
+    const c = w2 * f2.q + f2.p, d = f2.q
+    const num = a * d
+    const den = b * c
+    const g = bridge_gcd(num, den)
+    const sn = num / g, sd = den / g
+    const prompt = [w1, { frac: [f1.p, f1.q] }, '  ÷  ', w2, { frac: [f2.p, f2.q] }]
+    const answerKey = `frac:${sn}/${sd}`
+    const dist = []
+    const tryAdd = (n, dd) => {
+      if (!Number.isInteger(n) || !Number.isInteger(dd) || n <= 0 || dd <= 0) return
+      const k = `frac:${n}/${dd}`
+      if (k === answerKey || dist.find(x => x.key === k)) return
+      dist.push({ seg: [{ frac: [n, dd] }], key: k })
+    }
+    tryAdd(a * c, b * d)         // multiplied without flipping
+    tryAdd(num, den)             // unsimplified
+    tryAdd(w1, w2)               // divided wholes only
+    tryAdd(b * d, a * c)         // flipped result
+    const { options, correctIndex } = bridge_buildSegOptions([{ frac: [sn, sd] }], answerKey, dist)
+    return { prompt, options, correctIndex,
+             explanation: ['Convert: ', w1, { frac: [f1.p, f1.q] }, ' = ', { frac: [a, b] }, ',  ', w2, { frac: [f2.p, f2.q] }, ' = ', { frac: [c, d] }, '.  Flip second and multiply: ', { frac: [a, b] }, ' × ', { frac: [d, c] }, ' = ', { frac: [num, den] }, num !== sn ? [' = ', { frac: [sn, sd] }] : '', '.'] }
+  } else {
+    // whole ÷ fraction or fraction ÷ whole
+    const f = bridge_pickSimplestFraction(7)
+    const w = bridge_randInt(2, 9)
+    const wholeFirst = Math.random() < 0.5
+    let num, den
+    if (wholeFirst) {
+      // w ÷ p/q = w × q/p = wq/p
+      num = w * f.q
+      den = f.p
+    } else {
+      // p/q ÷ w = p/q × 1/w = p/(qw)
+      num = f.p
+      den = f.q * w
+    }
+    const g = bridge_gcd(num, den)
+    const sn = num / g, sd = den / g
+    const prompt = wholeFirst
+      ? [String(w), '  ÷  ', { frac: [f.p, f.q] }]
+      : [{ frac: [f.p, f.q] }, '  ÷  ', String(w)]
+    const answerKey = `frac:${sn}/${sd}`
+    const dist = []
+    const tryAdd = (n, d) => {
+      if (!Number.isInteger(n) || !Number.isInteger(d) || n <= 0 || d <= 0) return
+      const k = `frac:${n}/${d}`
+      if (k === answerKey || dist.find(x => x.key === k)) return
+      dist.push({ seg: [{ frac: [n, d] }], key: k })
+    }
+    if (wholeFirst) {
+      tryAdd(w * f.p, f.q)         // multiplied without flipping
+      tryAdd(f.q, w * f.p)         // flipped result
+    } else {
+      tryAdd(f.p * w, f.q)         // multiplied instead of dividing
+      tryAdd(f.q, f.p * w)
+    }
+    if (num !== sn || den !== sd) tryAdd(num, den)
+    const { options, correctIndex } = bridge_buildSegOptions([{ frac: [sn, sd] }], answerKey, dist)
+    const explanation = wholeFirst
+      ? [`Treat ${w} as `, { frac: [w, 1] }, '.  Flip second: ', { frac: [f.q, f.p] }, '.  Multiply: ', { frac: [w * f.q, f.p] }, num !== sn ? [' = ', { frac: [sn, sd] }] : '', '.']
+      : [`Treat ${w} as `, { frac: [w, 1] }, '.  Flip second: ', { frac: [1, w] }, '.  Multiply: ', { frac: [f.p, f.q * w] }, num !== sn ? [' = ', { frac: [sn, sd] }] : '', '.']
+    return { prompt, options, correctIndex, explanation }
+  }
+}
+
+function Lesson5ProgressionStrip({ current }) {
+  const nodes = [
+    { id: 'lesson4',  label: 'Lesson 4',  sub: 'Add & Subtract',     href: '/chapter5', done: ch5LessonDone('L4') },
+    { id: 'bridge13', label: 'Bridge 13', sub: 'Reciprocals',        href: '/bridge13' },
+    { id: 'bridge14', label: 'Bridge 14', sub: 'Divide Fractions',   href: '/bridge14' },
+    { id: 'lesson5',  label: 'Lesson 5',  sub: 'Dividing Fractions', href: '/chapter5' },
+  ]
+  return renderProgressionStrip('Lesson 5 — Prerequisite Path', nodes, current)
+}
+
+const Bridge13App = makeBridgeApp({
+  id: 'bridge13', currentNode: 'bridge13', StripComponent: Lesson5ProgressionStrip,
+  title: 'Bridge 13 · Reciprocals',
+  subtitle: 'Flip a fraction upside down — that is its reciprocal.',
+  intro: 'A new word: RECIPROCAL.  The reciprocal of a fraction is what you get by swapping the top and the bottom.  This is the key move for dividing fractions.',
+  teach: {
+    rule: ['The reciprocal of  ', { frac: ['a', 'b'] }, '  is  ', { frac: ['b', 'a'] }, '.   The reciprocal of a whole number  n  is  ', { frac: [1, 'n'] }, '.   A number times its reciprocal always equals 1.'],
+    example: {
+      setup: ['What is the reciprocal of  ', { frac: [3, 5] }, '?'],
+      steps: [
+        'Swap the top (3) and the bottom (5).',
+      ],
+      answer: ['Reciprocal of  ', { frac: [3, 5] }, '  is  ', { frac: [5, 3] }, '.'],
+    },
+  },
+  generator: generateBridge13Question,
+  nextHref: '/bridge14', nextLabel: 'Continue to Bridge 14',
+})
+
+const Bridge14App = makeBridgeApp({
+  id: 'bridge14', currentNode: 'bridge14', StripComponent: Lesson5ProgressionStrip,
+  title: 'Bridge 14 · Divide Fractions (Keep-Change-Flip)',
+  subtitle: 'Divide two fractions by flipping the second and multiplying.',
+  intro: 'Dividing by a fraction is the same as multiplying by its reciprocal — KEEP the first, CHANGE ÷ to ×, FLIP the second.',
+  teach: {
+    rule: ['To divide:  ', { frac: ['a', 'b'] }, '  ÷  ', { frac: ['c', 'd'] }, '  =  ', { frac: ['a', 'b'] }, '  ×  ', { frac: ['d', 'c'] }, '  =  ', { frac: ['a × d', 'b × c'] }, '.   Convert mixed numbers to improper first.   Treat any whole n as ', { frac: ['n', 1] }, '.'],
+    example: {
+      setup: [{ frac: [2, 3] }, '  ÷  ', { frac: [4, 5] }],
+      steps: [
+        ['Keep ', { frac: [2, 3] }, ', flip ', { frac: [4, 5] }, ' to ', { frac: [5, 4] }, ', multiply.'],
+        ['Result: ', { frac: [10, 12] }, '. Simplify (HCF=2): ', { frac: [5, 6] }, '.'],
+      ],
+      answer: [{ frac: [2, 3] }, ' ÷ ', { frac: [4, 5] }, ' = ', { frac: [5, 6] }, '.'],
+    },
+  },
+  generator: generateBridge14Question,
+  nextHref: '/chapter5', nextLabel: 'On to Lesson 5',
+})
+
 function Chapter5App({ onBack }) {
   const [progress, setProgress] = useState(ch5_loadProgress)
   const [activeId, setActiveId] = useState(null)
@@ -7667,6 +7857,7 @@ function Chapter5App({ onBack }) {
         {activeId === 'L2' && <Lesson2ProgressionStrip current="lesson2" />}
         {activeId === 'L3' && <Lesson3ProgressionStrip current="lesson3" />}
         {activeId === 'L4' && <Lesson4ProgressionStrip current="lesson4" />}
+        {activeId === 'L5' && <Lesson5ProgressionStrip current="lesson5" />}
         <h2 style={{ marginBottom: 4 }}>{ch5RenderMath(lesson.title)}</h2>
         <h3 style={{ color: 'var(--clr-accent, #6cf)', marginTop: 16 }}>{lesson.teach.heading}</h3>
         {lesson.teach.body.map((para, i) => (
@@ -7701,6 +7892,7 @@ function Chapter5App({ onBack }) {
         {activeId === 'L2' && <Lesson2ProgressionStrip current="lesson2" />}
         {activeId === 'L3' && <Lesson3ProgressionStrip current="lesson3" />}
         {activeId === 'L4' && <Lesson4ProgressionStrip current="lesson4" />}
+        {activeId === 'L5' && <Lesson5ProgressionStrip current="lesson5" />}
         <h2>🎉 Lesson complete</h2>
         <p>You finished <strong>{ch5RenderMath(lesson.title)}</strong>.</p>
         {next ? (
@@ -7737,6 +7929,7 @@ function Chapter5App({ onBack }) {
       {activeId === 'L2' && <Lesson2ProgressionStrip current="lesson2" />}
       {activeId === 'L3' && <Lesson3ProgressionStrip current="lesson3" />}
       {activeId === 'L4' && <Lesson4ProgressionStrip current="lesson4" />}
+      {activeId === 'L5' && <Lesson5ProgressionStrip current="lesson5" />}
       <h3 style={{ marginBottom: 8 }}>{ch5RenderMath(lesson.title)}</h3>
       {/* Question slider — drag to jump to any question in the play sequence */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
@@ -34446,6 +34639,8 @@ function App() {
   if (pathname === '/bridge10') return (<><button className="theme-toggle" onClick={toggleTheme}>{theme === 'dark' ? '☀️' : '🌙'}</button><div className="app-shell"><div className="card"><AuthGate><Bridge10App onBack={() => { window.location.href = '/chapter5' }} /></AuthGate></div></div></>)
   if (pathname === '/bridge11') return (<><button className="theme-toggle" onClick={toggleTheme}>{theme === 'dark' ? '☀️' : '🌙'}</button><div className="app-shell"><div className="card"><AuthGate><Bridge11App onBack={() => { window.location.href = '/chapter5' }} /></AuthGate></div></div></>)
   if (pathname === '/bridge12') return (<><button className="theme-toggle" onClick={toggleTheme}>{theme === 'dark' ? '☀️' : '🌙'}</button><div className="app-shell"><div className="card"><AuthGate><Bridge12App onBack={() => { window.location.href = '/chapter5' }} /></AuthGate></div></div></>)
+  if (pathname === '/bridge13') return (<><button className="theme-toggle" onClick={toggleTheme}>{theme === 'dark' ? '☀️' : '🌙'}</button><div className="app-shell"><div className="card"><AuthGate><Bridge13App onBack={() => { window.location.href = '/chapter5' }} /></AuthGate></div></div></>)
+  if (pathname === '/bridge14') return (<><button className="theme-toggle" onClick={toggleTheme}>{theme === 'dark' ? '☀️' : '🌙'}</button><div className="app-shell"><div className="card"><AuthGate><Bridge14App onBack={() => { window.location.href = '/chapter5' }} /></AuthGate></div></div></>)
 
   // Route: /chapter1 → Cambridge IGCSE Chapter 1 (Reviewing Number Concepts)
   if (pathname === '/chapter1') {
