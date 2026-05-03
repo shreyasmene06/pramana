@@ -103,8 +103,19 @@ All prompts, options, solutions, and teach paragraphs render through the chapter
 | `\\frac{2 \\times 3}{3 \\times 3}` | nested expressions inside fractions are fine |
 | `1\\frac{1}{4}` | mixed number |
 | `^5`, `^-7` | superscript exponent |
-| `\\times`, `\\div`, `\\approx`, `\\le`, `\\ge`, `\\to`, `\\cdot`, `\\pm` | proper Unicode glyphs |
+| `\\times`, `\\div`, `\\approx`, `\\sim`, `\\le`, `\\ge`, `\\ne`, `\\to`, `\\cdot`, `\\cdots`, `\\pm` | proper Unicode glyphs |
+| `\\pi`, `\\theta`, `\\Delta`, `\\alpha`, `\\beta`, `\\gamma`, `\\delta`, `\\mu`, `\\sigma`, `\\omega` | Greek letters |
+| `\\sum`, `\\prod`, `\\int` | ∑, ∏, ∫ |
+| `\\angle`, `\\triangle`, `\\square`, `\\infty` | ∠, △, □, ∞ |
+| `\\ell`, `\\circ` | ℓ, ° |
+| `\\sin`, `\\cos`, `\\tan`, `\\log`, `\\ln` | written as plain "sin", "cos", … |
+| `\\left(`, `\\right)`, `\\left[`, `\\right]` | parentheses / brackets (the \\left/\\right wrapper is stripped) |
+| `\\u2208`, `\\u2209`, `\\u2205`, `\\u222a`, `\\u2229`, `\\u2286`, `\\u2282` | ∈, ∉, ∅, ∪, ∩, ⊆, ⊂ |
+| `\\u2660`, `\\u2663`, `\\u2665`, `\\u2666` | ♠, ♣, ♥, ♦ |
+| `\\u2019`, `\\u2032`, `\\u2013` | ’, ′, – |
 | `\\$12`, `\\%` | escaped dollar / percent |
+
+If you need a command that isn't in the list above, ADD it to **every** `chN_subOps` (chapters 5–20 share the same body — when extending, update them all in one pass via a script). Otherwise the LaTeX token will render literally to the student.
 
 ### Vertical alignment rules
 

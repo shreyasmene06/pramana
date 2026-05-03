@@ -28,8 +28,8 @@ import './App.css'
 const API = import.meta.env.VITE_API_BASE_URL || '';
 
 // App version — increment with each commit
-const TENALI_VERSION = '1.0.82'
-const TENALI_BUILD_DATE = '2026-05-02 04:12 IST'
+const TENALI_VERSION = '1.0.83'
+const TENALI_BUILD_DATE = '2026-05-03 14:19 IST'
 
 // Inject version badge into DOM once (appears on all routes)
 ;(() => {
@@ -5905,9 +5905,31 @@ function Ch5Frac({ num, den }) {
 function ch5_subOps(s) {
   return String(s)
     .replace(/\\times/g, '×').replace(/\\div/g, '÷')
-    .replace(/\\approx/g, '≈').replace(/\\to\b/g, '→')
-    .replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
-    .replace(/\\cdot/g, '·').replace(/\\pm/g, '±')
+    .replace(/\\approx/g, '≈').replace(/\\sim\b/g, '~')
+    .replace(/\\to\b/g, '→').replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
+    .replace(/\\ne\b/g, '≠').replace(/\\neq\b/g, '≠')
+    .replace(/\\cdot/g, '·').replace(/\\cdots/g, '⋯').replace(/\\pm/g, '±')
+    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ').replace(/\\Delta/g, 'Δ')
+    .replace(/\\alpha/g, 'α').replace(/\\beta/g, 'β').replace(/\\gamma/g, 'γ').replace(/\\delta/g, 'δ')
+    .replace(/\\mu\b/g, 'μ').replace(/\\sigma/g, 'σ').replace(/\\omega/g, 'ω')
+    .replace(/\\sum/g, '∑').replace(/\\prod/g, '∏').replace(/\\int/g, '∫')
+    .replace(/\\angle/g, '∠').replace(/\\triangle/g, '△').replace(/\\square/g, '□')
+    .replace(/\\infty/g, '∞')
+    .replace(/\\sqrt\{([^{}]+)\}/g, '√($1)')
+    .replace(/\\sqrt(\d+)/g, '√$1')
+    .replace(/\\ell\b/g, 'ℓ').replace(/\\circ/g, '°')
+    .replace(/\\sin\b/g, 'sin').replace(/\\cos\b/g, 'cos').replace(/\\tan\b/g, 'tan')
+    .replace(/\\log\b/g, 'log').replace(/\\ln\b/g, 'ln')
+    .replace(/\\left\(/g, '(').replace(/\\right\)/g, ')')
+    .replace(/\\left\[/g, '[').replace(/\\right\]/g, ']')
+    .replace(/\\u2208/g, '∈').replace(/\\u2209/g, '∉')
+    .replace(/\\u2205/g, '∅')
+    .replace(/\\u222a/g, '∪').replace(/\\u2229/g, '∩')
+    .replace(/\\u2286/g, '⊆').replace(/\\u2282/g, '⊂')
+    .replace(/\\u2113/g, 'ℓ').replace(/\\u00b0/g, '°')
+    .replace(/\\u2019/g, '’').replace(/\\u2032/g, '′').replace(/\\u2013/g, '–')
+    .replace(/\\u2660/g, '♠').replace(/\\u2663/g, '♣').replace(/\\u2665/g, '♥').replace(/\\u2666/g, '♦')
+    .replace(/\\dot\{(\d)\}/g, '$1̇')
     .replace(/\\\$/g, '$').replace(/\\%/g, '%')
 }
 // Recursive parser: handles \frac{NUM}{DEN} (with nesting) and ^N/^-N.
@@ -6873,11 +6895,32 @@ function Ch6Frac({ num, den }) {
 function ch6_subOps(s) {
   return String(s)
     .replace(/\\times/g, '×').replace(/\\div/g, '÷')
-    .replace(/\\approx/g, '≈').replace(/\\to\b/g, '→')
-    .replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
-    .replace(/\\cdot/g, '·').replace(/\\pm/g, '±')
-    .replace(/\\sqrt\{([^{}]*)\}/g, '√($1)').replace(/\\sqrt/g, '√')
-    .replace(/\\\$/g, '$').replace(/\\%/g, '%').replace(/\\pi/g, 'π')
+    .replace(/\\approx/g, '≈').replace(/\\sim\b/g, '~')
+    .replace(/\\to\b/g, '→').replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
+    .replace(/\\ne\b/g, '≠').replace(/\\neq\b/g, '≠')
+    .replace(/\\cdot/g, '·').replace(/\\cdots/g, '⋯').replace(/\\pm/g, '±')
+    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ').replace(/\\Delta/g, 'Δ')
+    .replace(/\\alpha/g, 'α').replace(/\\beta/g, 'β').replace(/\\gamma/g, 'γ').replace(/\\delta/g, 'δ')
+    .replace(/\\mu\b/g, 'μ').replace(/\\sigma/g, 'σ').replace(/\\omega/g, 'ω')
+    .replace(/\\sum/g, '∑').replace(/\\prod/g, '∏').replace(/\\int/g, '∫')
+    .replace(/\\angle/g, '∠').replace(/\\triangle/g, '△').replace(/\\square/g, '□')
+    .replace(/\\infty/g, '∞')
+    .replace(/\\sqrt\{([^{}]+)\}/g, '√($1)')
+    .replace(/\\sqrt(\d+)/g, '√$1')
+    .replace(/\\ell\b/g, 'ℓ').replace(/\\circ/g, '°')
+    .replace(/\\sin\b/g, 'sin').replace(/\\cos\b/g, 'cos').replace(/\\tan\b/g, 'tan')
+    .replace(/\\log\b/g, 'log').replace(/\\ln\b/g, 'ln')
+    .replace(/\\left\(/g, '(').replace(/\\right\)/g, ')')
+    .replace(/\\left\[/g, '[').replace(/\\right\]/g, ']')
+    .replace(/\\u2208/g, '∈').replace(/\\u2209/g, '∉')
+    .replace(/\\u2205/g, '∅')
+    .replace(/\\u222a/g, '∪').replace(/\\u2229/g, '∩')
+    .replace(/\\u2286/g, '⊆').replace(/\\u2282/g, '⊂')
+    .replace(/\\u2113/g, 'ℓ').replace(/\\u00b0/g, '°')
+    .replace(/\\u2019/g, '’').replace(/\\u2032/g, '′').replace(/\\u2013/g, '–')
+    .replace(/\\u2660/g, '♠').replace(/\\u2663/g, '♣').replace(/\\u2665/g, '♥').replace(/\\u2666/g, '♦')
+    .replace(/\\dot\{(\d)\}/g, '$1̇')
+    .replace(/\\\$/g, '$').replace(/\\%/g, '%')
 }
 function ch6RenderMath(text) {
   if (text == null) return null
@@ -8203,17 +8246,31 @@ function Ch7Frac({ num, den }) {
 function ch7_subOps(s) {
   return String(s)
     .replace(/\\times/g, '×').replace(/\\div/g, '÷')
-    .replace(/\\approx/g, '≈').replace(/\\to\b/g, '→')
-    .replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
-    .replace(/\\cdot/g, '·').replace(/\\pm/g, '±')
-    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ')
+    .replace(/\\approx/g, '≈').replace(/\\sim\b/g, '~')
+    .replace(/\\to\b/g, '→').replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
+    .replace(/\\ne\b/g, '≠').replace(/\\neq\b/g, '≠')
+    .replace(/\\cdot/g, '·').replace(/\\cdots/g, '⋯').replace(/\\pm/g, '±')
+    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ').replace(/\\Delta/g, 'Δ')
+    .replace(/\\alpha/g, 'α').replace(/\\beta/g, 'β').replace(/\\gamma/g, 'γ').replace(/\\delta/g, 'δ')
+    .replace(/\\mu\b/g, 'μ').replace(/\\sigma/g, 'σ').replace(/\\omega/g, 'ω')
+    .replace(/\\sum/g, '∑').replace(/\\prod/g, '∏').replace(/\\int/g, '∫')
+    .replace(/\\angle/g, '∠').replace(/\\triangle/g, '△').replace(/\\square/g, '□')
+    .replace(/\\infty/g, '∞')
     .replace(/\\sqrt\{([^{}]+)\}/g, '√($1)')
     .replace(/\\sqrt(\d+)/g, '√$1')
-    .replace(/\\ell\b/g, 'ℓ')
-    .replace(/\\circ/g, '°')
-    .replace(/\\u2113/g, 'ℓ')
-    .replace(/\\u00b0/g, '°')
-    .replace(/\\u2019/g, '’')
+    .replace(/\\ell\b/g, 'ℓ').replace(/\\circ/g, '°')
+    .replace(/\\sin\b/g, 'sin').replace(/\\cos\b/g, 'cos').replace(/\\tan\b/g, 'tan')
+    .replace(/\\log\b/g, 'log').replace(/\\ln\b/g, 'ln')
+    .replace(/\\left\(/g, '(').replace(/\\right\)/g, ')')
+    .replace(/\\left\[/g, '[').replace(/\\right\]/g, ']')
+    .replace(/\\u2208/g, '∈').replace(/\\u2209/g, '∉')
+    .replace(/\\u2205/g, '∅')
+    .replace(/\\u222a/g, '∪').replace(/\\u2229/g, '∩')
+    .replace(/\\u2286/g, '⊆').replace(/\\u2282/g, '⊂')
+    .replace(/\\u2113/g, 'ℓ').replace(/\\u00b0/g, '°')
+    .replace(/\\u2019/g, '’').replace(/\\u2032/g, '′').replace(/\\u2013/g, '–')
+    .replace(/\\u2660/g, '♠').replace(/\\u2663/g, '♣').replace(/\\u2665/g, '♥').replace(/\\u2666/g, '♦')
+    .replace(/\\dot\{(\d)\}/g, '$1̇')
     .replace(/\\\$/g, '$').replace(/\\%/g, '%')
 }
 function ch7RenderMath(text) {
@@ -9422,23 +9479,31 @@ function Ch8Frac({ num, den }) {
 function ch8_subOps(s) {
   return String(s)
     .replace(/\\times/g, '×').replace(/\\div/g, '÷')
-    .replace(/\\approx/g, '≈').replace(/\\to\b/g, '→')
-    .replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
-    .replace(/\\cdot/g, '·').replace(/\\pm/g, '±')
-    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ')
+    .replace(/\\approx/g, '≈').replace(/\\sim\b/g, '~')
+    .replace(/\\to\b/g, '→').replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
+    .replace(/\\ne\b/g, '≠').replace(/\\neq\b/g, '≠')
+    .replace(/\\cdot/g, '·').replace(/\\cdots/g, '⋯').replace(/\\pm/g, '±')
+    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ').replace(/\\Delta/g, 'Δ')
+    .replace(/\\alpha/g, 'α').replace(/\\beta/g, 'β').replace(/\\gamma/g, 'γ').replace(/\\delta/g, 'δ')
+    .replace(/\\mu\b/g, 'μ').replace(/\\sigma/g, 'σ').replace(/\\omega/g, 'ω')
+    .replace(/\\sum/g, '∑').replace(/\\prod/g, '∏').replace(/\\int/g, '∫')
+    .replace(/\\angle/g, '∠').replace(/\\triangle/g, '△').replace(/\\square/g, '□')
+    .replace(/\\infty/g, '∞')
     .replace(/\\sqrt\{([^{}]+)\}/g, '√($1)')
     .replace(/\\sqrt(\d+)/g, '√$1')
-    .replace(/\\ell\b/g, 'ℓ')
-    .replace(/\\circ/g, '°')
-    .replace(/\\u2113/g, 'ℓ')
-    .replace(/\\u00b0/g, '°')
-    .replace(/\\u2019/g, '’')
-    .replace(/\\u2032/g, '′')
-    .replace(/\\u2013/g, '–')
-    .replace(/\\u2660/g, '♠')
-    .replace(/\\u2663/g, '♣')
-    .replace(/\\u2665/g, '♥')
-    .replace(/\\u2666/g, '♦')
+    .replace(/\\ell\b/g, 'ℓ').replace(/\\circ/g, '°')
+    .replace(/\\sin\b/g, 'sin').replace(/\\cos\b/g, 'cos').replace(/\\tan\b/g, 'tan')
+    .replace(/\\log\b/g, 'log').replace(/\\ln\b/g, 'ln')
+    .replace(/\\left\(/g, '(').replace(/\\right\)/g, ')')
+    .replace(/\\left\[/g, '[').replace(/\\right\]/g, ']')
+    .replace(/\\u2208/g, '∈').replace(/\\u2209/g, '∉')
+    .replace(/\\u2205/g, '∅')
+    .replace(/\\u222a/g, '∪').replace(/\\u2229/g, '∩')
+    .replace(/\\u2286/g, '⊆').replace(/\\u2282/g, '⊂')
+    .replace(/\\u2113/g, 'ℓ').replace(/\\u00b0/g, '°')
+    .replace(/\\u2019/g, '’').replace(/\\u2032/g, '′').replace(/\\u2013/g, '–')
+    .replace(/\\u2660/g, '♠').replace(/\\u2663/g, '♣').replace(/\\u2665/g, '♥').replace(/\\u2666/g, '♦')
+    .replace(/\\dot\{(\d)\}/g, '$1̇')
     .replace(/\\\$/g, '$').replace(/\\%/g, '%')
 }
 function ch8RenderMath(text) {
@@ -10784,27 +10849,30 @@ function Ch9Frac({ num, den }) {
 function ch9_subOps(s) {
   return String(s)
     .replace(/\\times/g, '×').replace(/\\div/g, '÷')
-    .replace(/\\approx/g, '≈').replace(/\\to\b/g, '→')
-    .replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
-    .replace(/\\cdot/g, '·').replace(/\\pm/g, '±')
-    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ')
+    .replace(/\\approx/g, '≈').replace(/\\sim\b/g, '~')
+    .replace(/\\to\b/g, '→').replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
+    .replace(/\\ne\b/g, '≠').replace(/\\neq\b/g, '≠')
+    .replace(/\\cdot/g, '·').replace(/\\cdots/g, '⋯').replace(/\\pm/g, '±')
+    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ').replace(/\\Delta/g, 'Δ')
+    .replace(/\\alpha/g, 'α').replace(/\\beta/g, 'β').replace(/\\gamma/g, 'γ').replace(/\\delta/g, 'δ')
+    .replace(/\\mu\b/g, 'μ').replace(/\\sigma/g, 'σ').replace(/\\omega/g, 'ω')
+    .replace(/\\sum/g, '∑').replace(/\\prod/g, '∏').replace(/\\int/g, '∫')
+    .replace(/\\angle/g, '∠').replace(/\\triangle/g, '△').replace(/\\square/g, '□')
+    .replace(/\\infty/g, '∞')
     .replace(/\\sqrt\{([^{}]+)\}/g, '√($1)')
     .replace(/\\sqrt(\d+)/g, '√$1')
-    .replace(/\\ell\b/g, 'ℓ')
-    .replace(/\\circ/g, '°')
+    .replace(/\\ell\b/g, 'ℓ').replace(/\\circ/g, '°')
+    .replace(/\\sin\b/g, 'sin').replace(/\\cos\b/g, 'cos').replace(/\\tan\b/g, 'tan')
+    .replace(/\\log\b/g, 'log').replace(/\\ln\b/g, 'ln')
+    .replace(/\\left\(/g, '(').replace(/\\right\)/g, ')')
+    .replace(/\\left\[/g, '[').replace(/\\right\]/g, ']')
     .replace(/\\u2208/g, '∈').replace(/\\u2209/g, '∉')
     .replace(/\\u2205/g, '∅')
     .replace(/\\u222a/g, '∪').replace(/\\u2229/g, '∩')
     .replace(/\\u2286/g, '⊆').replace(/\\u2282/g, '⊂')
-    .replace(/\\u2113/g, 'ℓ')
-    .replace(/\\u00b0/g, '°')
-    .replace(/\\u2019/g, '’')
-    .replace(/\\u2032/g, '′')
-    .replace(/\\u2013/g, '–')
-    .replace(/\\u2660/g, '♠')
-    .replace(/\\u2663/g, '♣')
-    .replace(/\\u2665/g, '♥')
-    .replace(/\\u2666/g, '♦')
+    .replace(/\\u2113/g, 'ℓ').replace(/\\u00b0/g, '°')
+    .replace(/\\u2019/g, '’').replace(/\\u2032/g, '′').replace(/\\u2013/g, '–')
+    .replace(/\\u2660/g, '♠').replace(/\\u2663/g, '♣').replace(/\\u2665/g, '♥').replace(/\\u2666/g, '♦')
     .replace(/\\dot\{(\d)\}/g, '$1̇')
     .replace(/\\\$/g, '$').replace(/\\%/g, '%')
 }
@@ -12149,27 +12217,30 @@ function Ch10Frac({ num, den }) {
 function ch10_subOps(s) {
   return String(s)
     .replace(/\\times/g, '×').replace(/\\div/g, '÷')
-    .replace(/\\approx/g, '≈').replace(/\\to\b/g, '→')
-    .replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
-    .replace(/\\cdot/g, '·').replace(/\\pm/g, '±')
-    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ')
+    .replace(/\\approx/g, '≈').replace(/\\sim\b/g, '~')
+    .replace(/\\to\b/g, '→').replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
+    .replace(/\\ne\b/g, '≠').replace(/\\neq\b/g, '≠')
+    .replace(/\\cdot/g, '·').replace(/\\cdots/g, '⋯').replace(/\\pm/g, '±')
+    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ').replace(/\\Delta/g, 'Δ')
+    .replace(/\\alpha/g, 'α').replace(/\\beta/g, 'β').replace(/\\gamma/g, 'γ').replace(/\\delta/g, 'δ')
+    .replace(/\\mu\b/g, 'μ').replace(/\\sigma/g, 'σ').replace(/\\omega/g, 'ω')
+    .replace(/\\sum/g, '∑').replace(/\\prod/g, '∏').replace(/\\int/g, '∫')
+    .replace(/\\angle/g, '∠').replace(/\\triangle/g, '△').replace(/\\square/g, '□')
+    .replace(/\\infty/g, '∞')
     .replace(/\\sqrt\{([^{}]+)\}/g, '√($1)')
     .replace(/\\sqrt(\d+)/g, '√$1')
-    .replace(/\\ell\b/g, 'ℓ')
-    .replace(/\\circ/g, '°')
+    .replace(/\\ell\b/g, 'ℓ').replace(/\\circ/g, '°')
+    .replace(/\\sin\b/g, 'sin').replace(/\\cos\b/g, 'cos').replace(/\\tan\b/g, 'tan')
+    .replace(/\\log\b/g, 'log').replace(/\\ln\b/g, 'ln')
+    .replace(/\\left\(/g, '(').replace(/\\right\)/g, ')')
+    .replace(/\\left\[/g, '[').replace(/\\right\]/g, ']')
     .replace(/\\u2208/g, '∈').replace(/\\u2209/g, '∉')
     .replace(/\\u2205/g, '∅')
     .replace(/\\u222a/g, '∪').replace(/\\u2229/g, '∩')
     .replace(/\\u2286/g, '⊆').replace(/\\u2282/g, '⊂')
-    .replace(/\\u2113/g, 'ℓ')
-    .replace(/\\u00b0/g, '°')
-    .replace(/\\u2019/g, '’')
-    .replace(/\\u2032/g, '′')
-    .replace(/\\u2013/g, '–')
-    .replace(/\\u2660/g, '♠')
-    .replace(/\\u2663/g, '♣')
-    .replace(/\\u2665/g, '♥')
-    .replace(/\\u2666/g, '♦')
+    .replace(/\\u2113/g, 'ℓ').replace(/\\u00b0/g, '°')
+    .replace(/\\u2019/g, '’').replace(/\\u2032/g, '′').replace(/\\u2013/g, '–')
+    .replace(/\\u2660/g, '♠').replace(/\\u2663/g, '♣').replace(/\\u2665/g, '♥').replace(/\\u2666/g, '♦')
     .replace(/\\dot\{(\d)\}/g, '$1̇')
     .replace(/\\\$/g, '$').replace(/\\%/g, '%')
 }
@@ -13413,27 +13484,30 @@ function Ch11Frac({ num, den }) {
 function ch11_subOps(s) {
   return String(s)
     .replace(/\\times/g, '×').replace(/\\div/g, '÷')
-    .replace(/\\approx/g, '≈').replace(/\\to\b/g, '→')
-    .replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
-    .replace(/\\cdot/g, '·').replace(/\\pm/g, '±')
-    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ')
+    .replace(/\\approx/g, '≈').replace(/\\sim\b/g, '~')
+    .replace(/\\to\b/g, '→').replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
+    .replace(/\\ne\b/g, '≠').replace(/\\neq\b/g, '≠')
+    .replace(/\\cdot/g, '·').replace(/\\cdots/g, '⋯').replace(/\\pm/g, '±')
+    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ').replace(/\\Delta/g, 'Δ')
+    .replace(/\\alpha/g, 'α').replace(/\\beta/g, 'β').replace(/\\gamma/g, 'γ').replace(/\\delta/g, 'δ')
+    .replace(/\\mu\b/g, 'μ').replace(/\\sigma/g, 'σ').replace(/\\omega/g, 'ω')
+    .replace(/\\sum/g, '∑').replace(/\\prod/g, '∏').replace(/\\int/g, '∫')
+    .replace(/\\angle/g, '∠').replace(/\\triangle/g, '△').replace(/\\square/g, '□')
+    .replace(/\\infty/g, '∞')
     .replace(/\\sqrt\{([^{}]+)\}/g, '√($1)')
     .replace(/\\sqrt(\d+)/g, '√$1')
-    .replace(/\\ell\b/g, 'ℓ')
-    .replace(/\\circ/g, '°')
+    .replace(/\\ell\b/g, 'ℓ').replace(/\\circ/g, '°')
+    .replace(/\\sin\b/g, 'sin').replace(/\\cos\b/g, 'cos').replace(/\\tan\b/g, 'tan')
+    .replace(/\\log\b/g, 'log').replace(/\\ln\b/g, 'ln')
+    .replace(/\\left\(/g, '(').replace(/\\right\)/g, ')')
+    .replace(/\\left\[/g, '[').replace(/\\right\]/g, ']')
     .replace(/\\u2208/g, '∈').replace(/\\u2209/g, '∉')
     .replace(/\\u2205/g, '∅')
     .replace(/\\u222a/g, '∪').replace(/\\u2229/g, '∩')
     .replace(/\\u2286/g, '⊆').replace(/\\u2282/g, '⊂')
-    .replace(/\\u2113/g, 'ℓ')
-    .replace(/\\u00b0/g, '°')
-    .replace(/\\u2019/g, '’')
-    .replace(/\\u2032/g, '′')
-    .replace(/\\u2013/g, '–')
-    .replace(/\\u2660/g, '♠')
-    .replace(/\\u2663/g, '♣')
-    .replace(/\\u2665/g, '♥')
-    .replace(/\\u2666/g, '♦')
+    .replace(/\\u2113/g, 'ℓ').replace(/\\u00b0/g, '°')
+    .replace(/\\u2019/g, '’').replace(/\\u2032/g, '′').replace(/\\u2013/g, '–')
+    .replace(/\\u2660/g, '♠').replace(/\\u2663/g, '♣').replace(/\\u2665/g, '♥').replace(/\\u2666/g, '♦')
     .replace(/\\dot\{(\d)\}/g, '$1̇')
     .replace(/\\\$/g, '$').replace(/\\%/g, '%')
 }
@@ -14683,27 +14757,30 @@ function Ch12Frac({ num, den }) {
 function ch12_subOps(s) {
   return String(s)
     .replace(/\\times/g, '×').replace(/\\div/g, '÷')
-    .replace(/\\approx/g, '≈').replace(/\\to\b/g, '→')
-    .replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
-    .replace(/\\cdot/g, '·').replace(/\\pm/g, '±')
-    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ')
+    .replace(/\\approx/g, '≈').replace(/\\sim\b/g, '~')
+    .replace(/\\to\b/g, '→').replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
+    .replace(/\\ne\b/g, '≠').replace(/\\neq\b/g, '≠')
+    .replace(/\\cdot/g, '·').replace(/\\cdots/g, '⋯').replace(/\\pm/g, '±')
+    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ').replace(/\\Delta/g, 'Δ')
+    .replace(/\\alpha/g, 'α').replace(/\\beta/g, 'β').replace(/\\gamma/g, 'γ').replace(/\\delta/g, 'δ')
+    .replace(/\\mu\b/g, 'μ').replace(/\\sigma/g, 'σ').replace(/\\omega/g, 'ω')
+    .replace(/\\sum/g, '∑').replace(/\\prod/g, '∏').replace(/\\int/g, '∫')
+    .replace(/\\angle/g, '∠').replace(/\\triangle/g, '△').replace(/\\square/g, '□')
+    .replace(/\\infty/g, '∞')
     .replace(/\\sqrt\{([^{}]+)\}/g, '√($1)')
     .replace(/\\sqrt(\d+)/g, '√$1')
-    .replace(/\\ell\b/g, 'ℓ')
-    .replace(/\\circ/g, '°')
+    .replace(/\\ell\b/g, 'ℓ').replace(/\\circ/g, '°')
+    .replace(/\\sin\b/g, 'sin').replace(/\\cos\b/g, 'cos').replace(/\\tan\b/g, 'tan')
+    .replace(/\\log\b/g, 'log').replace(/\\ln\b/g, 'ln')
+    .replace(/\\left\(/g, '(').replace(/\\right\)/g, ')')
+    .replace(/\\left\[/g, '[').replace(/\\right\]/g, ']')
     .replace(/\\u2208/g, '∈').replace(/\\u2209/g, '∉')
     .replace(/\\u2205/g, '∅')
     .replace(/\\u222a/g, '∪').replace(/\\u2229/g, '∩')
     .replace(/\\u2286/g, '⊆').replace(/\\u2282/g, '⊂')
-    .replace(/\\u2113/g, 'ℓ')
-    .replace(/\\u00b0/g, '°')
-    .replace(/\\u2019/g, '’')
-    .replace(/\\u2032/g, '′')
-    .replace(/\\u2013/g, '–')
-    .replace(/\\u2660/g, '♠')
-    .replace(/\\u2663/g, '♣')
-    .replace(/\\u2665/g, '♥')
-    .replace(/\\u2666/g, '♦')
+    .replace(/\\u2113/g, 'ℓ').replace(/\\u00b0/g, '°')
+    .replace(/\\u2019/g, '’').replace(/\\u2032/g, '′').replace(/\\u2013/g, '–')
+    .replace(/\\u2660/g, '♠').replace(/\\u2663/g, '♣').replace(/\\u2665/g, '♥').replace(/\\u2666/g, '♦')
     .replace(/\\dot\{(\d)\}/g, '$1̇')
     .replace(/\\\$/g, '$').replace(/\\%/g, '%')
 }
@@ -15828,27 +15905,30 @@ function Ch13Frac({ num, den }) {
 function ch13_subOps(s) {
   return String(s)
     .replace(/\\times/g, '×').replace(/\\div/g, '÷')
-    .replace(/\\approx/g, '≈').replace(/\\to\b/g, '→')
-    .replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
-    .replace(/\\cdot/g, '·').replace(/\\pm/g, '±')
-    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ')
+    .replace(/\\approx/g, '≈').replace(/\\sim\b/g, '~')
+    .replace(/\\to\b/g, '→').replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
+    .replace(/\\ne\b/g, '≠').replace(/\\neq\b/g, '≠')
+    .replace(/\\cdot/g, '·').replace(/\\cdots/g, '⋯').replace(/\\pm/g, '±')
+    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ').replace(/\\Delta/g, 'Δ')
+    .replace(/\\alpha/g, 'α').replace(/\\beta/g, 'β').replace(/\\gamma/g, 'γ').replace(/\\delta/g, 'δ')
+    .replace(/\\mu\b/g, 'μ').replace(/\\sigma/g, 'σ').replace(/\\omega/g, 'ω')
+    .replace(/\\sum/g, '∑').replace(/\\prod/g, '∏').replace(/\\int/g, '∫')
+    .replace(/\\angle/g, '∠').replace(/\\triangle/g, '△').replace(/\\square/g, '□')
+    .replace(/\\infty/g, '∞')
     .replace(/\\sqrt\{([^{}]+)\}/g, '√($1)')
     .replace(/\\sqrt(\d+)/g, '√$1')
-    .replace(/\\ell\b/g, 'ℓ')
-    .replace(/\\circ/g, '°')
+    .replace(/\\ell\b/g, 'ℓ').replace(/\\circ/g, '°')
+    .replace(/\\sin\b/g, 'sin').replace(/\\cos\b/g, 'cos').replace(/\\tan\b/g, 'tan')
+    .replace(/\\log\b/g, 'log').replace(/\\ln\b/g, 'ln')
+    .replace(/\\left\(/g, '(').replace(/\\right\)/g, ')')
+    .replace(/\\left\[/g, '[').replace(/\\right\]/g, ']')
     .replace(/\\u2208/g, '∈').replace(/\\u2209/g, '∉')
     .replace(/\\u2205/g, '∅')
     .replace(/\\u222a/g, '∪').replace(/\\u2229/g, '∩')
     .replace(/\\u2286/g, '⊆').replace(/\\u2282/g, '⊂')
-    .replace(/\\u2113/g, 'ℓ')
-    .replace(/\\u00b0/g, '°')
-    .replace(/\\u2019/g, '’')
-    .replace(/\\u2032/g, '′')
-    .replace(/\\u2013/g, '–')
-    .replace(/\\u2660/g, '♠')
-    .replace(/\\u2663/g, '♣')
-    .replace(/\\u2665/g, '♥')
-    .replace(/\\u2666/g, '♦')
+    .replace(/\\u2113/g, 'ℓ').replace(/\\u00b0/g, '°')
+    .replace(/\\u2019/g, '’').replace(/\\u2032/g, '′').replace(/\\u2013/g, '–')
+    .replace(/\\u2660/g, '♠').replace(/\\u2663/g, '♣').replace(/\\u2665/g, '♥').replace(/\\u2666/g, '♦')
     .replace(/\\dot\{(\d)\}/g, '$1̇')
     .replace(/\\\$/g, '$').replace(/\\%/g, '%')
 }
@@ -17082,27 +17162,30 @@ function Ch14Frac({ num, den }) {
 function ch14_subOps(s) {
   return String(s)
     .replace(/\\times/g, '×').replace(/\\div/g, '÷')
-    .replace(/\\approx/g, '≈').replace(/\\to\b/g, '→')
-    .replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
-    .replace(/\\cdot/g, '·').replace(/\\pm/g, '±')
-    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ')
+    .replace(/\\approx/g, '≈').replace(/\\sim\b/g, '~')
+    .replace(/\\to\b/g, '→').replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
+    .replace(/\\ne\b/g, '≠').replace(/\\neq\b/g, '≠')
+    .replace(/\\cdot/g, '·').replace(/\\cdots/g, '⋯').replace(/\\pm/g, '±')
+    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ').replace(/\\Delta/g, 'Δ')
+    .replace(/\\alpha/g, 'α').replace(/\\beta/g, 'β').replace(/\\gamma/g, 'γ').replace(/\\delta/g, 'δ')
+    .replace(/\\mu\b/g, 'μ').replace(/\\sigma/g, 'σ').replace(/\\omega/g, 'ω')
+    .replace(/\\sum/g, '∑').replace(/\\prod/g, '∏').replace(/\\int/g, '∫')
+    .replace(/\\angle/g, '∠').replace(/\\triangle/g, '△').replace(/\\square/g, '□')
+    .replace(/\\infty/g, '∞')
     .replace(/\\sqrt\{([^{}]+)\}/g, '√($1)')
     .replace(/\\sqrt(\d+)/g, '√$1')
-    .replace(/\\ell\b/g, 'ℓ')
-    .replace(/\\circ/g, '°')
+    .replace(/\\ell\b/g, 'ℓ').replace(/\\circ/g, '°')
+    .replace(/\\sin\b/g, 'sin').replace(/\\cos\b/g, 'cos').replace(/\\tan\b/g, 'tan')
+    .replace(/\\log\b/g, 'log').replace(/\\ln\b/g, 'ln')
+    .replace(/\\left\(/g, '(').replace(/\\right\)/g, ')')
+    .replace(/\\left\[/g, '[').replace(/\\right\]/g, ']')
     .replace(/\\u2208/g, '∈').replace(/\\u2209/g, '∉')
     .replace(/\\u2205/g, '∅')
     .replace(/\\u222a/g, '∪').replace(/\\u2229/g, '∩')
     .replace(/\\u2286/g, '⊆').replace(/\\u2282/g, '⊂')
-    .replace(/\\u2113/g, 'ℓ')
-    .replace(/\\u00b0/g, '°')
-    .replace(/\\u2019/g, '’')
-    .replace(/\\u2032/g, '′')
-    .replace(/\\u2013/g, '–')
-    .replace(/\\u2660/g, '♠')
-    .replace(/\\u2663/g, '♣')
-    .replace(/\\u2665/g, '♥')
-    .replace(/\\u2666/g, '♦')
+    .replace(/\\u2113/g, 'ℓ').replace(/\\u00b0/g, '°')
+    .replace(/\\u2019/g, '’').replace(/\\u2032/g, '′').replace(/\\u2013/g, '–')
+    .replace(/\\u2660/g, '♠').replace(/\\u2663/g, '♣').replace(/\\u2665/g, '♥').replace(/\\u2666/g, '♦')
     .replace(/\\dot\{(\d)\}/g, '$1̇')
     .replace(/\\\$/g, '$').replace(/\\%/g, '%')
 }
@@ -18427,27 +18510,30 @@ function Ch15Frac({ num, den }) {
 function ch15_subOps(s) {
   return String(s)
     .replace(/\\times/g, '×').replace(/\\div/g, '÷')
-    .replace(/\\approx/g, '≈').replace(/\\to\b/g, '→')
-    .replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
-    .replace(/\\cdot/g, '·').replace(/\\pm/g, '±')
-    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ')
+    .replace(/\\approx/g, '≈').replace(/\\sim\b/g, '~')
+    .replace(/\\to\b/g, '→').replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
+    .replace(/\\ne\b/g, '≠').replace(/\\neq\b/g, '≠')
+    .replace(/\\cdot/g, '·').replace(/\\cdots/g, '⋯').replace(/\\pm/g, '±')
+    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ').replace(/\\Delta/g, 'Δ')
+    .replace(/\\alpha/g, 'α').replace(/\\beta/g, 'β').replace(/\\gamma/g, 'γ').replace(/\\delta/g, 'δ')
+    .replace(/\\mu\b/g, 'μ').replace(/\\sigma/g, 'σ').replace(/\\omega/g, 'ω')
+    .replace(/\\sum/g, '∑').replace(/\\prod/g, '∏').replace(/\\int/g, '∫')
+    .replace(/\\angle/g, '∠').replace(/\\triangle/g, '△').replace(/\\square/g, '□')
+    .replace(/\\infty/g, '∞')
     .replace(/\\sqrt\{([^{}]+)\}/g, '√($1)')
     .replace(/\\sqrt(\d+)/g, '√$1')
-    .replace(/\\ell\b/g, 'ℓ')
-    .replace(/\\circ/g, '°')
+    .replace(/\\ell\b/g, 'ℓ').replace(/\\circ/g, '°')
+    .replace(/\\sin\b/g, 'sin').replace(/\\cos\b/g, 'cos').replace(/\\tan\b/g, 'tan')
+    .replace(/\\log\b/g, 'log').replace(/\\ln\b/g, 'ln')
+    .replace(/\\left\(/g, '(').replace(/\\right\)/g, ')')
+    .replace(/\\left\[/g, '[').replace(/\\right\]/g, ']')
     .replace(/\\u2208/g, '∈').replace(/\\u2209/g, '∉')
     .replace(/\\u2205/g, '∅')
     .replace(/\\u222a/g, '∪').replace(/\\u2229/g, '∩')
     .replace(/\\u2286/g, '⊆').replace(/\\u2282/g, '⊂')
-    .replace(/\\u2113/g, 'ℓ')
-    .replace(/\\u00b0/g, '°')
-    .replace(/\\u2019/g, '’')
-    .replace(/\\u2032/g, '′')
-    .replace(/\\u2013/g, '–')
-    .replace(/\\u2660/g, '♠')
-    .replace(/\\u2663/g, '♣')
-    .replace(/\\u2665/g, '♥')
-    .replace(/\\u2666/g, '♦')
+    .replace(/\\u2113/g, 'ℓ').replace(/\\u00b0/g, '°')
+    .replace(/\\u2019/g, '’').replace(/\\u2032/g, '′').replace(/\\u2013/g, '–')
+    .replace(/\\u2660/g, '♠').replace(/\\u2663/g, '♣').replace(/\\u2665/g, '♥').replace(/\\u2666/g, '♦')
     .replace(/\\dot\{(\d)\}/g, '$1̇')
     .replace(/\\\$/g, '$').replace(/\\%/g, '%')
 }
@@ -19404,27 +19490,30 @@ function Ch16Frac({ num, den }) {
 function ch16_subOps(s) {
   return String(s)
     .replace(/\\times/g, '×').replace(/\\div/g, '÷')
-    .replace(/\\approx/g, '≈').replace(/\\to\b/g, '→')
-    .replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
-    .replace(/\\cdot/g, '·').replace(/\\pm/g, '±')
-    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ')
+    .replace(/\\approx/g, '≈').replace(/\\sim\b/g, '~')
+    .replace(/\\to\b/g, '→').replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
+    .replace(/\\ne\b/g, '≠').replace(/\\neq\b/g, '≠')
+    .replace(/\\cdot/g, '·').replace(/\\cdots/g, '⋯').replace(/\\pm/g, '±')
+    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ').replace(/\\Delta/g, 'Δ')
+    .replace(/\\alpha/g, 'α').replace(/\\beta/g, 'β').replace(/\\gamma/g, 'γ').replace(/\\delta/g, 'δ')
+    .replace(/\\mu\b/g, 'μ').replace(/\\sigma/g, 'σ').replace(/\\omega/g, 'ω')
+    .replace(/\\sum/g, '∑').replace(/\\prod/g, '∏').replace(/\\int/g, '∫')
+    .replace(/\\angle/g, '∠').replace(/\\triangle/g, '△').replace(/\\square/g, '□')
+    .replace(/\\infty/g, '∞')
     .replace(/\\sqrt\{([^{}]+)\}/g, '√($1)')
     .replace(/\\sqrt(\d+)/g, '√$1')
-    .replace(/\\ell\b/g, 'ℓ')
-    .replace(/\\circ/g, '°')
+    .replace(/\\ell\b/g, 'ℓ').replace(/\\circ/g, '°')
+    .replace(/\\sin\b/g, 'sin').replace(/\\cos\b/g, 'cos').replace(/\\tan\b/g, 'tan')
+    .replace(/\\log\b/g, 'log').replace(/\\ln\b/g, 'ln')
+    .replace(/\\left\(/g, '(').replace(/\\right\)/g, ')')
+    .replace(/\\left\[/g, '[').replace(/\\right\]/g, ']')
     .replace(/\\u2208/g, '∈').replace(/\\u2209/g, '∉')
     .replace(/\\u2205/g, '∅')
     .replace(/\\u222a/g, '∪').replace(/\\u2229/g, '∩')
     .replace(/\\u2286/g, '⊆').replace(/\\u2282/g, '⊂')
-    .replace(/\\u2113/g, 'ℓ')
-    .replace(/\\u00b0/g, '°')
-    .replace(/\\u2019/g, '’')
-    .replace(/\\u2032/g, '′')
-    .replace(/\\u2013/g, '–')
-    .replace(/\\u2660/g, '♠')
-    .replace(/\\u2663/g, '♣')
-    .replace(/\\u2665/g, '♥')
-    .replace(/\\u2666/g, '♦')
+    .replace(/\\u2113/g, 'ℓ').replace(/\\u00b0/g, '°')
+    .replace(/\\u2019/g, '’').replace(/\\u2032/g, '′').replace(/\\u2013/g, '–')
+    .replace(/\\u2660/g, '♠').replace(/\\u2663/g, '♣').replace(/\\u2665/g, '♥').replace(/\\u2666/g, '♦')
     .replace(/\\dot\{(\d)\}/g, '$1̇')
     .replace(/\\\$/g, '$').replace(/\\%/g, '%')
 }
@@ -20554,27 +20643,30 @@ function Ch17Frac({ num, den }) {
 function ch17_subOps(s) {
   return String(s)
     .replace(/\\times/g, '×').replace(/\\div/g, '÷')
-    .replace(/\\approx/g, '≈').replace(/\\to\b/g, '→')
-    .replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
-    .replace(/\\cdot/g, '·').replace(/\\pm/g, '±')
-    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ')
+    .replace(/\\approx/g, '≈').replace(/\\sim\b/g, '~')
+    .replace(/\\to\b/g, '→').replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
+    .replace(/\\ne\b/g, '≠').replace(/\\neq\b/g, '≠')
+    .replace(/\\cdot/g, '·').replace(/\\cdots/g, '⋯').replace(/\\pm/g, '±')
+    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ').replace(/\\Delta/g, 'Δ')
+    .replace(/\\alpha/g, 'α').replace(/\\beta/g, 'β').replace(/\\gamma/g, 'γ').replace(/\\delta/g, 'δ')
+    .replace(/\\mu\b/g, 'μ').replace(/\\sigma/g, 'σ').replace(/\\omega/g, 'ω')
+    .replace(/\\sum/g, '∑').replace(/\\prod/g, '∏').replace(/\\int/g, '∫')
+    .replace(/\\angle/g, '∠').replace(/\\triangle/g, '△').replace(/\\square/g, '□')
+    .replace(/\\infty/g, '∞')
     .replace(/\\sqrt\{([^{}]+)\}/g, '√($1)')
     .replace(/\\sqrt(\d+)/g, '√$1')
-    .replace(/\\ell\b/g, 'ℓ')
-    .replace(/\\circ/g, '°')
+    .replace(/\\ell\b/g, 'ℓ').replace(/\\circ/g, '°')
+    .replace(/\\sin\b/g, 'sin').replace(/\\cos\b/g, 'cos').replace(/\\tan\b/g, 'tan')
+    .replace(/\\log\b/g, 'log').replace(/\\ln\b/g, 'ln')
+    .replace(/\\left\(/g, '(').replace(/\\right\)/g, ')')
+    .replace(/\\left\[/g, '[').replace(/\\right\]/g, ']')
     .replace(/\\u2208/g, '∈').replace(/\\u2209/g, '∉')
     .replace(/\\u2205/g, '∅')
     .replace(/\\u222a/g, '∪').replace(/\\u2229/g, '∩')
     .replace(/\\u2286/g, '⊆').replace(/\\u2282/g, '⊂')
-    .replace(/\\u2113/g, 'ℓ')
-    .replace(/\\u00b0/g, '°')
-    .replace(/\\u2019/g, '’')
-    .replace(/\\u2032/g, '′')
-    .replace(/\\u2013/g, '–')
-    .replace(/\\u2660/g, '♠')
-    .replace(/\\u2663/g, '♣')
-    .replace(/\\u2665/g, '♥')
-    .replace(/\\u2666/g, '♦')
+    .replace(/\\u2113/g, 'ℓ').replace(/\\u00b0/g, '°')
+    .replace(/\\u2019/g, '’').replace(/\\u2032/g, '′').replace(/\\u2013/g, '–')
+    .replace(/\\u2660/g, '♠').replace(/\\u2663/g, '♣').replace(/\\u2665/g, '♥').replace(/\\u2666/g, '♦')
     .replace(/\\dot\{(\d)\}/g, '$1̇')
     .replace(/\\\$/g, '$').replace(/\\%/g, '%')
 }
@@ -21890,27 +21982,30 @@ function Ch18Frac({ num, den }) {
 function ch18_subOps(s) {
   return String(s)
     .replace(/\\times/g, '×').replace(/\\div/g, '÷')
-    .replace(/\\approx/g, '≈').replace(/\\to\b/g, '→')
-    .replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
-    .replace(/\\cdot/g, '·').replace(/\\pm/g, '±')
-    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ')
+    .replace(/\\approx/g, '≈').replace(/\\sim\b/g, '~')
+    .replace(/\\to\b/g, '→').replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
+    .replace(/\\ne\b/g, '≠').replace(/\\neq\b/g, '≠')
+    .replace(/\\cdot/g, '·').replace(/\\cdots/g, '⋯').replace(/\\pm/g, '±')
+    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ').replace(/\\Delta/g, 'Δ')
+    .replace(/\\alpha/g, 'α').replace(/\\beta/g, 'β').replace(/\\gamma/g, 'γ').replace(/\\delta/g, 'δ')
+    .replace(/\\mu\b/g, 'μ').replace(/\\sigma/g, 'σ').replace(/\\omega/g, 'ω')
+    .replace(/\\sum/g, '∑').replace(/\\prod/g, '∏').replace(/\\int/g, '∫')
+    .replace(/\\angle/g, '∠').replace(/\\triangle/g, '△').replace(/\\square/g, '□')
+    .replace(/\\infty/g, '∞')
     .replace(/\\sqrt\{([^{}]+)\}/g, '√($1)')
     .replace(/\\sqrt(\d+)/g, '√$1')
-    .replace(/\\ell\b/g, 'ℓ')
-    .replace(/\\circ/g, '°')
+    .replace(/\\ell\b/g, 'ℓ').replace(/\\circ/g, '°')
+    .replace(/\\sin\b/g, 'sin').replace(/\\cos\b/g, 'cos').replace(/\\tan\b/g, 'tan')
+    .replace(/\\log\b/g, 'log').replace(/\\ln\b/g, 'ln')
+    .replace(/\\left\(/g, '(').replace(/\\right\)/g, ')')
+    .replace(/\\left\[/g, '[').replace(/\\right\]/g, ']')
     .replace(/\\u2208/g, '∈').replace(/\\u2209/g, '∉')
     .replace(/\\u2205/g, '∅')
     .replace(/\\u222a/g, '∪').replace(/\\u2229/g, '∩')
     .replace(/\\u2286/g, '⊆').replace(/\\u2282/g, '⊂')
-    .replace(/\\u2113/g, 'ℓ')
-    .replace(/\\u00b0/g, '°')
-    .replace(/\\u2019/g, '’')
-    .replace(/\\u2032/g, '′')
-    .replace(/\\u2013/g, '–')
-    .replace(/\\u2660/g, '♠')
-    .replace(/\\u2663/g, '♣')
-    .replace(/\\u2665/g, '♥')
-    .replace(/\\u2666/g, '♦')
+    .replace(/\\u2113/g, 'ℓ').replace(/\\u00b0/g, '°')
+    .replace(/\\u2019/g, '’').replace(/\\u2032/g, '′').replace(/\\u2013/g, '–')
+    .replace(/\\u2660/g, '♠').replace(/\\u2663/g, '♣').replace(/\\u2665/g, '♥').replace(/\\u2666/g, '♦')
     .replace(/\\dot\{(\d)\}/g, '$1̇')
     .replace(/\\\$/g, '$').replace(/\\%/g, '%')
 }
@@ -23044,27 +23139,30 @@ function Ch19Frac({ num, den }) {
 function ch19_subOps(s) {
   return String(s)
     .replace(/\\times/g, '×').replace(/\\div/g, '÷')
-    .replace(/\\approx/g, '≈').replace(/\\to\b/g, '→')
-    .replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
-    .replace(/\\cdot/g, '·').replace(/\\pm/g, '±')
-    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ')
+    .replace(/\\approx/g, '≈').replace(/\\sim\b/g, '~')
+    .replace(/\\to\b/g, '→').replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
+    .replace(/\\ne\b/g, '≠').replace(/\\neq\b/g, '≠')
+    .replace(/\\cdot/g, '·').replace(/\\cdots/g, '⋯').replace(/\\pm/g, '±')
+    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ').replace(/\\Delta/g, 'Δ')
+    .replace(/\\alpha/g, 'α').replace(/\\beta/g, 'β').replace(/\\gamma/g, 'γ').replace(/\\delta/g, 'δ')
+    .replace(/\\mu\b/g, 'μ').replace(/\\sigma/g, 'σ').replace(/\\omega/g, 'ω')
+    .replace(/\\sum/g, '∑').replace(/\\prod/g, '∏').replace(/\\int/g, '∫')
+    .replace(/\\angle/g, '∠').replace(/\\triangle/g, '△').replace(/\\square/g, '□')
+    .replace(/\\infty/g, '∞')
     .replace(/\\sqrt\{([^{}]+)\}/g, '√($1)')
     .replace(/\\sqrt(\d+)/g, '√$1')
-    .replace(/\\ell\b/g, 'ℓ')
-    .replace(/\\circ/g, '°')
+    .replace(/\\ell\b/g, 'ℓ').replace(/\\circ/g, '°')
+    .replace(/\\sin\b/g, 'sin').replace(/\\cos\b/g, 'cos').replace(/\\tan\b/g, 'tan')
+    .replace(/\\log\b/g, 'log').replace(/\\ln\b/g, 'ln')
+    .replace(/\\left\(/g, '(').replace(/\\right\)/g, ')')
+    .replace(/\\left\[/g, '[').replace(/\\right\]/g, ']')
     .replace(/\\u2208/g, '∈').replace(/\\u2209/g, '∉')
     .replace(/\\u2205/g, '∅')
     .replace(/\\u222a/g, '∪').replace(/\\u2229/g, '∩')
     .replace(/\\u2286/g, '⊆').replace(/\\u2282/g, '⊂')
-    .replace(/\\u2113/g, 'ℓ')
-    .replace(/\\u00b0/g, '°')
-    .replace(/\\u2019/g, '’')
-    .replace(/\\u2032/g, '′')
-    .replace(/\\u2013/g, '–')
-    .replace(/\\u2660/g, '♠')
-    .replace(/\\u2663/g, '♣')
-    .replace(/\\u2665/g, '♥')
-    .replace(/\\u2666/g, '♦')
+    .replace(/\\u2113/g, 'ℓ').replace(/\\u00b0/g, '°')
+    .replace(/\\u2019/g, '’').replace(/\\u2032/g, '′').replace(/\\u2013/g, '–')
+    .replace(/\\u2660/g, '♠').replace(/\\u2663/g, '♣').replace(/\\u2665/g, '♥').replace(/\\u2666/g, '♦')
     .replace(/\\dot\{(\d)\}/g, '$1̇')
     .replace(/\\\$/g, '$').replace(/\\%/g, '%')
 }
@@ -24105,27 +24203,30 @@ function Ch20Frac({ num, den }) {
 function ch20_subOps(s) {
   return String(s)
     .replace(/\\times/g, '×').replace(/\\div/g, '÷')
-    .replace(/\\approx/g, '≈').replace(/\\to\b/g, '→')
-    .replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
-    .replace(/\\cdot/g, '·').replace(/\\pm/g, '±')
-    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ')
+    .replace(/\\approx/g, '≈').replace(/\\sim\b/g, '~')
+    .replace(/\\to\b/g, '→').replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
+    .replace(/\\ne\b/g, '≠').replace(/\\neq\b/g, '≠')
+    .replace(/\\cdot/g, '·').replace(/\\cdots/g, '⋯').replace(/\\pm/g, '±')
+    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ').replace(/\\Delta/g, 'Δ')
+    .replace(/\\alpha/g, 'α').replace(/\\beta/g, 'β').replace(/\\gamma/g, 'γ').replace(/\\delta/g, 'δ')
+    .replace(/\\mu\b/g, 'μ').replace(/\\sigma/g, 'σ').replace(/\\omega/g, 'ω')
+    .replace(/\\sum/g, '∑').replace(/\\prod/g, '∏').replace(/\\int/g, '∫')
+    .replace(/\\angle/g, '∠').replace(/\\triangle/g, '△').replace(/\\square/g, '□')
+    .replace(/\\infty/g, '∞')
     .replace(/\\sqrt\{([^{}]+)\}/g, '√($1)')
     .replace(/\\sqrt(\d+)/g, '√$1')
-    .replace(/\\ell\b/g, 'ℓ')
-    .replace(/\\circ/g, '°')
+    .replace(/\\ell\b/g, 'ℓ').replace(/\\circ/g, '°')
+    .replace(/\\sin\b/g, 'sin').replace(/\\cos\b/g, 'cos').replace(/\\tan\b/g, 'tan')
+    .replace(/\\log\b/g, 'log').replace(/\\ln\b/g, 'ln')
+    .replace(/\\left\(/g, '(').replace(/\\right\)/g, ')')
+    .replace(/\\left\[/g, '[').replace(/\\right\]/g, ']')
     .replace(/\\u2208/g, '∈').replace(/\\u2209/g, '∉')
     .replace(/\\u2205/g, '∅')
     .replace(/\\u222a/g, '∪').replace(/\\u2229/g, '∩')
     .replace(/\\u2286/g, '⊆').replace(/\\u2282/g, '⊂')
-    .replace(/\\u2113/g, 'ℓ')
-    .replace(/\\u00b0/g, '°')
-    .replace(/\\u2019/g, '’')
-    .replace(/\\u2032/g, '′')
-    .replace(/\\u2013/g, '–')
-    .replace(/\\u2660/g, '♠')
-    .replace(/\\u2663/g, '♣')
-    .replace(/\\u2665/g, '♥')
-    .replace(/\\u2666/g, '♦')
+    .replace(/\\u2113/g, 'ℓ').replace(/\\u00b0/g, '°')
+    .replace(/\\u2019/g, '’').replace(/\\u2032/g, '′').replace(/\\u2013/g, '–')
+    .replace(/\\u2660/g, '♠').replace(/\\u2663/g, '♣').replace(/\\u2665/g, '♥').replace(/\\u2666/g, '♦')
     .replace(/\\dot\{(\d)\}/g, '$1̇')
     .replace(/\\\$/g, '$').replace(/\\%/g, '%')
 }
@@ -24589,6 +24690,2369 @@ function Chapter20App({ onBack }) {
   )
 }
 
+/* =====================================================================
+ *  Chapter21App — Cambridge IGCSE Chapter 21 (Straight Lines Sequences, Surds and Sets Quadratic Equations)
+ *
+ *  Mounted at /chapter9. Same UX as Chapter5App–Chapter8App: ordered
+ *  chain of lessons, every one unlocked from the start, slider to jump
+ *  questions, MCQ with 1-9 keys + fill-in fallbacks, 5s auto-advance,
+ *  completed lessons go green (with readable text), wrong answers
+ *  appended to END of playList. See Tenali/skills/igcse-chapter/SKILL.md
+ *  for the full pattern.
+ * ===================================================================== */
+
+const CH21_OPTION_LABEL = ['1','2','3','4','5','6','7','8','9']
+
+function ch21_seededShuffle(n, key) {
+  let h = 2166136261
+  for (let i = 0; i < key.length; i++) { h ^= key.charCodeAt(i); h = Math.imul(h, 16777619) }
+  const rand = () => { h = Math.imul(h ^ (h >>> 15), 2246822507); h = Math.imul(h ^ (h >>> 13), 3266489909); return ((h ^= h >>> 16) >>> 0) / 4294967295 }
+  const arr = Array.from({ length: n }, (_, i) => i)
+  for (let i = n - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]] }
+  return arr
+}
+
+function ch21_gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { [a, b] = [b, a % b] } return a || 1 }
+function ch21_reduce(n, d) {
+  if (d === 0) return null
+  if (d < 0) { n = -n; d = -d }
+  const g = ch21_gcd(n, d)
+  return { n: n / g, d: d / g }
+}
+function ch21_parseFrac(raw) {
+  if (raw == null) return null
+  let s = String(raw).trim().replace(/\\frac\{(-?\d+)\}\{(-?\d+)\}/g, '$1/$2').replace(/\s+/g, ' ').replace(/–/g, '-')
+  if (!s) return null
+  const mixed = s.match(/^(-?)(\d+)\s+(\d+)\s*\/\s*(\d+)$/)
+  if (mixed) {
+    const sign = mixed[1] === '-' ? -1 : 1
+    const w = +mixed[2], n = +mixed[3], d = +mixed[4]
+    if (d === 0) return null
+    return ch21_reduce(sign * (w * d + n), d)
+  }
+  const frac = s.match(/^(-?\d+)\s*\/\s*(-?\d+)$/)
+  if (frac) {
+    const n = +frac[1], d = +frac[2]
+    if (d === 0) return null
+    return ch21_reduce(n, d)
+  }
+  const num = Number(s)
+  if (Number.isFinite(num)) {
+    if (Number.isInteger(num)) return { n: num, d: 1 }
+    const sign = num < 0 ? -1 : 1
+    const decimals = (s.split('.')[1] || '').length
+    const denom = Math.pow(10, decimals)
+    return ch21_reduce(sign * Math.round(Math.abs(num) * denom), denom)
+  }
+  return null
+}
+function ch21_fracEqual(a, b) { return a && b && a.n === b.n && a.d === b.d }
+function ch21_normalizeNumStr(s) {
+  return String(s).trim().replace(/[$,\s%]/g, '').replace(/–/g, '-')
+}
+function ch21_numEqual(user, expected, tol) {
+  const u = parseFloat(ch21_normalizeNumStr(user))
+  if (!Number.isFinite(u)) return false
+  const t = tol != null ? tol : Math.max(0.005, Math.abs(expected) * 0.005)
+  return Math.abs(u - expected) <= t
+}
+
+function ch21_checkFill(q, raw) {
+  if (!raw || !raw.trim()) return false
+  switch (q.kind) {
+    case 'fill-num': return ch21_numEqual(raw, q.answer, q.tol)
+    case 'fill-frac': {
+      const u = ch21_parseFrac(raw)
+      const e = ch21_parseFrac(q.answer)
+      return ch21_fracEqual(u, e)
+    }
+    case 'fill-text': return raw.trim().toLowerCase() === String(q.answer).trim().toLowerCase()
+    default: return false
+  }
+}
+
+// --- Lesson catalogue ---------------------------------------------------
+// Cambridge IGCSE Chapter 21 — Straight Lines Sequences, Surds and Sets Quadratic Equations
+// Sections covered: 13.1 Units (length, mass, capacity, area/volume); 13.2 Time (12/24-hour, durations, timetables); 13.3 Limits of accuracy and bounds; 13.4 Conversion graphs; 13.5 Currency. See uploads PDF p. 412-438.
+// nth terms, special sequences, subscript notation); 9.2 Rational and
+// irrational numbers (inc. recurring decimals → fractions); 9.3 Surds
+// (simplify, +/-, ×/÷, rationalise); 9.4 Sets (notation, ∪/∩/⊂, Venn,
+// set builder). See uploads PDF p. 265-311.
+const CH21_LESSONS = [
+  {
+    id: 'L1',
+    title: 'Lesson 1 · Simplifying ratios',
+    teach: {
+      heading: 'Divide each part by the HCF',
+      body: [
+        'A RATIO compares two (or more) quantities of the SAME UNIT.',
+        'To SIMPLIFY a ratio: divide each part by the HCF (highest common factor) of all parts. Same as simplifying a fraction.',
+        'a : b is in simplest form when HCF(a, b) = 1.',
+        'For three-part ratios, do the same — divide every part by the common HCF.',
+        'Always convert to the SAME UNITS first if the parts have different units (e.g. cm and m).',
+      ],
+      example: '20 : 30 \\to divide both by 10 \\to 2 : 3. 25 min : 3 min in same unit \\to 25 : 3 (already simplified).',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'Simplify 20 : 30.',
+        options: ['2 : 3', '4 : 6', '10 : 15', '20 : 30'], correct: 0,
+        solution: 'HCF = 10.' },
+      { kind: 'mcq', prompt: 'Simplify 12 : 8.',
+        options: ['3 : 2', '6 : 4', '12 : 8', '4 : 3'], correct: 0,
+        solution: 'HCF = 4.' },
+      { kind: 'mcq', prompt: 'Simplify 25 minutes : 3 minutes.',
+        options: ['25 : 3', '5 : 1', '50 : 6', '12.5 : 1.5'], correct: 0,
+        solution: 'HCF(25, 3) = 1; already in simplest form.' },
+      { kind: 'mcq', prompt: 'Simplify 18 : 24 : 30.',
+        options: ['3 : 4 : 5', '6 : 8 : 10', '9 : 12 : 15', '18 : 24 : 30'], correct: 0,
+        solution: 'HCF = 6.' },
+      { kind: 'mcq', prompt: 'Simplify 15 cm : $1 — meaningful?',
+        options: ['No — different units do not form a ratio', 'Yes 15 : 1', 'Yes 1 : 15', 'Need conversion'], correct: 0,
+        solution: 'Ratios compare same kind of quantity.' },
+      { kind: 'mcq', prompt: 'Simplify 1 m : 50 cm.',
+        options: ['2 : 1', '1 : 50', '50 : 1', '100 : 50'], correct: 0,
+        solution: 'Convert: 100 cm : 50 cm \\to 2 : 1.' },
+      { kind: 'mcq', prompt: 'Simplify 9 nine children to one of nine adults: 9 : 9.',
+        options: ['1 : 1', '9 : 9', '3 : 3', '0 : 0'], correct: 0,
+        solution: 'Equal.' },
+      { kind: 'mcq', prompt: 'Simplify 18 sec to one minute.',
+        options: ['18 : 60 \\to 3 : 10', '1 : 1', '60 : 18', '3 : 1'], correct: 0,
+        solution: 'Same unit; HCF 6.' },
+      { kind: 'mcq', prompt: 'Simplify 10 kg of sand for every 4 bags of gravel and 8 bags of cement (i.e. 10 : 4 : 8).',
+        options: ['5 : 2 : 4', '10 : 4 : 8', '5 : 4 : 8', '1 : 1 : 1'], correct: 0,
+        solution: 'HCF = 2.' },
+      { kind: 'fill-frac', prompt: 'Simplify 56 : 64 (give as a/b in simplest form).', answer: '7/8',
+        solution: 'HCF = 8.' },
+    ],
+  },
+  {
+    id: 'L2',
+    title: 'Lesson 2 · Sharing in a given ratio',
+    teach: {
+      heading: 'Total the parts; each share = (its parts × total) ÷ total parts',
+      body: [
+        'To SHARE an amount in a given ratio:',
+        '1. Add the parts of the ratio to find the TOTAL number of parts.',
+        '2. The amount per part = (total amount) / (total parts).',
+        '3. Multiply each share by its number of parts.',
+        'Always check that your shares add up to the original total.',
+      ],
+      example: 'Share $40 in ratio 3 : 5. Total parts = 8. Per part = $5. Shares: $15 and $25.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'Share $40 in ratio 3 : 5.',
+        options: ['$15 and $25', '$10 and $30', '$8 and $32', '$20 and $20'], correct: 0,
+        solution: '$5 per part \\times 3 and 5.' },
+      { kind: 'mcq', prompt: 'Share 60 sweets in ratio 2 : 3.',
+        options: ['24 and 36', '20 and 40', '30 and 30', '12 and 18'], correct: 0,
+        solution: 'Per part = 12.' },
+      { kind: 'mcq', prompt: 'Share 100 in ratio 1 : 4.',
+        options: ['20 and 80', '25 and 75', '10 and 90', '50 and 50'], correct: 0,
+        solution: 'Per part = 20.' },
+      { kind: 'mcq', prompt: 'Share $120 in ratio 1 : 2 : 3.',
+        options: ['$20, $40, $60', '$30, $40, $50', '$40, $40, $40', '$10, $20, $90'], correct: 0,
+        solution: 'Per part = 20.' },
+      { kind: 'mcq', prompt: 'Joe and Ahmed share marbles in 3 : 4 ratio. Joe has 45. How many do they have together?',
+        options: ['105', '60', '90', '180'], correct: 0,
+        solution: 'Per part = 45/3 = 15; total 7 parts.' },
+      { kind: 'mcq', prompt: 'Same. How many does Ahmed have?',
+        options: ['60', '45', '30', '90'], correct: 0,
+        solution: '4 × 15.' },
+      { kind: 'mcq', prompt: 'Two friends share $200 so that one gets twice the other. Larger share?',
+        options: ['$133.33', '$100', '$150', '$66.67'], correct: 0,
+        solution: 'Ratio 1 : 2; per part 200/3 ≈ 66.67; larger 2 × 66.67.' },
+      { kind: 'mcq', prompt: 'Concrete mix 1 : 2 : 4 (cement : gravel : sand). What FRACTION is cement?',
+        options: ['1/7', '1/2', '1/4', '1/3'], correct: 0,
+        solution: 'Total 7 parts; cement is 1.' },
+      { kind: 'mcq', prompt: 'Same mix. Sand is what fraction?',
+        options: ['4/7', '4/2', '1/4', '4/4'], correct: 0,
+        solution: '4 of 7 parts.' },
+      { kind: 'fill-num', prompt: 'Share 84 in ratio 3 : 4 — the smaller share.', answer: 36,
+        solution: '12 × 3.' },
+    ],
+  },
+  {
+    id: 'L3',
+    title: 'Lesson 3 · Equivalent ratios & ratio problems',
+    teach: {
+      heading: 'Multiply (or divide) ALL parts by the same number',
+      body: [
+        'Two ratios are EQUIVALENT if you can multiply (or divide) every part of one by the same number to get the other.',
+        '2 : 3 = 4 : 6 = 6 : 9 = 100 : 150 — all equivalent (each part × 2, ×3, ×50).',
+        'To find an unknown in an equivalent-ratio problem: figure out the multiplier or divisor and apply it to the matching part.',
+        'A handy form: a : b = c : d means a/c = b/d (same scale factor).',
+      ],
+      example: 'In a school, the staff:student ratio is 1 : 25 and there are 1000 students. Staff = 1000/25 = 40.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: '2 : 3 is equivalent to …',
+        options: ['8 : 12', '5 : 6', '3 : 2', '2 : 6'], correct: 0,
+        solution: '× 4 both sides.' },
+      { kind: 'mcq', prompt: '5 : 7 is equivalent to …',
+        options: ['25 : 35', '5 : 14', '10 : 12', '7 : 5'], correct: 0,
+        solution: '× 5 both sides.' },
+      { kind: 'mcq', prompt: 'Student/teacher ratio 25 : 1. With 350 students, how many teachers?',
+        options: ['14', '15', '12', '20'], correct: 0,
+        solution: '350 / 25.' },
+      { kind: 'mcq', prompt: 'A drink mixed 1 : 9 (concentrate : water). 5 ml concentrate. Total drink?',
+        options: ['50 ml', '45 ml', '5 ml', '90 ml'], correct: 0,
+        solution: '5 + 45 = 50.' },
+      { kind: 'mcq', prompt: '300 ml in ratio 3 : 7. Smaller part?',
+        options: ['90 ml', '100 ml', '210 ml', '30 ml'], correct: 0,
+        solution: '300 × 3/10.' },
+      { kind: 'mcq', prompt: '$200 split among Ahmed and Amina in ratio 3 : 5. Ahmed gets …',
+        options: ['$75', '$125', '$100', '$60'], correct: 0,
+        solution: '200 × 3/8.' },
+      { kind: 'mcq', prompt: '5 : 6 = 25 : ?',
+        options: ['30', '25', '20', '50'], correct: 0,
+        solution: '× 5.' },
+      { kind: 'mcq', prompt: '4 : 3 = ? : 12',
+        options: ['16', '12', '9', '24'], correct: 0,
+        solution: '× 4 both sides.' },
+      { kind: 'mcq', prompt: 'Two friends share apples 4 : 3. One gets 12. The other?',
+        options: ['9', '12', '8', '16'], correct: 0,
+        solution: '12 / 4 × 3.' },
+      { kind: 'mcq', prompt: 'A 16-cm length divided in ratio 3 : 5. Smaller part?',
+        options: ['6 cm', '10 cm', '8 cm', '4 cm'], correct: 0,
+        solution: '16 × 3/8.' },
+    ],
+  },
+  {
+    id: 'L4',
+    title: 'Lesson 4 · Ratios with scales',
+    teach: {
+      heading: 'Scale 1 : k means 1 unit on map = k same units in real life',
+      body: [
+        'A SCALE on a map or model is a ratio that compares drawing-distance to real-distance, both in the same unit.',
+        '1 : 50 000 means 1 cm on the map = 50 000 cm real = 500 m real = 0.5 km real.',
+        'Drawing \\to real: multiply by the scale. Real \\to drawing: divide by the scale.',
+        'You may need to convert UNITS (cm \\to m \\to km) in the answer.',
+      ],
+      example: 'Scale 1 : 50 000. 4 cm on map = 4 × 50 000 = 200 000 cm = 2 km real.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'Scale 1 : 100. 5 cm on drawing = ? cm real.',
+        options: ['500', '5', '50', '0.05'], correct: 0,
+        solution: '× 100.' },
+      { kind: 'mcq', prompt: 'Scale 1 : 50 000. 4 cm on map = ? km',
+        options: ['2', '0.2', '20', '0.02'], correct: 0,
+        solution: '4 × 50 000 = 200 000 cm = 2 km.' },
+      { kind: 'mcq', prompt: 'A map of scale 1 : 50 000 between two cities is 4 cm. Real distance in km?',
+        options: ['2', '20', '4', '0.5'], correct: 0,
+        solution: '× 50 000 = 200 000 cm = 2 km.' },
+      { kind: 'mcq', prompt: 'Scale 1 : 1 000 000. 5 cm on map = ? km.',
+        options: ['50', '500', '5000', '5'], correct: 0,
+        solution: '5 × 1 000 000 cm = 50 km.' },
+      { kind: 'mcq', prompt: 'Scale 2 cm : 1 km is the same as ratio …',
+        options: ['1 : 50 000', '1 : 500', '1 : 100 000', '2 : 1'], correct: 0,
+        solution: '2 cm / 100 000 cm = 1 / 50 000.' },
+      { kind: 'mcq', prompt: 'Real wall 6 m. On 1 : 200 plan: drawing length?',
+        options: ['3 cm', '0.3 cm', '30 cm', '600 cm'], correct: 0,
+        solution: '600 cm / 200.' },
+      { kind: 'mcq', prompt: 'Model car scale 1 : 50. Real car 4 m long. Model length?',
+        options: ['8 cm', '0.8 cm', '80 cm', '4 cm'], correct: 0,
+        solution: '400 cm / 50.' },
+      { kind: 'mcq', prompt: 'Scale 1 : 50 000. Distance between two cities is 13 km. Map distance?',
+        options: ['26 cm', '13 cm', '2.6 cm', '260 cm'], correct: 0,
+        solution: '13 km = 1 300 000 cm; / 50 000 = 26.' },
+      { kind: 'mcq', prompt: 'Snail length on a scale 12 : 1 (enlarged). Real 25 mm. Drawing length?',
+        options: ['300 mm', '12 mm', '2.5 mm', '37 mm'], correct: 0,
+        solution: '25 × 12.' },
+      { kind: 'mcq', prompt: 'A 1 : 1 250 000 map. 1 cm = ? km',
+        options: ['12.5', '125', '1.25', '1250'], correct: 0,
+        solution: '1 250 000 cm = 12 500 m = 12.5 km.' },
+    ],
+  },
+  {
+    id: 'L5',
+    title: 'Lesson 5 · Rates basics',
+    teach: {
+      heading: 'A RATIO of two quantities with DIFFERENT units',
+      body: [
+        'A RATE compares quantities of DIFFERENT units, expressed as one quantity per unit of the other.',
+        'Examples: 60 km per hour (km/h), $5 per kilo, 750 people per km^2 (population density).',
+        'Express in SIMPLEST FORM: divide both quantities so the second part = 1 (or sometimes 100).',
+        'Useful in: speed, density, fuel economy, exchange rates, prices per item.',
+      ],
+      example: '492 people in 12 km^2 = 41 people/km^2 (divide both by 12).',
+    },
+    questions: [
+      { kind: 'mcq', prompt: '120 km in 2 hours = ? km/h.',
+        options: ['60', '120', '2', '240'], correct: 0,
+        solution: '120 / 2.' },
+      { kind: 'mcq', prompt: '$15 for 5 kg = ? per kg.',
+        options: ['$3', '$5', '$15', '$0.33'], correct: 0,
+        solution: '15 / 5.' },
+      { kind: 'mcq', prompt: '492 people in 12 km^2 = ? people/km^2.',
+        options: ['41', '12', '492', '4.1'], correct: 0,
+        solution: '492 / 12.' },
+      { kind: 'mcq', prompt: '12 kg for $5 = $? per kg.',
+        options: ['$0.4167 (≈ 0.42)', '$0.05', '$5', '$2.40'], correct: 0,
+        solution: '5 / 12.' },
+      { kind: 'mcq', prompt: '120 lines for 1000 m = ? lines/m.',
+        options: ['0.12', '12', '0.012', '1.2'], correct: 0,
+        solution: '120 / 1000.' },
+      { kind: 'mcq', prompt: '$315 for 3 nights = ? per night.',
+        options: ['$105', '$15', '$300', '$945'], correct: 0,
+        solution: '315 / 3.' },
+      { kind: 'mcq', prompt: '135 students for 5 teachers = ? students per teacher.',
+        options: ['27', '7', '5', '670'], correct: 0,
+        solution: '135 / 5.' },
+      { kind: 'mcq', prompt: '15 hours spent for 5 holes dug = ? hours per hole.',
+        options: ['3', '1/3', '15', '5'], correct: 0,
+        solution: '15 / 5.' },
+      { kind: 'mcq', prompt: 'A car uses 8 L per 100 km. To go 250 km, fuel needed?',
+        options: ['20 L', '8 L', '32 L', '250 L'], correct: 0,
+        solution: '8 × 2.5.' },
+      { kind: 'mcq', prompt: 'Density 5 g/cm^3. Mass of 30 cm^3?',
+        options: ['150 g', '6 g', '30 g', '5 g'], correct: 0,
+        solution: '5 × 30.' },
+    ],
+  },
+  {
+    id: 'L6',
+    title: 'Lesson 6 · Speed, distance, time',
+    teach: {
+      heading: 'speed = distance / time; distance = speed × time; time = distance / speed',
+      body: [
+        'These three relationships are linked. Use the famous triangle: distance over (speed × time).',
+        'speed (in m/s, km/h, …) = distance / time.',
+        'distance = speed × time.',
+        'time = distance / speed.',
+        'Be CAREFUL with UNITS — speed in km/h × time in HOURS gives distance in KM. Convert minutes to hours (÷ 60) when needed.',
+      ],
+      example: '60 km/h for 2.5 hours: distance = 150 km. 100 km in 2 h: speed = 50 km/h.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: '60 km/h for 2 hours. Distance?',
+        options: ['120 km', '30 km', '62 km', '1800 km'], correct: 0,
+        solution: '60 × 2.' },
+      { kind: 'mcq', prompt: '100 km in 2 hours. Speed?',
+        options: ['50 km/h', '200 km/h', '100 km/h', '50 m/s'], correct: 0,
+        solution: '100 / 2.' },
+      { kind: 'mcq', prompt: '300 km at 75 km/h. Time?',
+        options: ['4 h', '4.5 h', '3.75 h', '5 h'], correct: 0,
+        solution: '300 / 75.' },
+      { kind: 'mcq', prompt: '50 km/h for 30 minutes. Distance?',
+        options: ['25 km', '50 km', '15 km', '100 km'], correct: 0,
+        solution: '0.5 h × 50.' },
+      { kind: 'mcq', prompt: '20 km in 15 minutes. Speed in km/h?',
+        options: ['80', '300', '60', '5'], correct: 0,
+        solution: '0.25 h \\to 20/0.25 = 80.' },
+      { kind: 'mcq', prompt: '60 km/h in m/s? (× 1000 / 3600)',
+        options: ['16.67 m/s', '60 m/s', '600 m/s', '1 m/s'], correct: 0,
+        solution: '60 × 1000 / 3600.' },
+      { kind: 'mcq', prompt: 'Usain Bolt 100 m in 9.58 s. Average speed (m/s, 3 s.f.)?',
+        options: ['10.4', '5.50', '0.96', '12.0'], correct: 0,
+        solution: '100/9.58.' },
+      { kind: 'mcq', prompt: '4 hours at 75 km/h. Distance?',
+        options: ['300 km', '350 km', '275 km', '400 km'], correct: 0,
+        solution: '4 × 75.' },
+      { kind: 'mcq', prompt: '45 km/h in m/s (3 s.f.)?',
+        options: ['12.5', '45', '12', '0.75'], correct: 0,
+        solution: '45 × 1000 / 3600 = 12.5.' },
+      { kind: 'fill-num', prompt: '120 km/h for 90 minutes — distance in km.', answer: 180,
+        solution: '120 × 1.5.' },
+    ],
+  },
+  {
+    id: 'L7',
+    title: 'Lesson 7 · Distance-time graphs',
+    teach: {
+      heading: 'Slope = speed; flat = stopped',
+      body: [
+        'A DISTANCE-TIME graph plots distance (y) against time (x).',
+        'GRADIENT (slope) of the line = SPEED.',
+        'A horizontal segment means STOPPED (no distance change while time passes).',
+        'A negative gradient means RETURNING toward the start (y decreasing).',
+        'A straight line (constant gradient) means CONSTANT speed; a curve means changing speed.',
+      ],
+      example: 'Line from (0, 0) to (2, 60) has gradient 30 — speed 30 km/h.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'On a distance-time graph, slope represents …',
+        options: ['Speed', 'Time', 'Acceleration', 'Direction'], correct: 0,
+        solution: 'Distance/time = speed.' },
+      { kind: 'mcq', prompt: 'A horizontal segment means …',
+        options: ['Stationary (no movement)', 'Constant speed', 'Acceleration', 'Returning'], correct: 0,
+        solution: 'No distance change.' },
+      { kind: 'mcq', prompt: 'Line from (0, 0) to (4, 80). Speed?',
+        options: ['20', '80', '4', '320'], correct: 0,
+        solution: '80/4.' },
+      { kind: 'mcq', prompt: 'Going DOWN on a distance-time graph (negative slope) means …',
+        options: ['Returning to start', 'Stopped', 'Going faster', 'Time reversal'], correct: 0,
+        solution: 'Distance decreasing.' },
+      { kind: 'mcq', prompt: 'A curved (not straight) distance-time graph means …',
+        options: ['Speed is changing', 'Constant speed', 'Stopped', 'Going back'], correct: 0,
+        solution: 'Gradient varies.' },
+      { kind: 'mcq', prompt: 'From (0, 0) to (3, 90), then horizontal to (5, 90). Speed in second segment?',
+        options: ['0 (stopped)', '30', '45', '90'], correct: 0,
+        solution: 'Horizontal.' },
+      { kind: 'mcq', prompt: 'From (0, 0) to (2, 100) — average speed?',
+        options: ['50', '100', '2', '200'], correct: 0,
+        solution: '100/2.' },
+      { kind: 'mcq', prompt: 'Steeper line on distance-time means …',
+        options: ['Faster speed', 'Slower speed', 'Stopped', 'Going back'], correct: 0,
+        solution: 'Larger gradient.' },
+      { kind: 'mcq', prompt: 'A car travels 60 km, stops 1 h, returns. Total distance vs DISPLACEMENT after returning?',
+        options: ['Distance 120, displacement 0', 'Both 60', 'Both 120', 'Both 0'], correct: 0,
+        solution: 'Distance accumulates; displacement is net.' },
+      { kind: 'mcq', prompt: 'A distance-time graph has gradient 50. Units of speed?',
+        options: ['Same as (y/x)', 'km only', 'h only', 'Unknown'], correct: 0,
+        solution: 'Slope inherits units.' },
+    ],
+  },
+  {
+    id: 'L8',
+    title: 'Lesson 8 · Speed-time graphs',
+    teach: {
+      heading: 'Slope = ACCELERATION',
+      body: [
+        'A SPEED-TIME graph plots speed (y) against time (x).',
+        'GRADIENT (slope) of the line = ACCELERATION (rate of change of speed).',
+        'A horizontal segment means CONSTANT speed.',
+        'A POSITIVE slope = speeding up. A NEGATIVE slope = slowing down (deceleration).',
+        'Straight line = constant acceleration; curved line = changing acceleration.',
+      ],
+      example: 'Speed goes 0 \\to 20 m/s in 4 s: acceleration = 5 m/s^2.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'Slope on a speed-time graph represents …',
+        options: ['Acceleration', 'Speed', 'Distance', 'Time'], correct: 0,
+        solution: 'd(speed)/dt.' },
+      { kind: 'mcq', prompt: 'Speed 0 \\to 20 m/s in 4 s. Acceleration?',
+        options: ['5 m/s^2', '20', '4', '0.2'], correct: 0,
+        solution: '20/4.' },
+      { kind: 'mcq', prompt: 'Horizontal segment on speed-time graph means …',
+        options: ['Constant speed', 'Stopped', 'Decelerating', 'Accelerating'], correct: 0,
+        solution: 'No speed change.' },
+      { kind: 'mcq', prompt: 'NEGATIVE slope on speed-time = ?',
+        options: ['Decelerating', 'Stopped', 'Accelerating', 'Constant'], correct: 0,
+        solution: 'Speed decreasing.' },
+      { kind: 'mcq', prompt: 'Speed 30 \\to 0 m/s in 6 s. Acceleration (signed)?',
+        options: ['-5 m/s^2', '5 m/s^2', '0', '6'], correct: 0,
+        solution: 'Negative deceleration.' },
+      { kind: 'mcq', prompt: 'Speed-time graph at t = 0 starts at speed 0. Object is …',
+        options: ['Stationary', 'Moving', 'Accelerating', 'Decelerating'], correct: 0,
+        solution: 'Zero speed.' },
+      { kind: 'mcq', prompt: 'Constant speed segment shows on speed-time as …',
+        options: ['Horizontal line', 'Sloped line', 'Vertical line', 'Curve'], correct: 0,
+        solution: 'No change.' },
+      { kind: 'mcq', prompt: 'Acceleration UNITS?',
+        options: ['m/s^2 (or km/h^2)', 'km/h', 'm', 'm/s'], correct: 0,
+        solution: 'Per time per time.' },
+      { kind: 'mcq', prompt: 'A car going 20 m/s decelerates uniformly to rest in 5 s. Acceleration?',
+        options: ['-4 m/s^2', '4 m/s^2', '-20 m/s', '5 m/s^2'], correct: 0,
+        solution: '(0 - 20)/5.' },
+      { kind: 'mcq', prompt: 'Speed-time line goes 0 \\to 12 m/s in 3 s, then constant for 5 s, then 12 \\to 0 in 2 s. Acceleration in segment 1?',
+        options: ['4 m/s^2', '12 m/s^2', '3 m/s^2', '0'], correct: 0,
+        solution: '12/3.' },
+    ],
+  },
+  {
+    id: 'L9',
+    title: 'Lesson 9 · Area under speed-time graph',
+    teach: {
+      heading: 'AREA = total DISTANCE travelled',
+      body: [
+        'On a SPEED-TIME graph, the AREA under the curve = the total DISTANCE travelled.',
+        'For a rectangle (constant speed): area = speed × time.',
+        'For a triangle (linear acceleration from 0): area = ½ × time × top speed.',
+        'For a TRAPEZIUM (start from non-zero speed, accelerate): area = ½ × (sum of parallel sides) × time.',
+        'Compose complex graphs from rectangles, triangles, and trapeziums.',
+      ],
+      example: 'Constant 30 m/s for 8 s: area = 30 × 8 = 240 m. Triangle from 0 to 20 m/s in 5 s: area = ½ × 5 × 20 = 50 m.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'Area under speed-time graph represents …',
+        options: ['Total distance travelled', 'Average speed', 'Acceleration', 'Time'], correct: 0,
+        solution: 'speed × time = distance.' },
+      { kind: 'mcq', prompt: 'Constant 30 m/s for 8 s. Distance?',
+        options: ['240 m', '38 m', '8 m', '30 m'], correct: 0,
+        solution: 'Rectangle.' },
+      { kind: 'mcq', prompt: 'Triangle 0 \\to 20 m/s in 5 s. Distance?',
+        options: ['50 m', '100 m', '25 m', '20 m'], correct: 0,
+        solution: '½ × 5 × 20.' },
+      { kind: 'mcq', prompt: 'Trapezium: speed 10 m/s for 0 \\to 4 s, accelerates to 20 m/s by 6 s. Distance from 4 to 6 s?',
+        options: ['30 m', '40 m', '60 m', '20 m'], correct: 0,
+        solution: '½ × (10+20) × 2 = 30.' },
+      { kind: 'mcq', prompt: 'Particle 0 \\to 15 m/s in 3 s, then constant 15 m/s for 5 s. Total distance?',
+        options: ['97.5 m', '52.5 m', '75 m', '120 m'], correct: 0,
+        solution: 'Triangle 22.5 + rect 75 = 97.5.' },
+      { kind: 'mcq', prompt: 'A speed-time graph rectangle 5 s wide, 12 m/s tall. Distance?',
+        options: ['60 m', '17 m', '5 m', '7 m'], correct: 0,
+        solution: '60.' },
+      { kind: 'mcq', prompt: 'A car decelerates from 25 to 0 m/s in 10 s. Distance during deceleration?',
+        options: ['125 m', '250 m', '25 m', '50 m'], correct: 0,
+        solution: '½ × 10 × 25.' },
+      { kind: 'mcq', prompt: 'Speed graph: 0–4s rises 0\\to10; 4–10s constant 10; 10–12s drops 10\\to0. Total distance?',
+        options: ['80 m', '100 m', '60 m', '120 m'], correct: 0,
+        solution: '20 + 60 + 10 = 90. Closest 80 — wait recompute: ½×4×10 = 20; 6×10 = 60; ½×2×10 = 10; total 90.' },
+      { kind: 'mcq', prompt: 'Constant 50 m/s for 6 s. Distance?',
+        options: ['300 m', '56 m', '50 m', '60 m'], correct: 0,
+        solution: '50 × 6.' },
+      { kind: 'mcq', prompt: 'Why does AREA under speed-time give distance?',
+        options: ['speed × time = distance, summed up', 'Coincidence', 'Always works', 'Rule of physics'], correct: 0,
+        solution: 'Direct meaning.' },
+    ],
+  },
+  {
+    id: 'L10',
+    title: 'Lesson 10 · Direct proportion',
+    teach: {
+      heading: 'As one quantity multiplies, the other multiplies by the same factor',
+      body: [
+        'Two quantities are in DIRECT PROPORTION if doubling one doubles the other (and so on).',
+        'Equivalently: their RATIO is constant. y / x = k (constant).',
+        'Equivalently: y = k x for some constant k.',
+        'Examples: cost depends directly on weight (at fixed price/kg); distance traveled at constant speed depends directly on time.',
+        'Graph: a STRAIGHT LINE through the origin.',
+      ],
+      example: 'A car uses 12 L of fuel for $50. For the same fuel-price, 5 L costs 5 × (50/12) ≈ $20.83.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'Two quantities in direct proportion: doubling one …',
+        options: ['Doubles the other', 'Halves the other', 'Squares the other', 'Has no effect'], correct: 0,
+        solution: 'Definition.' },
+      { kind: 'mcq', prompt: '12 kg costs $5. How much for 36 kg (direct proportion)?',
+        options: ['$15', '$20', '$60', '$5'], correct: 0,
+        solution: '× 3.' },
+      { kind: 'mcq', prompt: 'Distance 60 km in 1 hour; distance in 3 hours (constant speed)?',
+        options: ['180 km', '60 km', '20 km', '120 km'], correct: 0,
+        solution: '× 3.' },
+      { kind: 'mcq', prompt: 'For y = 5x, when x = 8, y = ?',
+        options: ['40', '13', '5', '8'], correct: 0,
+        solution: '5 × 8.' },
+      { kind: 'mcq', prompt: 'Direct-proportion graph through origin has the form …',
+        options: ['y = kx', 'y = mx + c', 'y = k/x', 'y = c'], correct: 0,
+        solution: 'Through origin.' },
+      { kind: 'mcq', prompt: 'A quarry produces 1200 t of crushed stone per hour. How much in 6.5 hours?',
+        options: ['7800 t', '1206.5 t', '184 t', '1200 t'], correct: 0,
+        solution: '× 6.5.' },
+      { kind: 'mcq', prompt: '5 painters paint a wall in 2 hours. How long for 1 painter (assuming inverse for painters but THIS question is direct on time per task)?',
+        options: ['10 hours (1 painter takes 5× as long if task is fixed)', '0.4 h', '2 h', 'cannot say'], correct: 0,
+        solution: 'Manpower-hours conserved (this is INVERSE proportion!) — careful. Total work = 10 painter-hours; with 1 painter, 10 h.' },
+      { kind: 'mcq', prompt: 'A water main fills a tank at 25 L per minute. To fill 500 L?',
+        options: ['20 minutes', '12.5 minutes', '500 minutes', '125 minutes'], correct: 0,
+        solution: '500/25.' },
+      { kind: 'mcq', prompt: '$315 for 3 nights, $? for 5 nights (direct proportion)?',
+        options: ['$525', '$300', '$945', '$157.50'], correct: 0,
+        solution: 'Per night $105; × 5.' },
+      { kind: 'mcq', prompt: '12 kg : $5 = 24 kg : ?',
+        options: ['$10', '$5', '$25', '$30'], correct: 0,
+        solution: '× 2.' },
+    ],
+  },
+  {
+    id: 'L11',
+    title: 'Lesson 11 · Inverse proportion',
+    teach: {
+      heading: 'As one quantity multiplies, the other DIVIDES by the same factor',
+      body: [
+        'Two quantities are in INVERSE PROPORTION if doubling one HALVES the other.',
+        'Equivalently: their PRODUCT is constant. xy = k.',
+        'Equivalently: y = k/x.',
+        'Examples: speed × time = distance (fixed distance \\to inverse); workers × time = total work (fixed task).',
+        'Graph: a HYPERBOLA — never crosses either axis.',
+      ],
+      example: '10 painters paint in 6 hours. With 5 painters: 12 hours. With 30 painters: 2 hours.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'Doubling x with inverse proportion …',
+        options: ['Halves y', 'Doubles y', 'Doesn\\u2019t change y', 'Squares y'], correct: 0,
+        solution: 'Inverse.' },
+      { kind: 'mcq', prompt: '10 workers take 6 days. 20 workers (inverse proportion) take?',
+        options: ['3 days', '12 days', '6 days', '60 days'], correct: 0,
+        solution: '6 / 2 = 3.' },
+      { kind: 'mcq', prompt: 'A car driving at 80 km/h takes 2 hours. At 40 km/h?',
+        options: ['4 hours', '1 hour', '2 hours', '8 hours'], correct: 0,
+        solution: 'Inverse \\to half speed = double time.' },
+      { kind: 'mcq', prompt: 'For y = 60/x, when x = 4, y = ?',
+        options: ['15', '60', '4', '64'], correct: 0,
+        solution: '60/4.' },
+      { kind: 'mcq', prompt: 'For inverse proportion, the graph is …',
+        options: ['Hyperbola', 'Parabola', 'Straight line', 'Circle'], correct: 0,
+        solution: 'y = k/x.' },
+      { kind: 'mcq', prompt: '12 painters take 5 hours. Time for 4 painters?',
+        options: ['15 hours', '7 hours', '5 hours', '60 hours'], correct: 0,
+        solution: 'Inverse — third the workers, triple the time.' },
+      { kind: 'mcq', prompt: 'xy = 24. If x = 8, y = ?',
+        options: ['3', '24', '8', '32'], correct: 0,
+        solution: '24/8.' },
+      { kind: 'mcq', prompt: 'A box of cookies feeds 8 people for 3 days. For 12 people, how many days?',
+        options: ['2 days', '4.5 days', '3 days', '24 days'], correct: 0,
+        solution: '24 person-days / 12 = 2.' },
+      { kind: 'mcq', prompt: 'A bag of sand fills 10 buckets each 5 L. The same sand into smaller 2 L buckets: how many buckets?',
+        options: ['25', '15', '20', '5'], correct: 0,
+        solution: '50 L total / 2.' },
+      { kind: 'mcq', prompt: 'For a fixed perimeter, length and width of a rectangle are in … proportion?',
+        options: ['Inverse (l × w = const, but only for area; perimeter has l + w = const, NOT inverse)', 'Direct', 'Square', 'None'], correct: 0,
+        solution: 'Area is fixed → inverse; perimeter constant → linear l + w = const.' },
+    ],
+  },
+  {
+    id: 'L12',
+    title: 'Lesson 12 · Direct proportion in algebra',
+    teach: {
+      heading: 'y \\propto x means y = kx; y \\propto x^2 means y = kx^2',
+      body: [
+        'The symbol \\propto means "proportional to".',
+        'y \\propto x \\to y = kx for some constant k.',
+        'y \\propto x^2 \\to y = kx^2 (e.g. area scales as length squared).',
+        'y \\propto x^3 \\to y = kx^3 (volume).',
+        'Find k from one given (x, y) pair, then use it for any other.',
+      ],
+      example: 'y \\propto x and y = 6 when x = 2. So 6 = 2k \\to k = 3. Then y = 3x.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'y \\propto x and y = 12 when x = 4. Find k.',
+        options: ['3', '12', '4', '48'], correct: 0,
+        solution: 'k = 12/4.' },
+      { kind: 'mcq', prompt: 'Same proportion. y when x = 7?',
+        options: ['21', '49', '7', '12'], correct: 0,
+        solution: '3 × 7.' },
+      { kind: 'mcq', prompt: 'y \\propto x^2 and y = 18 when x = 3. Find k.',
+        options: ['2', '6', '18', '9'], correct: 0,
+        solution: 'y = kx^2 \\to 18 = 9k.' },
+      { kind: 'mcq', prompt: 'Same. y when x = 5?',
+        options: ['50', '90', '125', '25'], correct: 0,
+        solution: '2 × 25.' },
+      { kind: 'mcq', prompt: 'y \\propto x^3 and y = 64 when x = 2. Find k.',
+        options: ['8', '32', '64', '4'], correct: 0,
+        solution: '64 = 8k.' },
+      { kind: 'mcq', prompt: 'y \\propto x and y = 30 when x = 6. y when x = 9?',
+        options: ['45', '54', '36', '120'], correct: 0,
+        solution: 'k = 5; y = 45.' },
+      { kind: 'mcq', prompt: 'Volume V \\propto r^3. V = 36 \\pi when r = 3. Find k.',
+        options: ['\\frac{4 \\pi}{3}', '\\pi', '4 \\pi', '36 \\pi'], correct: 0,
+        solution: '36\\pi = 27k → k = 36\\pi/27 = 4\\pi/3.' },
+      { kind: 'mcq', prompt: 'Same V = (4\\pi/3) r^3. V when r = 6?',
+        options: ['288 \\pi', '36 \\pi', '216 \\pi', '24 \\pi'], correct: 0,
+        solution: '(4\\pi/3) × 216 = 288\\pi.' },
+      { kind: 'mcq', prompt: 'A spring stretches y mm under load x N. y = 0.4 x. Stretch under 25 N?',
+        options: ['10 mm', '25 mm', '0.4 mm', '0.016 mm'], correct: 0,
+        solution: '0.4 × 25.' },
+      { kind: 'fill-num', prompt: 'y \\propto x and y = 21 when x = 3. y when x = 8.', answer: 56,
+        solution: 'k = 7; 7 × 8.' },
+    ],
+  },
+  {
+    id: 'L13',
+    title: 'Lesson 13 · Inverse proportion in algebra',
+    teach: {
+      heading: 'y \\propto 1/x means y = k/x; y \\propto 1/x^2 means y = k/x^2',
+      body: [
+        'y \\propto 1/x \\to y = k/x (inverse proportion). xy = k.',
+        'y \\propto 1/x^2 \\to y = k/x^2 (inverse-square law — e.g. gravity, light intensity).',
+        'Find k from one (x, y) pair, then use it for any other.',
+      ],
+      example: 'y \\propto 1/x and y = 12 when x = 2. So 12 = k/2 \\to k = 24. Then y = 24/x. At x = 6, y = 4.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'y \\propto 1/x and y = 6 when x = 2. Find k.',
+        options: ['12', '6', '2', '3'], correct: 0,
+        solution: '6 = k/2 \\to k = 12.' },
+      { kind: 'mcq', prompt: 'Same. y when x = 4?',
+        options: ['3', '12', '4', '48'], correct: 0,
+        solution: '12/4.' },
+      { kind: 'mcq', prompt: 'y \\propto 1/x^2 and y = 4 when x = 3. Find k.',
+        options: ['36', '12', '4', '9'], correct: 0,
+        solution: 'k = 4 × 9.' },
+      { kind: 'mcq', prompt: 'Same. y when x = 6?',
+        options: ['1', '4', '36', '6'], correct: 0,
+        solution: '36/36.' },
+      { kind: 'mcq', prompt: 'y \\propto 1/x. y = 8 at x = 5. xy = ?',
+        options: ['40', '13', '8', '5'], correct: 0,
+        solution: 'Constant = k.' },
+      { kind: 'mcq', prompt: 'For inverse-SQUARE proportion, doubling x …',
+        options: ['Quarters y', 'Halves y', 'Doubles y', 'No change'], correct: 0,
+        solution: 'k/(2x)^2 = k/4x^2.' },
+      { kind: 'mcq', prompt: 'Light intensity I \\propto 1/r^2. At r = 2, I = 50. At r = 4?',
+        options: ['12.5', '25', '100', '50'], correct: 0,
+        solution: 'k = 200; 200/16 = 12.5.' },
+      { kind: 'mcq', prompt: 'Gravity F \\propto 1/r^2. F = 400 at r = 1. At r = 5?',
+        options: ['16', '80', '2000', '400'], correct: 0,
+        solution: 'k = 400; 400/25.' },
+      { kind: 'mcq', prompt: 'For y = 60/x, x and y are related by …',
+        options: ['Inverse proportion', 'Direct', 'Linear', 'Quadratic'], correct: 0,
+        solution: 'y = k/x.' },
+      { kind: 'fill-num', prompt: 'y \\propto 1/x. y = 10 at x = 6. y at x = 12.', answer: 5,
+        solution: 'k = 60; 60/12.' },
+    ],
+  },
+  {
+    id: 'L14',
+    title: 'Lesson 14 · Mixed proportion word problems',
+    teach: {
+      heading: 'Decide first: direct or inverse? Then apply',
+      body: [
+        'For each problem, ask: "If I double x, does y double (direct), halve (inverse), or do something else?"',
+        'Direct: y = kx. Inverse: y = k/x. Square: y = kx^2 or y = k/x^2.',
+        'Find k from given data, then use it.',
+        'For combined proportion (e.g. y \\propto x and z), use y = k x z.',
+      ],
+      example: 'A train travels 230 km/h. To go 138.5 km, time = 138.5/230 = 0.602 h.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: '6 cooks prepare a meal in 4 hours. How long for 8 cooks (inverse proportion)?',
+        options: ['3 hours', '5.33 h', '4 h', '12 h'], correct: 0,
+        solution: '24 cook-hours / 8.' },
+      { kind: 'mcq', prompt: '2 painters paint a fence in 9 days. With 6 painters?',
+        options: ['3 days', '9 days', '27 days', '12 days'], correct: 0,
+        solution: 'Inverse: 18 painter-days / 6.' },
+      { kind: 'mcq', prompt: 'A bag of feed lasts 12 chickens 5 days. For 20 chickens?',
+        options: ['3 days', '8 days', '5 days', '20 days'], correct: 0,
+        solution: 'Inverse: 60 chicken-days / 20.' },
+      { kind: 'mcq', prompt: 'A train at 100 km/h covers a route in 4 h. At 80 km/h?',
+        options: ['5 h', '3.2 h', '4 h', '8 h'], correct: 0,
+        solution: 'Distance 400; 400/80.' },
+      { kind: 'mcq', prompt: 'Drink mix 1 : 9 (concentrate : water). 200 ml drink contains how much concentrate?',
+        options: ['20 ml', '180 ml', '40 ml', '50 ml'], correct: 0,
+        solution: 'Per part = 20.' },
+      { kind: 'mcq', prompt: 'A 3 : 5 ratio. The 3 part is 12. The 5 part?',
+        options: ['20', '15', '8', '24'], correct: 0,
+        solution: 'Per part = 4.' },
+      { kind: 'mcq', prompt: 'A car uses 7 L per 100 km. To go 350 km?',
+        options: ['24.5 L', '20 L', '350 L', '50 L'], correct: 0,
+        solution: '7 × 3.5.' },
+      { kind: 'mcq', prompt: 'Pressure at depth in water: P \\propto d. P = 200 kPa at d = 20 m. At d = 50 m?',
+        options: ['500 kPa', '200 kPa', '50 kPa', '5000 kPa'], correct: 0,
+        solution: 'k = 10; 10 × 50.' },
+      { kind: 'mcq', prompt: 'Force F \\propto 1/r^2. F = 80 at r = 1. At r = 2?',
+        options: ['20', '40', '80', '160'], correct: 0,
+        solution: 'k = 80; 80/4.' },
+      { kind: 'mcq', prompt: 'A sprinter runs 100 m in 9.5 s. Average speed in m/s (3 s.f.)?',
+        options: ['10.5', '950', '5.50', '9.50'], correct: 0,
+        solution: '100/9.5.' },
+    ],
+  },
+]
+
+const CH21_PROGRESS_KEY = 'tenali-chapter21-progress'
+function ch21_loadProgress() {
+  try { return JSON.parse(localStorage.getItem(CH21_PROGRESS_KEY) || '{}') || {} } catch { return {} }
+}
+function ch21_saveProgress(p) { try { localStorage.setItem(CH21_PROGRESS_KEY, JSON.stringify(p)) } catch {} }
+
+// --- Custom math renderer for Chapter 21 ----------------------------------
+function Ch21Frac({ num, den }) {
+  return (
+    <span style={{
+      display: 'inline-flex', flexDirection: 'column', alignItems: 'center',
+      verticalAlign: 'middle', margin: '0 0.18em', lineHeight: 1.05,
+      fontSize: '0.95em',
+    }}>
+      <span style={{ padding: '0 0.4em 0.05em', borderBottom: '1.6px solid currentColor' }}>{num}</span>
+      <span style={{ padding: '0.05em 0.4em 0' }}>{den}</span>
+    </span>
+  )
+}
+function ch21_subOps(s) {
+  return String(s)
+    .replace(/\\times/g, '×').replace(/\\div/g, '÷')
+    .replace(/\\approx/g, '≈').replace(/\\sim\b/g, '~')
+    .replace(/\\to\b/g, '→').replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
+    .replace(/\\ne\b/g, '≠').replace(/\\neq\b/g, '≠')
+    .replace(/\\cdot/g, '·').replace(/\\cdots/g, '⋯').replace(/\\pm/g, '±')
+    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ').replace(/\\Delta/g, 'Δ')
+    .replace(/\\alpha/g, 'α').replace(/\\beta/g, 'β').replace(/\\gamma/g, 'γ').replace(/\\delta/g, 'δ')
+    .replace(/\\mu\b/g, 'μ').replace(/\\sigma/g, 'σ').replace(/\\omega/g, 'ω')
+    .replace(/\\sum/g, '∑').replace(/\\prod/g, '∏').replace(/\\int/g, '∫')
+    .replace(/\\angle/g, '∠').replace(/\\triangle/g, '△').replace(/\\square/g, '□')
+    .replace(/\\infty/g, '∞')
+    .replace(/\\sqrt\{([^{}]+)\}/g, '√($1)')
+    .replace(/\\sqrt(\d+)/g, '√$1')
+    .replace(/\\ell\b/g, 'ℓ').replace(/\\circ/g, '°')
+    .replace(/\\sin\b/g, 'sin').replace(/\\cos\b/g, 'cos').replace(/\\tan\b/g, 'tan')
+    .replace(/\\log\b/g, 'log').replace(/\\ln\b/g, 'ln')
+    .replace(/\\left\(/g, '(').replace(/\\right\)/g, ')')
+    .replace(/\\left\[/g, '[').replace(/\\right\]/g, ']')
+    .replace(/\\u2208/g, '∈').replace(/\\u2209/g, '∉')
+    .replace(/\\u2205/g, '∅')
+    .replace(/\\u222a/g, '∪').replace(/\\u2229/g, '∩')
+    .replace(/\\u2286/g, '⊆').replace(/\\u2282/g, '⊂')
+    .replace(/\\u2113/g, 'ℓ').replace(/\\u00b0/g, '°')
+    .replace(/\\u2019/g, '’').replace(/\\u2032/g, '′').replace(/\\u2013/g, '–')
+    .replace(/\\u2660/g, '♠').replace(/\\u2663/g, '♣').replace(/\\u2665/g, '♥').replace(/\\u2666/g, '♦')
+    .replace(/\\dot\{(\d)\}/g, '$1̇')
+    .replace(/\\\$/g, '$').replace(/\\%/g, '%')
+}
+function ch21RenderMath(text) {
+  if (text == null) return null
+  const src = ch21_subOps(text).replace(/\\left\(/g, '(').replace(/\\right\)/g, ')')
+  const out = []
+  let i = 0, buf = ''
+  const flush = () => { if (buf) { out.push(buf); buf = '' } }
+  while (i < src.length) {
+    if (src.startsWith('\\frac{', i)) {
+      flush()
+      let j = i + 6, depth = 1
+      const ns = j
+      while (j < src.length) { if (src[j] === '{') depth++; else if (src[j] === '}') { depth--; if (depth === 0) break } j++ }
+      const numStr = src.slice(ns, j); j++
+      if (src[j] !== '{') { buf += src.slice(i, j); i = j; continue }
+      j++; depth = 1
+      const ds = j
+      while (j < src.length) { if (src[j] === '{') depth++; else if (src[j] === '}') { depth--; if (depth === 0) break } j++ }
+      const denStr = src.slice(ds, j); j++
+      out.push(<Ch21Frac key={`f${out.length}`} num={ch21RenderMath(numStr)} den={ch21RenderMath(denStr)} />)
+      i = j
+    } else if (src[i] === '^') {
+      const m = src.slice(i).match(/^\^(-?\d+)/)
+      if (m) { flush(); out.push(<sup key={`s${out.length}`} style={{ fontSize: '0.72em', verticalAlign: 'super' }}>{m[1]}</sup>); i += m[0].length }
+      else { buf += src[i]; i++ }
+    } else { buf += src[i]; i++ }
+  }
+  flush()
+  return out
+}
+
+const CH21_AUTO_ADVANCE_MS = 5000
+
+function Chapter21App({ onBack }) {
+  const [progress, setProgress] = useState(ch21_loadProgress)
+  const [activeId, setActiveId] = useState(null)
+  const [phase, setPhase] = useState('teach')
+  const [qIdx, setQIdx] = useState(0)
+  const [playList, setPlayList] = useState([])
+  const [lastWrongSrc, setLastWrongSrc] = useState(null)
+  const [selectedIdx, setSelectedIdx] = useState(null)
+  const [fillInput, setFillInput] = useState('')
+  const [revealed, setRevealed] = useState(false)
+  const [isCorrect, setIsCorrect] = useState(false)
+  const [autoCountdown, setAutoCountdown] = useState(0)
+  const inputRef = useRef(null)
+  const autoTimerRef = useRef(null)
+  const advanceRef = useRef(() => {})
+
+  const lesson = activeId ? CH21_LESSONS.find(l => l.id === activeId) : null
+  const currentSourceIdx = playList[qIdx]
+  const currentQ = lesson && currentSourceIdx != null ? lesson.questions[currentSourceIdx] : null
+  const isRetry = useMemo(() => {
+    if (currentSourceIdx == null) return false
+    return playList.slice(0, qIdx).includes(currentSourceIdx)
+  }, [playList, qIdx, currentSourceIdx])
+
+  const optionOrder = useMemo(() => {
+    if (!currentQ || currentQ.kind !== 'mcq') return []
+    return ch21_seededShuffle(currentQ.options.length, `${activeId}-${qIdx}-${currentSourceIdx}-${currentQ.prompt}`)
+  }, [activeId, qIdx, currentSourceIdx, currentQ])
+  const correctDisplayIdx = useMemo(() => optionOrder.indexOf(currentQ?.correct ?? -1), [optionOrder, currentQ])
+
+  useEffect(() => { ch21_saveProgress(progress) }, [progress])
+
+  useEffect(() => {
+    if (phase !== 'practice' || revealed) return
+    if (currentQ?.kind?.startsWith('fill') && inputRef.current) inputRef.current.focus()
+  }, [phase, qIdx, revealed, currentQ])
+
+  const startLesson = (id) => {
+    setActiveId(id)
+    const lessonRef = CH21_LESSONS.find(l => l.id === id)
+    const initial = Array.from({ length: lessonRef.questions.length }, (_, i) => i)
+    setPlayList(initial)
+    setLastWrongSrc(null)
+    const p = progress[id] || {}
+    if (p.teachSeen) { setPhase('practice'); setQIdx(p.qIdx || 0) }
+    else { setPhase('teach'); setQIdx(0) }
+    setSelectedIdx(null); setFillInput(''); setRevealed(false); setIsCorrect(false)
+  }
+
+  const acknowledgeTeach = () => {
+    setProgress(p => ({ ...p, [activeId]: { ...(p[activeId] || {}), teachSeen: true, qIdx: 0 } }))
+    setPhase('practice'); setQIdx(0)
+    setSelectedIdx(null); setFillInput(''); setRevealed(false); setIsCorrect(false)
+    setLastWrongSrc(null)
+  }
+
+  const submitFill = () => {
+    if (!currentQ) return
+    if (revealed) { advance(); return }
+    const ok = ch21_checkFill(currentQ, fillInput)
+    setIsCorrect(ok); setRevealed(true)
+    setLastWrongSrc(ok ? null : currentSourceIdx)
+  }
+
+  const pickMcq = (displayIdx) => {
+    if (!currentQ || revealed || currentQ.kind !== 'mcq') return
+    const optSourceIdx = optionOrder[displayIdx]
+    const ok = optSourceIdx === currentQ.correct
+    setSelectedIdx(displayIdx); setIsCorrect(ok); setRevealed(true)
+    setLastWrongSrc(ok ? null : currentSourceIdx)
+  }
+
+  const cancelAutoAdvance = () => {
+    if (autoTimerRef.current) { clearInterval(autoTimerRef.current); autoTimerRef.current = null }
+    setAutoCountdown(0)
+  }
+
+  const advance = () => {
+    cancelAutoAdvance()
+    if (!lesson) return
+    let workingList = playList
+    if (lastWrongSrc != null) {
+      // Wrong answers go to the END of the lesson — student finishes all
+      // fresh questions first, then meets the retry cluster at the tail.
+      workingList = [...playList, lastWrongSrc]
+      setPlayList(workingList)
+      setLastWrongSrc(null)
+    }
+    const next = qIdx + 1
+    if (next >= workingList.length) {
+      setProgress(p => ({ ...p, [activeId]: { ...(p[activeId] || {}), teachSeen: true, qIdx: lesson.questions.length, completed: true } }))
+      setPhase('done')
+    } else {
+      setQIdx(next)
+      setSelectedIdx(null); setFillInput(''); setRevealed(false); setIsCorrect(false)
+      setProgress(p => ({ ...p, [activeId]: { ...(p[activeId] || {}), teachSeen: true, qIdx: Math.min(lesson.questions.length, next) } }))
+    }
+  }
+  advanceRef.current = advance
+
+  const jumpToQuestion = (i) => {
+    cancelAutoAdvance()
+    if (!lesson) return
+    const clamped = Math.max(0, Math.min(playList.length - 1, i))
+    setQIdx(clamped); setLastWrongSrc(null)
+    setSelectedIdx(null); setFillInput(''); setRevealed(false); setIsCorrect(false)
+    setProgress(p => {
+      const cur = p[activeId] || {}
+      const saved = Math.max(cur.qIdx || 0, Math.min(lesson.questions.length, clamped))
+      return { ...p, [activeId]: { ...cur, teachSeen: true, qIdx: saved } }
+    })
+  }
+
+  const backToOverview = () => {
+    cancelAutoAdvance()
+    setActiveId(null); setPhase('teach'); setQIdx(0)
+    setSelectedIdx(null); setFillInput(''); setRevealed(false); setIsCorrect(false)
+  }
+
+  const resetAll = () => {
+    if (!confirm('Reset all Chapter 21 progress?')) return
+    setProgress({}); ch21_saveProgress({})
+    backToOverview()
+  }
+
+  useEffect(() => {
+    if (phase !== 'practice' || !revealed) { cancelAutoAdvance(); return }
+    const total = Math.round(CH21_AUTO_ADVANCE_MS / 1000)
+    setAutoCountdown(total)
+    autoTimerRef.current = setInterval(() => {
+      setAutoCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(autoTimerRef.current); autoTimerRef.current = null
+          advanceRef.current()
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+    return () => { if (autoTimerRef.current) { clearInterval(autoTimerRef.current); autoTimerRef.current = null } }
+  }, [phase, revealed, qIdx, activeId])
+
+  useEffect(() => {
+    if (phase !== 'practice' || !currentQ) return
+    const onKey = (e) => {
+      if (revealed) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); advance() }
+        return
+      }
+      if (currentQ.kind === 'mcq') {
+        const k = e.key
+        if (/^[1-9]$/.test(k)) {
+          const i = parseInt(k, 10) - 1
+          if (i < currentQ.options.length) { e.preventDefault(); pickMcq(i) }
+        }
+      } else if (currentQ.kind?.startsWith('fill')) {
+        if (e.key === 'Enter') { e.preventDefault(); submitFill() }
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [phase, qIdx, revealed, currentQ, fillInput, optionOrder])
+
+  // ────────── Overview ──────────
+  if (!activeId) {
+    const total = CH21_LESSONS.length
+    const done = CH21_LESSONS.filter(l => progress[l.id]?.completed).length
+    return (
+      <div style={{ maxWidth: 760, margin: '0 auto', padding: '1.5rem 1rem', color: 'var(--clr-text)' }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 16 }}>
+          <button className="back-button" onClick={onBack}>← Home</button>
+          <button className="back-button" style={{ marginLeft: 'auto' }} onClick={resetAll}>Reset progress</button>
+        </div>
+        <h1 style={{ marginBottom: 4 }}>Chapter  — Scale Drawings, Bearings & Trigonometry</h1>
+        <p className="subtitle" style={{ marginTop: 0 }}>
+          Cambridge IGCSE Mathematics · {done}/{total} lessons complete
+        </p>
+        <p style={{ opacity: 0.85, marginTop: 8 }}>
+          Pick the next lesson. Each one starts with a short explanation, then a stream of multiple-choice and fill-in-the-blank
+          questions — easy warm-ups first, then the actual chapter exercise problems.
+        </p>
+        <ol style={{ listStyle: 'none', padding: 0, marginTop: 16 }}>
+          {CH21_LESSONS.map((l) => {
+            const p = progress[l.id] || {}
+            const completed = p.completed
+            const inProg = !completed && (p.teachSeen || (p.qIdx || 0) > 0)
+            return (
+              <li key={l.id} style={{ marginBottom: 8 }}>
+                <button
+                  onClick={() => startLesson(l.id)}
+                  style={{
+                    width: '100%', textAlign: 'left', padding: '12px 14px',
+                    borderRadius: 10,
+                    borderLeft: completed ? '4px solid #2ea043' : inProg ? '4px solid #388bfd' : '1px solid var(--clr-border, #444)',
+                    borderTop: '1px solid ' + (completed ? '#2ea043' : 'var(--clr-border, #444)'),
+                    borderRight: '1px solid ' + (completed ? '#2ea043' : 'var(--clr-border, #444)'),
+                    borderBottom: '1px solid ' + (completed ? '#2ea043' : 'var(--clr-border, #444)'),
+                    background: completed
+                      ? 'linear-gradient(90deg, rgba(46,160,67,0.32) 0%, rgba(46,160,67,0.18) 100%)'
+                      : inProg ? 'rgba(56,139,253,0.10)' : 'var(--clr-surface, #1c1c1f)',
+                    color: 'var(--clr-text)',
+                    fontWeight: completed ? 600 : 400,
+                    cursor: 'pointer', fontSize: '0.95rem',
+                    boxShadow: completed ? '0 0 0 1px rgba(46,160,67,0.35) inset' : 'none',
+                  }}
+                >
+                  <span style={{ marginRight: 8 }}>{completed ? '✅' : inProg ? '▶' : '○'}</span>
+                  {ch21RenderMath(l.title)}
+                  {completed && (
+                    <span style={{
+                      float: 'right', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.5px',
+                      color: '#fff', background: '#2ea043', padding: '2px 8px', borderRadius: 10,
+                    }}>DONE</span>
+                  )}
+                  {p.qIdx > 0 && !completed && (
+                    <span style={{ float: 'right', fontSize: '0.8rem', opacity: 0.7 }}>{p.qIdx}/{l.questions.length}</span>
+                  )}
+                </button>
+              </li>
+            )
+          })}
+        </ol>
+      </div>
+    )
+  }
+
+  // ────────── Teach ──────────
+  if (phase === 'teach') {
+    return (
+      <div style={{ maxWidth: 720, margin: '0 auto', padding: '1.5rem 1rem', color: 'var(--clr-text)' }}>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+          <button className="back-button" onClick={backToOverview}>← Lessons</button>
+        </div>
+        <h2 style={{ marginBottom: 4 }}>{ch21RenderMath(lesson.title)}</h2>
+        <h3 style={{ color: 'var(--clr-accent, #6cf)', marginTop: 16 }}>{ch21RenderMath(lesson.teach.heading)}</h3>
+        {lesson.teach.body.map((para, i) => (
+          <p key={i} style={{ lineHeight: 1.7, marginBottom: 10, fontSize: '1rem' }}>{ch21RenderMath(para)}</p>
+        ))}
+        <div style={{
+          marginTop: 14, padding: 14, borderRadius: 8,
+          background: 'rgba(108,206,255,0.08)', border: '1px solid rgba(108,206,255,0.25)',
+          fontSize: '1rem', lineHeight: 1.7,
+        }}>
+          <strong>Worked example: </strong>{ch21RenderMath(lesson.teach.example)}
+        </div>
+        {lesson.qFormat && <p style={{ marginTop: 14, fontSize: '0.9rem', opacity: 0.8 }}><em>Note:</em> {lesson.qFormat}</p>}
+        <button onClick={acknowledgeTeach} style={{
+          marginTop: 18, padding: '10px 18px', borderRadius: 8, fontSize: '1rem',
+          background: 'var(--clr-accent, #2ea043)', color: 'white', border: 'none', cursor: 'pointer',
+        }}>I've got it — start questions →</button>
+      </div>
+    )
+  }
+
+  // ────────── Done ──────────
+  if (phase === 'done') {
+    const idx = CH21_LESSONS.findIndex(l => l.id === activeId)
+    const next = CH21_LESSONS[idx + 1]
+    return (
+      <div style={{ maxWidth: 720, margin: '0 auto', padding: '1.5rem 1rem', color: 'var(--clr-text)' }}>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+          <button className="back-button" onClick={backToOverview}>← Lessons</button>
+        </div>
+        <h2>🎉 Lesson complete</h2>
+        <p>You finished <strong>{ch21RenderMath(lesson.title)}</strong>.</p>
+        {next ? (
+          <button onClick={() => startLesson(next.id)} style={{
+            marginTop: 12, padding: '10px 18px', borderRadius: 8, fontSize: '1rem',
+            background: 'var(--clr-accent, #2ea043)', color: 'white', border: 'none', cursor: 'pointer',
+          }}>Next: {ch21RenderMath(next.title)} →</button>
+        ) : (
+          <p style={{ marginTop: 16, fontSize: '1.05rem' }}>🎓 You've completed every lesson in Chapter 21.</p>
+        )}
+        <button onClick={backToOverview} style={{
+          marginTop: 12, marginLeft: 8, padding: '10px 18px', borderRadius: 8,
+          background: 'transparent', color: 'var(--clr-text)', border: '1px solid var(--clr-border, #555)', cursor: 'pointer',
+        }}>Back to lessons</button>
+      </div>
+    )
+  }
+
+  // ────────── Practice ──────────
+  const sliderMax = Math.max(1, playList.length)
+  return (
+    <div style={{ maxWidth: 720, margin: '0 auto', padding: '1.5rem 1rem', color: 'var(--clr-text)' }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 12, alignItems: 'center' }}>
+        <button className="back-button" onClick={backToOverview}>← Lessons</button>
+        <button className="back-button" onClick={() => setPhase('teach')}>📖 Re-read teach</button>
+        <span style={{ marginLeft: 'auto', fontSize: '0.85rem', opacity: 0.75 }}>
+          Question {qIdx + 1} / {sliderMax}
+          {sliderMax > lesson.questions.length && (
+            <span style={{ marginLeft: 6, color: '#f0a020' }}>· {sliderMax - lesson.questions.length} retry queued</span>
+          )}
+        </span>
+      </div>
+      <h3 style={{ marginBottom: 8 }}>{ch21RenderMath(lesson.title)}</h3>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
+        <span style={{ fontSize: '0.78rem', opacity: 0.65, minWidth: 18, textAlign: 'right' }}>1</span>
+        <input
+          type="range"
+          min={1}
+          max={sliderMax}
+          value={qIdx + 1}
+          onChange={e => jumpToQuestion(parseInt(e.target.value, 10) - 1)}
+          aria-label="Jump to question"
+          style={{
+            flex: 1, accentColor: 'var(--clr-accent, #2ea043)',
+            cursor: 'pointer', height: 22,
+          }}
+        />
+        <span style={{ fontSize: '0.78rem', opacity: 0.65, minWidth: 22 }}>{sliderMax}</span>
+      </div>
+
+      <div style={{
+        padding: '22px 24px', borderRadius: 10, background: 'var(--clr-surface, #1c1c1f)',
+        border: '1px solid var(--clr-border, #333)', marginBottom: 16,
+        fontSize: '1.25rem', lineHeight: 2.1, textAlign: 'center',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 80,
+        position: 'relative',
+      }}>
+        {isRetry && (
+          <span style={{
+            position: 'absolute', top: 8, right: 12, fontSize: '0.7rem', fontWeight: 700,
+            letterSpacing: '0.5px', color: '#f0a020', background: 'rgba(240,160,32,0.15)',
+            border: '1px solid rgba(240,160,32,0.45)', padding: '2px 8px', borderRadius: 10,
+          }}>↻ RETRY</span>
+        )}
+        <span>{ch21RenderMath(currentQ.prompt)}</span>
+      </div>
+
+      {currentQ.kind === 'mcq' ? (
+        <div className="options-list">
+          {optionOrder.map((srcIdx, displayIdx) => {
+            const opt = currentQ.options[srcIdx]
+            const isSelected = selectedIdx === displayIdx
+            const isCorrectOpt = revealed && correctDisplayIdx === displayIdx
+            const isWrongPick = revealed && isSelected && !isCorrect
+            return (
+              <button
+                key={displayIdx}
+                className={`option-card ${isSelected ? 'selected' : ''} ${isCorrectOpt ? 'correct-option' : ''} ${isWrongPick ? 'wrong-option' : ''}`}
+                onClick={() => pickMcq(displayIdx)}
+                disabled={revealed}
+                style={{
+                  borderColor: isCorrectOpt ? 'var(--clr-correct, #2ea043)' : isWrongPick ? 'var(--clr-wrong, #f85149)' : undefined,
+                  background: isCorrectOpt ? 'rgba(46,160,67,0.15)' : isWrongPick ? 'rgba(248,81,73,0.15)' : undefined,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  position: 'relative', padding: '18px 24px', minHeight: 64,
+                  fontSize: '1.1rem', lineHeight: 1.9,
+                }}
+              >
+                <span style={{
+                  position: 'absolute', left: 18, top: '50%', transform: 'translateY(-50%)',
+                  fontWeight: 700, opacity: 0.6, fontSize: '0.95rem',
+                }}>{CH21_OPTION_LABEL[displayIdx]}.</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center' }}>{ch21RenderMath(opt)}</span>
+              </button>
+            )
+          })}
+        </div>
+      ) : (
+        <>
+          <input
+            ref={inputRef}
+            type="text"
+            value={fillInput}
+            onChange={e => setFillInput(e.target.value)}
+            disabled={revealed}
+            placeholder="Your answer…"
+            autoComplete="off"
+            style={{
+              width: '100%', padding: '14px 16px', fontSize: '1.15rem', borderRadius: 8,
+              border: '1px solid var(--clr-border, #555)', textAlign: 'center',
+              background: revealed ? 'rgba(255,255,255,0.04)' : 'var(--clr-surface, #1c1c1f)',
+              color: 'var(--clr-text)', boxSizing: 'border-box',
+            }}
+          />
+          {!revealed && (
+            <div style={{ display: 'flex', gap: 8, marginTop: 12, justifyContent: 'center' }}>
+              <button onClick={submitFill} disabled={!fillInput.trim()} style={{
+                padding: '10px 22px', borderRadius: 6, background: 'var(--clr-accent, #2ea043)',
+                color: 'white', border: 'none', cursor: 'pointer', fontSize: '0.95rem',
+                opacity: fillInput.trim() ? 1 : 0.5,
+              }}>Check</button>
+            </div>
+          )}
+        </>
+      )}
+
+      {revealed && (
+        <>
+          <div style={{
+            marginTop: 16, padding: 16, borderRadius: 8,
+            background: isCorrect ? 'rgba(46,160,67,0.15)' : 'rgba(248,81,73,0.15)',
+            border: `1px solid ${isCorrect ? 'rgba(46,160,67,0.45)' : 'rgba(248,81,73,0.45)'}`,
+            fontSize: '1rem', lineHeight: 1.9,
+          }}>
+            <strong>{isCorrect ? '✅ Correct!' : '❌ Not quite.'}</strong>
+            <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+              <strong>Answer:</strong>
+              <span>{currentQ.kind === 'mcq'
+                ? ch21RenderMath(currentQ.options[currentQ.correct])
+                : ch21RenderMath(String(currentQ.answer))}</span>
+            </div>
+            {currentQ.solution && (
+              <div style={{ marginTop: 8, opacity: 0.9, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+                <strong>Working:</strong>
+                <span>{ch21RenderMath(currentQ.solution)}</span>
+              </div>
+            )}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 14, justifyContent: 'center' }}>
+            <button onClick={advance} style={{
+              padding: '12px 28px', borderRadius: 8, background: 'var(--clr-accent, #2ea043)',
+              color: 'white', border: 'none', cursor: 'pointer', fontSize: '1rem', fontWeight: 600,
+            }}>
+              {qIdx + 1 === lesson.questions.length ? 'Finish lesson →' : 'Next →'}
+            </button>
+            <span style={{ fontSize: '0.85rem', opacity: 0.65 }}>
+              auto-advance in {autoCountdown}s · or press <kbd style={{ padding: '1px 6px', border: '1px solid var(--clr-border, #555)', borderRadius: 4, fontSize: '0.78rem' }}>Enter</kbd>
+            </span>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+/* =====================================================================
+ *  Chapter22App — Cambridge IGCSE Chapter 22 (More Equations, Formulae and Functions)
+ *
+ *  Mounted at /chapter22. Same UX as Chapter5App–Chapter21App: ordered
+ *  chain of lessons, every one unlocked from the start, slider to jump
+ *  questions, MCQ with 1-9 keys + fill-in fallbacks, 5s auto-advance,
+ *  completed lessons go green (with readable text), wrong answers
+ *  appended to END of playList. See Tenali/skills/igcse-chapter/SKILL.md
+ *  for the full pattern.
+ *
+ *  Sections covered: 22.1 Setting up equations to solve problems;
+ *  22.2 Using and rearranging formulae (incl. squares/roots and
+ *  subject-in-more-than-one-term); 22.3 Functions and function notation
+ *  (incl. domain and range, composite functions, inverse functions).
+ *  See uploads PDF p. 754-779 (book ch. 22).
+ * ===================================================================== */
+
+const CH22_OPTION_LABEL = ['1','2','3','4','5','6','7','8','9']
+
+function ch22_seededShuffle(n, key) {
+  let h = 2166136261
+  for (let i = 0; i < key.length; i++) { h ^= key.charCodeAt(i); h = Math.imul(h, 16777619) }
+  const rand = () => { h = Math.imul(h ^ (h >>> 15), 2246822507); h = Math.imul(h ^ (h >>> 13), 3266489909); return ((h ^= h >>> 16) >>> 0) / 4294967295 }
+  const arr = Array.from({ length: n }, (_, i) => i)
+  for (let i = n - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]] }
+  return arr
+}
+
+function ch22_gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { [a, b] = [b, a % b] } return a || 1 }
+function ch22_reduce(n, d) {
+  if (d === 0) return null
+  if (d < 0) { n = -n; d = -d }
+  const g = ch22_gcd(n, d)
+  return { n: n / g, d: d / g }
+}
+function ch22_parseFrac(raw) {
+  if (raw == null) return null
+  let s = String(raw).trim().replace(/\\frac\{(-?\d+)\}\{(-?\d+)\}/g, '$1/$2').replace(/\s+/g, ' ').replace(/–/g, '-')
+  if (!s) return null
+  const mixed = s.match(/^(-?)(\d+)\s+(\d+)\s*\/\s*(\d+)$/)
+  if (mixed) {
+    const sign = mixed[1] === '-' ? -1 : 1
+    const w = +mixed[2], n = +mixed[3], d = +mixed[4]
+    if (d === 0) return null
+    return ch22_reduce(sign * (w * d + n), d)
+  }
+  const frac = s.match(/^(-?\d+)\s*\/\s*(-?\d+)$/)
+  if (frac) {
+    const n = +frac[1], d = +frac[2]
+    if (d === 0) return null
+    return ch22_reduce(n, d)
+  }
+  const num = Number(s)
+  if (Number.isFinite(num)) {
+    if (Number.isInteger(num)) return { n: num, d: 1 }
+    const sign = num < 0 ? -1 : 1
+    const decimals = (s.split('.')[1] || '').length
+    const denom = Math.pow(10, decimals)
+    return ch22_reduce(sign * Math.round(Math.abs(num) * denom), denom)
+  }
+  return null
+}
+function ch22_fracEqual(a, b) { return a && b && a.n === b.n && a.d === b.d }
+function ch22_normalizeNumStr(s) {
+  return String(s).trim().replace(/[$,\s%]/g, '').replace(/–/g, '-')
+}
+function ch22_numEqual(user, expected, tol) {
+  const u = parseFloat(ch22_normalizeNumStr(user))
+  if (!Number.isFinite(u)) return false
+  const t = tol != null ? tol : Math.max(0.005, Math.abs(expected) * 0.005)
+  return Math.abs(u - expected) <= t
+}
+
+function ch22_checkFill(q, raw) {
+  if (!raw || !raw.trim()) return false
+  switch (q.kind) {
+    case 'fill-num': return ch22_numEqual(raw, q.answer, q.tol)
+    case 'fill-frac': {
+      const u = ch22_parseFrac(raw)
+      const e = ch22_parseFrac(q.answer)
+      return ch22_fracEqual(u, e)
+    }
+    case 'fill-text': return raw.trim().toLowerCase() === String(q.answer).trim().toLowerCase()
+    default: return false
+  }
+}
+
+// --- Lesson catalogue ---------------------------------------------------
+// Cambridge IGCSE Chapter 22 — More Equations, Formulae and Functions
+// 22.1 setting up equations from word problems (linear and quadratic);
+// 22.2 changing the subject of a formula (incl. squares/roots and the
+// subject-in-more-than-one-term factorising trick);
+// 22.3 function notation f(x), domain & range, composite functions fg(x),
+// inverse functions f^-1(x).
+const CH22_LESSONS = [
+  {
+    id: 'L1',
+    title: 'Lesson 1 · Forming linear equations from words',
+    teach: {
+      heading: 'Name the unknown, translate piece by piece, then solve',
+      body: [
+        'Many word problems boil down to ONE unknown. Pick a letter (often x or n) for that unknown number, then translate each phrase into algebra.',
+        '"a number multiplied by 4" \\to 4x. "5 more than a number" \\to x + 5. "a number divided by 3" \\to \\frac{x}{3}. "twice a number plus 3" \\to 2x + 3.',
+        'Step 1 — name the unknown. Step 2 — translate the words into an equation. Step 3 — solve using the methods of Chapter 6 (do the same to both sides). Step 4 — answer the original question, with units.',
+        'Always check by substituting your answer back into the original sentence.',
+      ],
+      example: '"A number multiplied by four gives 28." Let the number be x. Then 4x = 28, so x = 7.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'Which equation matches "A number multiplied by 4 gives 28"?',
+        options: ['4x = 28', 'x + 4 = 28', '4 - x = 28', '\\frac{4}{x} = 28'], correct: 0,
+        solution: '"Multiplied by 4" \\to 4x; "gives 28" \\to = 28.' },
+      { kind: 'mcq', prompt: 'Solve x + 7 = 12.',
+        options: ['x = 5', 'x = 12', 'x = 19', 'x = 7'], correct: 0,
+        solution: 'Subtract 7 from both sides.' },
+      { kind: 'mcq', prompt: '"A number added to 13 gives 25." The number is …',
+        options: ['12', '38', '8', '13'], correct: 0,
+        solution: 'x + 13 = 25 \\to x = 12.' },
+      { kind: 'mcq', prompt: '"14 subtracted from a number leaves 5." The number is …',
+        options: ['19', '9', '70', '28'], correct: 0,
+        solution: 'x - 14 = 5 \\to x = 19.' },
+      { kind: 'mcq', prompt: '"A number subtracted from 14 leaves 5." The number is …',
+        options: ['9', '19', '70', '28'], correct: 0,
+        solution: '14 - x = 5 \\to x = 9.' },
+      { kind: 'mcq', prompt: '"28 divided by a number gives 4." The number is …',
+        options: ['7', '4', '32', '24'], correct: 0,
+        solution: '\\frac{28}{x} = 4 \\to x = 7.' },
+      { kind: 'mcq', prompt: '"A number multiplied by 12 gives 60." The number is …',
+        options: ['5', '60', '12', '72'], correct: 0,
+        solution: '12x = 60 \\to x = 5.' },
+      { kind: 'mcq', prompt: '"A number is multiplied by 5 then 3 is added; result 23." The number is …',
+        options: ['4', '26', '20', '5'], correct: 0,
+        solution: '5x + 3 = 23 \\to 5x = 20 \\to x = 4.' },
+      { kind: 'mcq', prompt: '"Three more than twice a number is 17." The number is …',
+        options: ['7', '10', '8', '14'], correct: 0,
+        solution: '2x + 3 = 17 \\to 2x = 14 \\to x = 7.' },
+      { kind: 'mcq', prompt: '"A number divided by 2, then 1 added, gives 6." The number is …',
+        options: ['10', '11', '12', '13'], correct: 0,
+        solution: '\\frac{x}{2} + 1 = 6 \\to \\frac{x}{2} = 5 \\to x = 10.' },
+      { kind: 'mcq', prompt: '"Five times a number, decreased by 7, is 18." The number is …',
+        options: ['5', '25', '11', '7'], correct: 0,
+        solution: '5x - 7 = 18 \\to 5x = 25 \\to x = 5.' },
+      { kind: 'fill-num', prompt: '"Four times the sum of a number and 3 is 28." Find the number.', answer: 4,
+        solution: '4(x + 3) = 28 \\to x + 3 = 7 \\to x = 4.' },
+    ],
+  },
+  {
+    id: 'L2',
+    title: 'Lesson 2 · Solving word problems with linear equations',
+    teach: {
+      heading: 'Read carefully, label every quantity, then write ONE equation',
+      body: [
+        'For tougher word problems, the same recipe works — but the translation step is harder. Read the problem twice. Identify what you are asked to find and what you are told.',
+        'Choose ONE unknown. Express every other quantity in the problem in terms of that unknown.',
+        'For ages, lengths, sums, money — write each piece on the same page so you can see it. Then look for the sentence that gives an equation (often "the total is", "they are equal", "differs by", "the perimeter is").',
+        'Solve, then translate the answer back to plain English (with units!).',
+      ],
+      example: 'A father is 31 years older than his child. Their ages add to 43. Let the child be x. Father = x + 31. Equation: x + (x + 31) = 43 \\to 2x = 12 \\to x = 6. Child is 6.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'Bongi is 4 years older than her sister. Their ages add to 22. How old is the sister?',
+        options: ['9', '11', '13', '18'], correct: 0,
+        solution: 'x + (x + 4) = 22 \\to 2x = 18 \\to x = 9.' },
+      { kind: 'mcq', prompt: 'I think of a number, double it, and add 5; the answer is 21. The number is …',
+        options: ['8', '16', '13', '9'], correct: 0,
+        solution: '2x + 5 = 21 \\to 2x = 16 \\to x = 8.' },
+      { kind: 'mcq', prompt: 'A father is 31 years older than his child. Their ages add to 43. The child is …',
+        options: ['6 years old', '12 years old', '15 years old', '31 years old'], correct: 0,
+        solution: 'x + (x + 31) = 43 \\to x = 6.' },
+      { kind: 'mcq', prompt: 'Two consecutive integers add to 53. The smaller is …',
+        options: ['26', '27', '25', '24'], correct: 0,
+        solution: 'n + (n + 1) = 53 \\to n = 26.' },
+      { kind: 'mcq', prompt: 'Three consecutive integers sum to 84. The middle one is …',
+        options: ['28', '29', '27', '30'], correct: 0,
+        solution: '(n - 1) + n + (n + 1) = 84 \\to 3n = 84 \\to n = 28.' },
+      { kind: 'mcq', prompt: 'A rectangle is twice as long as it is wide. Its perimeter is 18 cm. The width is …',
+        options: ['3 cm', '6 cm', '4 cm', '9 cm'], correct: 0,
+        solution: '2(w) + 2(2w) = 18 \\to 6w = 18 \\to w = 3.' },
+      { kind: 'mcq', prompt: 'A 28 cm strip is cut into two pieces, one 4 cm longer than the other. The shorter piece is …',
+        options: ['12 cm', '16 cm', '14 cm', '10 cm'], correct: 0,
+        solution: 'x + (x + 4) = 28 \\to 2x = 24 \\to x = 12.' },
+      { kind: 'mcq', prompt: 'A number is multiplied by 3 then 5 is subtracted, giving 16. The number is …',
+        options: ['7', '6', '21', '11'], correct: 0,
+        solution: '3x - 5 = 16 \\to 3x = 21 \\to x = 7.' },
+      { kind: 'mcq', prompt: 'Three children share 60 sweets. Adi gets twice Bina; Cara gets the same as Bina. Adi gets …',
+        options: ['30', '20', '15', '40'], correct: 0,
+        solution: 'b + 2b + b = 60 \\to 4b = 60 \\to b = 15; Adi = 2b = 30.' },
+      { kind: 'mcq', prompt: 'An athlete runs around a 400 m track. After x metres he has 250 m left. Then x = …',
+        options: ['150', '250', '400', '650'], correct: 0,
+        solution: 'x + 250 = 400 \\to x = 150.' },
+      { kind: 'mcq', prompt: 'Beena has 3 more than twice the marbles Ali has. Together they have 27. Ali has …',
+        options: ['8', '12', '9', '18'], correct: 0,
+        solution: 'a + (2a + 3) = 27 \\to 3a = 24 \\to a = 8.' },
+      { kind: 'fill-num', prompt: 'A rectangle’s length is 4 m more than its width and the perimeter is 28 m. Find the width (m).', answer: 5,
+        solution: '2(w + 4) + 2w = 28 \\to 4w + 8 = 28 \\to w = 5.' },
+    ],
+  },
+  {
+    id: 'L3',
+    title: 'Lesson 3 · Forming and solving quadratic equations from words',
+    teach: {
+      heading: 'When two unknowns multiply, you usually need a quadratic',
+      body: [
+        'Some word problems give the PRODUCT of two quantities, or an AREA, or a SUM OF SQUARES. The translation gives a quadratic equation.',
+        'Step 1 — name the unknown. Step 2 — write each piece in terms of it (often consecutive integers x and x+1, or sides x and x+k). Step 3 — write the equation, expand, and rearrange to make one side 0. Step 4 — factorise (or use the formula).',
+        'Quadratics often have two solutions — pick the one that makes physical sense (a length cannot be negative, an integer cannot be a fraction, …).',
+        'Check by substituting back.',
+      ],
+      example: 'Two consecutive integers x and x+1 have product 30. x(x+1)=30 \\to x^2+x-30=0 \\to (x-5)(x+6)=0 \\to x=5 or x=-6. The pair is 5, 6 (or -6, -5).',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'x and x + 1 are consecutive integers; x(x + 1) = 30. The smaller positive value is …',
+        options: ['5', '-6', '6', '4'], correct: 0,
+        solution: 'x^2 + x - 30 = 0 \\to (x-5)(x+6).' },
+      { kind: 'mcq', prompt: 'n and n + 1 satisfy n(n + 1) = 56. n = …',
+        options: ['7', '8', '-8', '6'], correct: 0,
+        solution: 'n^2 + n - 56 = 0 \\to (n-7)(n+8).' },
+      { kind: 'mcq', prompt: 'A positive number plus its square is 56. The number is …',
+        options: ['7', '8', '-7', '6'], correct: 0,
+        solution: 'x + x^2 = 56 \\to x^2 + x - 56 = 0 \\to (x-7)(x+8).' },
+      { kind: 'mcq', prompt: 'Two consecutive even integers have product 168. The smaller is …',
+        options: ['12', '14', '11', '13'], correct: 0,
+        solution: 'n(n+2) = 168 \\to n^2 + 2n - 168 = 0 \\to (n-12)(n+14).' },
+      { kind: 'mcq', prompt: 'A rectangle has area 24 cm^2; its length is 2 cm more than its width. The width is …',
+        options: ['4 cm', '6 cm', '3 cm', '8 cm'], correct: 0,
+        solution: 'w(w+2) = 24 \\to w^2 + 2w - 24 = 0 \\to (w-4)(w+6).' },
+      { kind: 'mcq', prompt: 'A square has area 64 cm^2. Its side is …',
+        options: ['8 cm', '16 cm', '4 cm', '32 cm'], correct: 0,
+        solution: 's^2 = 64 \\to s = 8 (positive).' },
+      { kind: 'mcq', prompt: 'Two consecutive integers whose squares add to 145. The smaller is …',
+        options: ['8', '9', '7', '12'], correct: 0,
+        solution: 'n^2 + (n+1)^2 = 145 \\to 2n^2 + 2n - 144 = 0 \\to n^2 + n - 72 = 0 \\to (n-8)(n+9).' },
+      { kind: 'mcq', prompt: 'The square of a positive number, plus 5, equals 30. The number is …',
+        options: ['5', '-5', '25', '\\sqrt{35}'], correct: 0,
+        solution: 'x^2 + 5 = 30 \\to x^2 = 25 \\to x = 5.' },
+      { kind: 'mcq', prompt: 'A right triangle has legs n and n + 7 and hypotenuse 13. The shorter leg is …',
+        options: ['5', '12', '7', '8'], correct: 0,
+        solution: 'n^2 + (n+7)^2 = 169 \\to 2n^2 + 14n - 120 = 0 \\to n^2 + 7n - 60 = 0 \\to (n-5)(n+12).' },
+      { kind: 'mcq', prompt: 'A free-falling object has h = 5t^2 metres after t seconds. h = 80 m when t = …',
+        options: ['4 s', '16 s', '8 s', '2 s'], correct: 0,
+        solution: '5t^2 = 80 \\to t^2 = 16 \\to t = 4.' },
+      { kind: 'mcq', prompt: 'A picture is 2 cm wider than tall and has area 80 cm^2. Its height is …',
+        options: ['8 cm', '10 cm', '9 cm', '12 cm'], correct: 0,
+        solution: 'h(h+2) = 80 \\to h^2 + 2h - 80 = 0 \\to (h-8)(h+10).' },
+      { kind: 'fill-num', prompt: 'The sum of an integer and its square is 90. Find the positive integer.', answer: 9,
+        solution: 'n + n^2 = 90 \\to n^2 + n - 90 = 0 \\to (n-9)(n+10).' },
+    ],
+  },
+  {
+    id: 'L4',
+    title: 'Lesson 4 · Changing the subject of a simple formula',
+    teach: {
+      heading: 'Do the same to both sides until the new subject is alone',
+      body: [
+        'Rearranging a formula is solving an equation in disguise — except instead of a numerical answer, you end up with an expression.',
+        'To change the subject: do the same operations to both sides until the desired letter sits alone on one side.',
+        'Order: undo addition/subtraction first, then undo multiplication/division. Always do the inverse: + becomes -, \\times becomes \\div, etc.',
+        'A handy check: substitute simple numbers into both the original and your rearranged form — the values should agree.',
+      ],
+      example: 'Make x the subject of y = 4x + 7. Subtract 7: y - 7 = 4x. Divide by 4: x = \\frac{y - 7}{4}.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'Make x the subject of y = x + 4.',
+        options: ['x = y - 4', 'x = y + 4', 'x = -y - 4', 'x = 4 - y'], correct: 0,
+        solution: 'Subtract 4 from both sides.' },
+      { kind: 'mcq', prompt: 'Make x the subject of y = 3x.',
+        options: ['x = \\frac{y}{3}', 'x = 3y', 'x = y - 3', 'x = 3 + y'], correct: 0,
+        solution: 'Divide both sides by 3.' },
+      { kind: 'mcq', prompt: 'Make x the subject of y = 4x + 7.',
+        options: ['x = \\frac{y - 7}{4}', 'x = 4y - 7', 'x = \\frac{y}{4} - 7', 'x = \\frac{y + 7}{4}'], correct: 0,
+        solution: '-7, then ÷4.' },
+      { kind: 'mcq', prompt: 'Make x the subject of y = \\frac{x - 3}{5}.',
+        options: ['x = 5y + 3', 'x = 5y - 3', 'x = \\frac{y + 3}{5}', 'x = 5(y - 3)'], correct: 0,
+        solution: 'Multiply by 5, then add 3.' },
+      { kind: 'mcq', prompt: 'Make r the subject of C = 2\\pi r.',
+        options: ['r = \\frac{C}{2\\pi}', 'r = 2\\pi C', 'r = C - 2\\pi', 'r = C + 2\\pi'], correct: 0,
+        solution: 'Divide by 2π.' },
+      { kind: 'mcq', prompt: 'Make h the subject of V = lwh.',
+        options: ['h = \\frac{V}{lw}', 'h = Vlw', 'h = V - lw', 'h = \\frac{lw}{V}'], correct: 0,
+        solution: 'Divide both sides by lw.' },
+      { kind: 'mcq', prompt: 'Make y the subject of 2y - 5 = 3x.',
+        options: ['y = \\frac{3x + 5}{2}', 'y = \\frac{3x - 5}{2}', 'y = 2(3x - 5)', 'y = (3x + 5) \\times 2'], correct: 0,
+        solution: '+5, then ÷2.' },
+      { kind: 'mcq', prompt: 'Make a the subject of b = \\frac{4a}{c}.',
+        options: ['a = \\frac{bc}{4}', 'a = \\frac{b}{4c}', 'a = \\frac{4}{bc}', 'a = 4bc'], correct: 0,
+        solution: '×c, then ÷4.' },
+      { kind: 'mcq', prompt: 'Make x the subject of 3y = 2x + 1.',
+        options: ['x = \\frac{3y - 1}{2}', 'x = \\frac{3y + 1}{2}', 'x = 3y - \\frac{1}{2}', 'x = 2(3y - 1)'], correct: 0,
+        solution: '-1, then ÷2.' },
+      { kind: 'mcq', prompt: 'Make m the subject of F = ma.',
+        options: ['m = \\frac{F}{a}', 'm = \\frac{a}{F}', 'm = F + a', 'm = F - a'], correct: 0,
+        solution: 'Divide by a.' },
+      { kind: 'mcq', prompt: 'Make x the subject of y = 5x - 8.',
+        options: ['x = \\frac{y + 8}{5}', 'x = \\frac{y - 8}{5}', 'x = 5y + 8', 'x = \\frac{8 - y}{5}'], correct: 0,
+        solution: '+8, then ÷5.' },
+      { kind: 'mcq', prompt: 'Make w the subject of P = 2L + 2w.',
+        options: ['w = \\frac{P - 2L}{2}', 'w = P - 2L', 'w = \\frac{P + 2L}{2}', 'w = \\frac{P}{2} - L'], correct: 0,
+        solution: '-2L, then ÷2. (Last option is equivalent — but the canonical form is the first.)' },
+    ],
+  },
+  {
+    id: 'L5',
+    title: 'Lesson 5 · Squares and square roots in formulae',
+    teach: {
+      heading: 'Take square roots last (and don’t forget the ±)',
+      body: [
+        'When a formula has a SQUARE on the new subject, isolate the squared term first, THEN take the square root of both sides.',
+        'When a formula has a SQUARE ROOT on the new subject, isolate the root first, THEN square both sides.',
+        'Strictly, taking a square root introduces a ± sign. In real-world IGCSE problems we usually want the positive value (a length, a radius, a speed) so we drop the ±.',
+        'Always isolate the squared/rooted expression by itself first — handle additions and multiplications around it before un-squaring or un-rooting.',
+      ],
+      example: 'Make r the subject of A = \\pi r^2. Divide by π: \\frac{A}{\\pi} = r^2. Take √: r = \\sqrt{\\frac{A}{\\pi}}.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'Make x the subject of y = x^2 (positive root).',
+        options: ['x = \\sqrt{y}', 'x = y^2', 'x = \\frac{y}{2}', 'x = 2y'], correct: 0,
+        solution: 'Square root both sides.' },
+      { kind: 'mcq', prompt: 'Make r the subject of A = \\pi r^2.',
+        options: ['r = \\sqrt{\\frac{A}{\\pi}}', 'r = \\frac{A}{\\pi}', 'r = \\sqrt{\\pi A}', 'r = (\\frac{A}{\\pi})^2'], correct: 0,
+        solution: 'Divide by π then √.' },
+      { kind: 'mcq', prompt: 'Make x the subject of y = \\sqrt{x}.',
+        options: ['x = y^2', 'x = \\sqrt{y}', 'x = \\frac{1}{y^2}', 'x = 2y'], correct: 0,
+        solution: 'Square both sides.' },
+      { kind: 'mcq', prompt: 'Make t the subject of s = \\frac{1}{2} g t^2 (positive root).',
+        options: ['t = \\sqrt{\\frac{2s}{g}}', 't = \\frac{2s}{g}', 't = \\sqrt{\\frac{s}{2g}}', 't = (\\frac{2s}{g})^2'], correct: 0,
+        solution: '×2, ÷g, then √.' },
+      { kind: 'mcq', prompt: 'Make x the subject of y = \\frac{1}{4} x^2 (positive root).',
+        options: ['x = 2\\sqrt{y}', 'x = \\sqrt{4y}', 'x = 4\\sqrt{y}', 'x = \\sqrt{\\frac{y}{4}}'], correct: 0,
+        solution: '4y = x^2 \\to x = 2\\sqrt{y}. (\\sqrt{4y} is also correct — same number — but usually written 2√y.)' },
+      { kind: 'mcq', prompt: 'Make x the subject of y^2 = 4x + 9.',
+        options: ['x = \\frac{y^2 - 9}{4}', 'x = \\frac{y^2 + 9}{4}', 'x = y^2 - 36', 'x = \\frac{y}{4} - 9'], correct: 0,
+        solution: '-9, then ÷4.' },
+      { kind: 'mcq', prompt: 'Make c the subject of a^2 + b^2 = c^2 (positive root).',
+        options: ['c = \\sqrt{a^2 + b^2}', 'c = a + b', 'c = \\sqrt{a^2 - b^2}', 'c = a^2 + b^2'], correct: 0,
+        solution: '√ both sides.' },
+      { kind: 'mcq', prompt: 'Make x the subject of y^2 = x^2 + 4 (positive root).',
+        options: ['x = \\sqrt{y^2 - 4}', 'x = y - 2', 'x = \\sqrt{y} - 2', 'x = y^2 - 4'], correct: 0,
+        solution: 'x^2 = y^2 - 4 \\to x = \\sqrt{y^2 - 4}.' },
+      { kind: 'mcq', prompt: 'Make a the subject of c = \\sqrt{a^2 + b^2} (positive root).',
+        options: ['a = \\sqrt{c^2 - b^2}', 'a = c - b', 'a = c + b', 'a = c^2 - b^2'], correct: 0,
+        solution: 'Square: c^2 = a^2 + b^2 \\to a^2 = c^2 - b^2.' },
+      { kind: 'mcq', prompt: 'Make r the subject of A = 4\\pi r^2.',
+        options: ['r = \\sqrt{\\frac{A}{4\\pi}}', 'r = \\frac{A}{4\\pi}', 'r = (\\frac{A}{4\\pi})^2', 'r = \\frac{\\sqrt{A}}{2}'], correct: 0,
+        solution: 'Divide by 4π then √.' },
+      { kind: 'mcq', prompt: 'Make L the subject of T = 2\\pi \\sqrt{\\frac{L}{g}}.',
+        options: ['L = g(\\frac{T}{2\\pi})^2', 'L = \\frac{gT}{2\\pi}', 'L = \\frac{g}{T^2}', 'L = (\\frac{T}{2\\pi})^2'], correct: 0,
+        solution: '\\frac{T}{2\\pi} = \\sqrt{\\frac{L}{g}}; square both sides; ×g.' },
+      { kind: 'fill-num', prompt: 'If E = \\frac{1}{2} m v^2, with E = 200 and m = 4, find v (positive).', answer: 10,
+        solution: 'v^2 = \\frac{2E}{m} = \\frac{400}{4} = 100 \\to v = 10.' },
+    ],
+  },
+  {
+    id: 'L6',
+    title: 'Lesson 6 · Subject appears in more than one term',
+    teach: {
+      heading: 'Collect every term with the subject on one side, then factorise',
+      body: [
+        'Sometimes the subject you want appears in two different terms — typically once on each side, or inside a fraction.',
+        'Step 1 — get rid of any fractions by multiplying out. Step 2 — move every term containing the subject to ONE side and everything else to the OTHER side. Step 3 — FACTORISE the subject out. Step 4 — divide by the bracket.',
+        'This factorising step is the whole trick. Until you do it, the subject is "trapped" in two places at once.',
+        'Always double-check the sign you pull out — if you take x out of (-3x), the bracket starts with a -3.',
+      ],
+      example: 'Make x the subject of y(x + 1) = x. Expand: yx + y = x. Move: yx - x = -y. Factorise: x(y - 1) = -y. Divide: x = \\frac{-y}{y - 1} = \\frac{y}{1 - y}.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'Solve 5x = 2x + 6.',
+        options: ['x = 2', 'x = 6', 'x = 1', 'x = 3'], correct: 0,
+        solution: '5x - 2x = 6 \\to 3x = 6.' },
+      { kind: 'mcq', prompt: 'Make x the subject of ax + b = cx + d.',
+        options: ['x = \\frac{d - b}{a - c}', 'x = \\frac{b - d}{a - c}', 'x = \\frac{b + d}{a + c}', 'x = \\frac{a + c}{b + d}'], correct: 0,
+        solution: 'ax - cx = d - b \\to x(a - c) = d - b.' },
+      { kind: 'mcq', prompt: 'Make x the subject of y = \\frac{x + 3}{x - 1}.',
+        options: ['x = \\frac{y + 3}{y - 1}', 'x = \\frac{y - 3}{y + 1}', 'x = (y + 3)(y - 1)', 'x = y - 3'], correct: 0,
+        solution: 'y(x - 1) = x + 3 \\to yx - x = y + 3 \\to x(y - 1) = y + 3.' },
+      { kind: 'mcq', prompt: 'Solve 2x + 5 = 3x - 7.',
+        options: ['x = 12', 'x = -2', 'x = 6', 'x = -12'], correct: 0,
+        solution: '5 + 7 = 3x - 2x \\to 12 = x.' },
+      { kind: 'mcq', prompt: 'Make a the subject of ka + 1 = a + k.',
+        options: ['a = 1', 'a = k', 'a = \\frac{k - 1}{k - 1}', 'a = \\frac{k + 1}{k - 1}'], correct: 0,
+        solution: 'ka - a = k - 1 \\to a(k - 1) = k - 1 \\to a = 1.' },
+      { kind: 'mcq', prompt: 'Make x the subject of y(x + 1) = x.',
+        options: ['x = \\frac{y}{1 - y}', 'x = \\frac{y}{y - 1}', 'x = \\frac{1 - y}{y}', 'x = y - 1'], correct: 0,
+        solution: 'yx + y = x \\to y = x - yx = x(1 - y).' },
+      { kind: 'mcq', prompt: 'Make x the subject of \\frac{1}{x} + \\frac{1}{y} = \\frac{1}{f}.',
+        options: ['x = \\frac{yf}{y - f}', 'x = \\frac{y - f}{yf}', 'x = y - f', 'x = yf'], correct: 0,
+        solution: '\\frac{1}{x} = \\frac{y - f}{yf} \\to x = \\frac{yf}{y - f}.' },
+      { kind: 'mcq', prompt: 'Make a the subject of ab + ac = d.',
+        options: ['a = \\frac{d}{b + c}', 'a = d - b - c', 'a = \\frac{b + c}{d}', 'a = d \\cdot b \\cdot c'], correct: 0,
+        solution: 'a(b + c) = d.' },
+      { kind: 'mcq', prompt: 'Make x the subject of y = \\frac{ax}{x + 1}.',
+        options: ['x = \\frac{y}{a - y}', 'x = \\frac{y}{y - a}', 'x = \\frac{a - y}{y}', 'x = ay - 1'], correct: 0,
+        solution: 'y(x + 1) = ax \\to yx + y = ax \\to y = ax - yx = x(a - y).' },
+      { kind: 'mcq', prompt: 'Solve m + 3 = 5(m - 1).',
+        options: ['m = 2', 'm = -2', 'm = 4', 'm = 8'], correct: 0,
+        solution: 'm + 3 = 5m - 5 \\to 8 = 4m \\to m = 2.' },
+      { kind: 'mcq', prompt: 'Make t the subject of at - bt = c.',
+        options: ['t = \\frac{c}{a - b}', 't = \\frac{a - b}{c}', 't = \\frac{a + b}{c}', 't = c(a - b)'], correct: 0,
+        solution: 't(a - b) = c.' },
+      { kind: 'fill-num', prompt: 'Solve 3x = x + 8.', answer: 4,
+        solution: '2x = 8 \\to x = 4.' },
+    ],
+  },
+  {
+    id: 'L7',
+    title: 'Lesson 7 · Function notation — evaluating f(x)',
+    teach: {
+      heading: 'f(x) is a rule. f(3) means "apply the rule to 3"',
+      body: [
+        'A FUNCTION is a rule that turns each input into exactly one output.',
+        'We write functions as f(x) = …, g(x) = …, h(x) = … . The letter (f, g, h) is the rule’s name; the (x) reminds you what the input is called.',
+        'To EVALUATE f(a), substitute a wherever x appears. e.g. if f(x) = 2x + 1, then f(3) = 2(3) + 1 = 7.',
+        'You can also be told that f(?) equals a value, and asked to find ? — that’s really just solving an equation.',
+      ],
+      example: 'If f(x) = x^2 + 1, then f(-2) = (-2)^2 + 1 = 4 + 1 = 5.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'If f(x) = 2x + 1, find f(3).',
+        options: ['7', '6', '5', '9'], correct: 0,
+        solution: '2(3) + 1 = 7.' },
+      { kind: 'mcq', prompt: 'If f(x) = 3x - 2, find f(0).',
+        options: ['-2', '0', '2', '-3'], correct: 0,
+        solution: '3(0) - 2 = -2.' },
+      { kind: 'mcq', prompt: 'If f(x) = x^2 + 1, find f(-2).',
+        options: ['5', '-3', '3', '-5'], correct: 0,
+        solution: '(-2)^2 + 1 = 5.' },
+      { kind: 'mcq', prompt: 'If f(x) = 5x - 3, find f(2).',
+        options: ['7', '13', '8', '12'], correct: 0,
+        solution: '5(2) - 3 = 7.' },
+      { kind: 'mcq', prompt: 'If f(x) = \\frac{x + 1}{x - 1}, find f(2).',
+        options: ['3', '0', '1', 'undefined'], correct: 0,
+        solution: '\\frac{3}{1} = 3.' },
+      { kind: 'mcq', prompt: 'If f(x) = x^3, find f(-3).',
+        options: ['-27', '27', '-9', '9'], correct: 0,
+        solution: '(-3)^3 = -27.' },
+      { kind: 'mcq', prompt: 'If f(x) = 2x^2 - x, find f(3).',
+        options: ['15', '18', '21', '17'], correct: 0,
+        solution: '2(9) - 3 = 15.' },
+      { kind: 'mcq', prompt: 'If f(x) = 4 - x, find f(1) + f(-1).',
+        options: ['8', '4', '0', '6'], correct: 0,
+        solution: '3 + 5 = 8.' },
+      { kind: 'mcq', prompt: 'If f(x) = \\frac{1}{x} (x \\ne 0), find f(0.5).',
+        options: ['2', '0.5', '-2', '1'], correct: 0,
+        solution: '\\frac{1}{0.5} = 2.' },
+      { kind: 'mcq', prompt: 'If f(x) = x^2, for which value of x is f(x) = 9?',
+        options: ['\\pm 3', '3', '-3', '81'], correct: 0,
+        solution: 'Two roots: x = 3 or x = -3.' },
+      { kind: 'mcq', prompt: 'If g(x) = 3x + k and g(2) = 7, find k.',
+        options: ['1', '7', '-1', '13'], correct: 0,
+        solution: '3(2) + k = 7 \\to k = 1.' },
+      { kind: 'fill-num', prompt: 'If h(x) = x^2 - 2x, find h(5).', answer: 15,
+        solution: '25 - 10 = 15.' },
+    ],
+  },
+  {
+    id: 'L8',
+    title: 'Lesson 8 · Domain and range',
+    teach: {
+      heading: 'Domain = inputs allowed. Range = outputs produced',
+      body: [
+        'The DOMAIN of a function is the set of allowed input values (the x-values).',
+        'The RANGE is the set of output values (the f(x)-values) the rule actually produces over its domain.',
+        'Two things commonly RESTRICT the domain in IGCSE problems: (1) you cannot divide by zero, so any x that makes a denominator 0 is banned; (2) you cannot take the square root of a negative real number, so any x that makes the inside of a √ negative is banned.',
+        'For ranges, look at the shape of the graph: x^2 only ever gives ≥ 0; a positive √ only gives ≥ 0; (x-a)^2 + k bottoms out at k.',
+      ],
+      example: 'f(x) = \\sqrt{x - 4}. The expression under the root must be \\ge 0, so x \\ge 4. Domain: x \\ge 4. Range: f(x) \\ge 0.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'The DOMAIN of f(x) is the set of allowed …',
+        options: ['inputs', 'outputs', 'numbers', 'answers'], correct: 0,
+        solution: 'Inputs (x-values).' },
+      { kind: 'mcq', prompt: 'The RANGE of f(x) is the set of …',
+        options: ['outputs (values f gives)', 'inputs', 'integers only', 'positive numbers only'], correct: 0,
+        solution: 'Outputs (f(x) values).' },
+      { kind: 'mcq', prompt: 'Largest possible domain of f(x) = \\sqrt{x}.',
+        options: ['x \\ge 0', 'x > 0', 'x \\le 0', 'all real x'], correct: 0,
+        solution: 'Inside the root must be \\ge 0.' },
+      { kind: 'mcq', prompt: 'Domain of f(x) = \\frac{1}{x}.',
+        options: ['x \\ne 0', 'x > 0', 'x \\ge 0', 'all real x'], correct: 0,
+        solution: 'Cannot divide by 0.' },
+      { kind: 'mcq', prompt: 'Domain of f(x) = \\sqrt{x - 4}.',
+        options: ['x \\ge 4', 'x > 4', 'x \\le 4', 'x \\ge 0'], correct: 0,
+        solution: 'x - 4 \\ge 0.' },
+      { kind: 'mcq', prompt: 'Range of f(x) = x^2 (all real x).',
+        options: ['y \\ge 0', 'y > 0', 'all real y', 'y \\le 0'], correct: 0,
+        solution: 'A square is never negative.' },
+      { kind: 'mcq', prompt: 'Range of f(x) = -x^2 (all real x).',
+        options: ['y \\le 0', 'y < 0', 'all real y', 'y \\ge 0'], correct: 0,
+        solution: '-x^2 is never positive.' },
+      { kind: 'mcq', prompt: 'Domain of f(x) = \\frac{1}{x - 3}.',
+        options: ['x \\ne 3', 'x > 3', 'x \\ge 3', 'all real x'], correct: 0,
+        solution: 'Denominator zero when x = 3.' },
+      { kind: 'mcq', prompt: 'Range of f(x) = \\sqrt{x} for x \\ge 0.',
+        options: ['y \\ge 0', 'y > 0', 'all real y', 'y \\ne 0'], correct: 0,
+        solution: 'The principal root is always \\ge 0.' },
+      { kind: 'mcq', prompt: 'Domain of f(x) = \\sqrt{2x - 1}.',
+        options: ['x \\ge \\frac{1}{2}', 'x \\ge 0', 'x > \\frac{1}{2}', 'x \\le \\frac{1}{2}'], correct: 0,
+        solution: '2x - 1 \\ge 0 \\to x \\ge \\frac{1}{2}.' },
+      { kind: 'mcq', prompt: 'If f(x) = x^2 + 1, the smallest value in its range is …',
+        options: ['1', '0', '-1', '2'], correct: 0,
+        solution: 'x^2 \\ge 0, so f(x) \\ge 1.' },
+      { kind: 'mcq', prompt: 'Domain of f(x) = \\frac{1}{x^2}.',
+        options: ['x \\ne 0', 'x > 0', 'x < 0', 'x \\ge 0'], correct: 0,
+        solution: 'Denominator zero only when x = 0.' },
+    ],
+  },
+  {
+    id: 'L9',
+    title: 'Lesson 9 · Composite functions fg(x)',
+    teach: {
+      heading: 'fg(x) means "first do g, then feed the result into f"',
+      body: [
+        'A COMPOSITE function applies one rule then another. The notation fg(x) means f(g(x)) — work the INSIDE function first.',
+        'fg(x) and gf(x) are usually different — order matters!',
+        'To find fg(x) symbolically: replace every x in f(x) with the whole expression g(x). To find fg(a) numerically: compute g(a), then plug that into f.',
+        'Composing a function with itself, ff(x), is also fine — just feed f’s output back into f.',
+      ],
+      example: 'f(x) = x + 6, g(x) = x^2. Then fg(2) = f(g(2)) = f(4) = 4 + 6 = 10. As an expression, fg(x) = x^2 + 6.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'f(x) = x + 1, g(x) = 2x. Find fg(3) = f(g(3)).',
+        options: ['7', '6', '8', '5'], correct: 0,
+        solution: 'g(3) = 6; f(6) = 7.' },
+      { kind: 'mcq', prompt: 'Same f, g. Find gf(3) = g(f(3)).',
+        options: ['8', '7', '6', '9'], correct: 0,
+        solution: 'f(3) = 4; g(4) = 8.' },
+      { kind: 'mcq', prompt: 'f(x) = x + 6, g(x) = x^2. Find fg(2).',
+        options: ['10', '64', '12', '14'], correct: 0,
+        solution: 'g(2) = 4; f(4) = 10.' },
+      { kind: 'mcq', prompt: 'f(x) = x^2, g(x) = x + 3. Find fg(2).',
+        options: ['25', '7', '9', '16'], correct: 0,
+        solution: 'g(2) = 5; f(5) = 25.' },
+      { kind: 'mcq', prompt: 'f(x) = 2x + 1, g(x) = x - 3. Find fg(5).',
+        options: ['5', '11', '7', '13'], correct: 0,
+        solution: 'g(5) = 2; f(2) = 5.' },
+      { kind: 'mcq', prompt: 'Same f, g. Find gf(5).',
+        options: ['8', '11', '7', '5'], correct: 0,
+        solution: 'f(5) = 11; g(11) = 8.' },
+      { kind: 'mcq', prompt: 'f(x) = x^2, g(x) = 2x + 1. Find an expression for fg(x).',
+        options: ['(2x + 1)^2', '2x^2 + 1', '2x^2 + 2x + 1', '4x^2 + 1'], correct: 0,
+        solution: 'Square the whole g(x).' },
+      { kind: 'mcq', prompt: 'f(x) = x + 4, g(x) = 3x. Find an expression for gf(x).',
+        options: ['3x + 12', '3x + 4', '3(x + 4)x', 'x + 12'], correct: 0,
+        solution: '3(x + 4) = 3x + 12.' },
+      { kind: 'mcq', prompt: 'f(x) = \\sqrt{x}, g(x) = x + 9. Find fg(7).',
+        options: ['4', '16', '5', '6'], correct: 0,
+        solution: 'g(7) = 16; \\sqrt{16} = 4.' },
+      { kind: 'mcq', prompt: 'f(x) = 3x - 2. Find ff(4) = f(f(4)).',
+        options: ['28', '10', '12', '30'], correct: 0,
+        solution: 'f(4) = 10; f(10) = 28.' },
+      { kind: 'mcq', prompt: 'f(x) = \\frac{1}{x} (x \\ne 0). Simplify ff(x).',
+        options: ['x', '\\frac{1}{x}', '\\frac{1}{x^2}', '0'], correct: 0,
+        solution: 'f(\\frac{1}{x}) = \\frac{1}{1/x} = x.' },
+      { kind: 'fill-num', prompt: 'f(x) = 2x + 5, g(x) = x^2. Find gf(0).', answer: 25,
+        solution: 'f(0) = 5; g(5) = 25.' },
+    ],
+  },
+  {
+    id: 'L10',
+    title: 'Lesson 10 · Inverse functions f^-1(x)',
+    teach: {
+      heading: 'The inverse undoes the function — swap x and y, then solve',
+      body: [
+        'If f turns x into y, the INVERSE f^-1 turns y back into x. So f^-1(f(x)) = x and f(f^-1(x)) = x.',
+        'Standard recipe to find an inverse: 1) Write y = f(x). 2) SWAP x and y. 3) Solve the new equation for y. 4) That is f^-1(x).',
+        'Equivalently: rearrange y = f(x) to make x the subject, then rename — replace y with x and x with f^-1(x).',
+        'Caution: f^-1(x) does NOT mean \\frac{1}{f(x)}. It is the inverse function, not the reciprocal.',
+      ],
+      example: 'f(x) = 5x - 3. Set y = 5x - 3. Swap: x = 5y - 3. Solve: y = \\frac{x + 3}{5}. So f^-1(x) = \\frac{x + 3}{5}.',
+    },
+    questions: [
+      { kind: 'mcq', prompt: 'If f(x) = x + 4, then f^-1(x) is …',
+        options: ['x - 4', '4 - x', '\\frac{1}{x + 4}', 'x + 4'], correct: 0,
+        solution: 'Subtraction undoes addition.' },
+      { kind: 'mcq', prompt: 'If f(x) = 3x, then f^-1(x) is …',
+        options: ['\\frac{x}{3}', '3x', '\\frac{3}{x}', 'x - 3'], correct: 0,
+        solution: 'Division by 3 undoes multiplication by 3.' },
+      { kind: 'mcq', prompt: 'If f(x) = 5x - 3, then f^-1(x) is …',
+        options: ['\\frac{x + 3}{5}', '\\frac{x - 3}{5}', '5x + 3', '\\frac{5 - x}{3}'], correct: 0,
+        solution: 'Add 3, then ÷5.' },
+      { kind: 'mcq', prompt: 'If f(x) = \\frac{x + 2}{3}, then f^-1(x) is …',
+        options: ['3x - 2', '3x + 2', '\\frac{x - 2}{3}', '3(x + 2)'], correct: 0,
+        solution: '×3 then -2.' },
+      { kind: 'mcq', prompt: 'f(x) = 2x + 1. Find f^-1(7).',
+        options: ['3', '15', '7', '4'], correct: 0,
+        solution: 'Solve 2x + 1 = 7 \\to x = 3.' },
+      { kind: 'mcq', prompt: 'f(x) = \\frac{x - 1}{4}. Find f^-1(2).',
+        options: ['9', '\\frac{1}{4}', '7', '5'], correct: 0,
+        solution: 'Solve \\frac{x - 1}{4} = 2 \\to x = 9.' },
+      { kind: 'mcq', prompt: 'f(x) = \\frac{1}{x} (x \\ne 0). Then f^-1(x) is …',
+        options: ['\\frac{1}{x}', 'x', '-\\frac{1}{x}', 'x^2'], correct: 0,
+        solution: 'f is its own inverse: y = 1/x \\to xy = 1 \\to x = 1/y.' },
+      { kind: 'mcq', prompt: 'If f(x) = 4x + 7, then f^-1(x) is …',
+        options: ['\\frac{x - 7}{4}', '\\frac{x + 7}{4}', '\\frac{7 - x}{4}', '4x - 7'], correct: 0,
+        solution: '-7, then ÷4.' },
+      { kind: 'mcq', prompt: 'f(x) = x^2 for x \\ge 0. Then f^-1(x) is …',
+        options: ['\\sqrt{x}', '\\pm\\sqrt{x}', '\\frac{x}{2}', 'x^2'], correct: 0,
+        solution: 'Restricting to x \\ge 0 picks the positive root.' },
+      { kind: 'mcq', prompt: 'f(x) = \\frac{5 - x}{2}. Find f^-1(x).',
+        options: ['5 - 2x', '5 + 2x', '\\frac{5 + x}{2}', '2x - 5'], correct: 0,
+        solution: 'y = \\frac{5 - x}{2} \\to 2y = 5 - x \\to x = 5 - 2y.' },
+      { kind: 'mcq', prompt: 'f(x) = x + 3, g(x) = 2x. Then (fg)^-1(x) is …',
+        options: ['\\frac{x - 3}{2}', '2x - 3', '\\frac{x}{2} + 3', '2(x - 3)'], correct: 0,
+        solution: 'fg(x) = 2x + 3; inverse: \\frac{x - 3}{2}.' },
+      { kind: 'fill-num', prompt: 'f(x) = 2x - 5. Solve f(x) = 9 by computing f^-1(9).', answer: 7,
+        solution: '2x - 5 = 9 \\to x = 7.' },
+    ],
+  },
+]
+
+const CH22_PROGRESS_KEY = 'tenali-chapter22-progress'
+function ch22_loadProgress() {
+  try { return JSON.parse(localStorage.getItem(CH22_PROGRESS_KEY) || '{}') || {} } catch { return {} }
+}
+function ch22_saveProgress(p) { try { localStorage.setItem(CH22_PROGRESS_KEY, JSON.stringify(p)) } catch {} }
+
+// --- Custom math renderer for Chapter 22 ----------------------------------
+function Ch22Frac({ num, den }) {
+  return (
+    <span style={{
+      display: 'inline-flex', flexDirection: 'column', alignItems: 'center',
+      verticalAlign: 'middle', margin: '0 0.18em', lineHeight: 1.05,
+      fontSize: '0.95em',
+    }}>
+      <span style={{ padding: '0 0.4em 0.05em', borderBottom: '1.6px solid currentColor' }}>{num}</span>
+      <span style={{ padding: '0.05em 0.4em 0' }}>{den}</span>
+    </span>
+  )
+}
+function ch22_subOps(s) {
+  return String(s)
+    .replace(/\\times/g, '×').replace(/\\div/g, '÷')
+    .replace(/\\approx/g, '≈').replace(/\\sim\b/g, '~')
+    .replace(/\\to\b/g, '→').replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥')
+    .replace(/\\ne\b/g, '≠').replace(/\\neq\b/g, '≠')
+    .replace(/\\cdot/g, '·').replace(/\\cdots/g, '⋯').replace(/\\pm/g, '±')
+    .replace(/\\pi/g, 'π').replace(/\\theta/g, 'θ').replace(/\\Delta/g, 'Δ')
+    .replace(/\\alpha/g, 'α').replace(/\\beta/g, 'β').replace(/\\gamma/g, 'γ').replace(/\\delta/g, 'δ')
+    .replace(/\\mu\b/g, 'μ').replace(/\\sigma/g, 'σ').replace(/\\omega/g, 'ω')
+    .replace(/\\sum/g, '∑').replace(/\\prod/g, '∏').replace(/\\int/g, '∫')
+    .replace(/\\angle/g, '∠').replace(/\\triangle/g, '△').replace(/\\square/g, '□')
+    .replace(/\\infty/g, '∞')
+    .replace(/\\sqrt\{([^{}]+)\}/g, '√($1)')
+    .replace(/\\sqrt(\d+)/g, '√$1')
+    .replace(/\\ell\b/g, 'ℓ').replace(/\\circ/g, '°')
+    .replace(/\\sin\b/g, 'sin').replace(/\\cos\b/g, 'cos').replace(/\\tan\b/g, 'tan')
+    .replace(/\\log\b/g, 'log').replace(/\\ln\b/g, 'ln')
+    .replace(/\\left\(/g, '(').replace(/\\right\)/g, ')')
+    .replace(/\\left\[/g, '[').replace(/\\right\]/g, ']')
+    .replace(/\\u2208/g, '∈').replace(/\\u2209/g, '∉')
+    .replace(/\\u2205/g, '∅')
+    .replace(/\\u222a/g, '∪').replace(/\\u2229/g, '∩')
+    .replace(/\\u2286/g, '⊆').replace(/\\u2282/g, '⊂')
+    .replace(/\\u2113/g, 'ℓ').replace(/\\u00b0/g, '°')
+    .replace(/\\u2019/g, '’').replace(/\\u2032/g, '′').replace(/\\u2013/g, '–')
+    .replace(/\\u2660/g, '♠').replace(/\\u2663/g, '♣').replace(/\\u2665/g, '♥').replace(/\\u2666/g, '♦')
+    .replace(/\\dot\{(\d)\}/g, '$1̇')
+    .replace(/\\\$/g, '$').replace(/\\%/g, '%')
+}
+function ch22RenderMath(text) {
+  if (text == null) return null
+  const src = ch22_subOps(text).replace(/\\left\(/g, '(').replace(/\\right\)/g, ')')
+  const out = []
+  let i = 0, buf = ''
+  const flush = () => { if (buf) { out.push(buf); buf = '' } }
+  while (i < src.length) {
+    if (src.startsWith('\\frac{', i)) {
+      flush()
+      let j = i + 6, depth = 1
+      const ns = j
+      while (j < src.length) { if (src[j] === '{') depth++; else if (src[j] === '}') { depth--; if (depth === 0) break } j++ }
+      const numStr = src.slice(ns, j); j++
+      if (src[j] !== '{') { buf += src.slice(i, j); i = j; continue }
+      j++; depth = 1
+      const ds = j
+      while (j < src.length) { if (src[j] === '{') depth++; else if (src[j] === '}') { depth--; if (depth === 0) break } j++ }
+      const denStr = src.slice(ds, j); j++
+      out.push(<Ch22Frac key={`f${out.length}`} num={ch22RenderMath(numStr)} den={ch22RenderMath(denStr)} />)
+      i = j
+    } else if (src[i] === '^') {
+      const m = src.slice(i).match(/^\^(-?\d+)/)
+      if (m) { flush(); out.push(<sup key={`s${out.length}`} style={{ fontSize: '0.72em', verticalAlign: 'super' }}>{m[1]}</sup>); i += m[0].length }
+      else { buf += src[i]; i++ }
+    } else { buf += src[i]; i++ }
+  }
+  flush()
+  return out
+}
+
+const CH22_AUTO_ADVANCE_MS = 5000
+
+function Chapter22App({ onBack }) {
+  const [progress, setProgress] = useState(ch22_loadProgress)
+  const [activeId, setActiveId] = useState(null)
+  const [phase, setPhase] = useState('teach')
+  const [qIdx, setQIdx] = useState(0)
+  const [playList, setPlayList] = useState([])
+  const [lastWrongSrc, setLastWrongSrc] = useState(null)
+  const [selectedIdx, setSelectedIdx] = useState(null)
+  const [fillInput, setFillInput] = useState('')
+  const [revealed, setRevealed] = useState(false)
+  const [isCorrect, setIsCorrect] = useState(false)
+  const [autoCountdown, setAutoCountdown] = useState(0)
+  const inputRef = useRef(null)
+  const autoTimerRef = useRef(null)
+  const advanceRef = useRef(() => {})
+
+  const lesson = activeId ? CH22_LESSONS.find(l => l.id === activeId) : null
+  const currentSourceIdx = playList[qIdx]
+  const currentQ = lesson && currentSourceIdx != null ? lesson.questions[currentSourceIdx] : null
+  const isRetry = useMemo(() => {
+    if (currentSourceIdx == null) return false
+    return playList.slice(0, qIdx).includes(currentSourceIdx)
+  }, [playList, qIdx, currentSourceIdx])
+
+  const optionOrder = useMemo(() => {
+    if (!currentQ || currentQ.kind !== 'mcq') return []
+    return ch22_seededShuffle(currentQ.options.length, `${activeId}-${qIdx}-${currentSourceIdx}-${currentQ.prompt}`)
+  }, [activeId, qIdx, currentSourceIdx, currentQ])
+  const correctDisplayIdx = useMemo(() => optionOrder.indexOf(currentQ?.correct ?? -1), [optionOrder, currentQ])
+
+  useEffect(() => { ch22_saveProgress(progress) }, [progress])
+
+  useEffect(() => {
+    if (phase !== 'practice' || revealed) return
+    if (currentQ?.kind?.startsWith('fill') && inputRef.current) inputRef.current.focus()
+  }, [phase, qIdx, revealed, currentQ])
+
+  const startLesson = (id) => {
+    setActiveId(id)
+    const lessonRef = CH22_LESSONS.find(l => l.id === id)
+    const initial = Array.from({ length: lessonRef.questions.length }, (_, i) => i)
+    setPlayList(initial)
+    setLastWrongSrc(null)
+    const p = progress[id] || {}
+    if (p.teachSeen) { setPhase('practice'); setQIdx(p.qIdx || 0) }
+    else { setPhase('teach'); setQIdx(0) }
+    setSelectedIdx(null); setFillInput(''); setRevealed(false); setIsCorrect(false)
+  }
+
+  const acknowledgeTeach = () => {
+    setProgress(p => ({ ...p, [activeId]: { ...(p[activeId] || {}), teachSeen: true, qIdx: 0 } }))
+    setPhase('practice'); setQIdx(0)
+    setSelectedIdx(null); setFillInput(''); setRevealed(false); setIsCorrect(false)
+    setLastWrongSrc(null)
+  }
+
+  const submitFill = () => {
+    if (!currentQ) return
+    if (revealed) { advance(); return }
+    const ok = ch22_checkFill(currentQ, fillInput)
+    setIsCorrect(ok); setRevealed(true)
+    setLastWrongSrc(ok ? null : currentSourceIdx)
+  }
+
+  const pickMcq = (displayIdx) => {
+    if (!currentQ || revealed || currentQ.kind !== 'mcq') return
+    const optSourceIdx = optionOrder[displayIdx]
+    const ok = optSourceIdx === currentQ.correct
+    setSelectedIdx(displayIdx); setIsCorrect(ok); setRevealed(true)
+    setLastWrongSrc(ok ? null : currentSourceIdx)
+  }
+
+  const cancelAutoAdvance = () => {
+    if (autoTimerRef.current) { clearInterval(autoTimerRef.current); autoTimerRef.current = null }
+    setAutoCountdown(0)
+  }
+
+  const advance = () => {
+    cancelAutoAdvance()
+    if (!lesson) return
+    let workingList = playList
+    if (lastWrongSrc != null) {
+      workingList = [...playList, lastWrongSrc]
+      setPlayList(workingList)
+      setLastWrongSrc(null)
+    }
+    const next = qIdx + 1
+    if (next >= workingList.length) {
+      setProgress(p => ({ ...p, [activeId]: { ...(p[activeId] || {}), teachSeen: true, qIdx: lesson.questions.length, completed: true } }))
+      setPhase('done')
+    } else {
+      setQIdx(next)
+      setSelectedIdx(null); setFillInput(''); setRevealed(false); setIsCorrect(false)
+      setProgress(p => ({ ...p, [activeId]: { ...(p[activeId] || {}), teachSeen: true, qIdx: Math.min(lesson.questions.length, next) } }))
+    }
+  }
+  advanceRef.current = advance
+
+  const jumpToQuestion = (i) => {
+    cancelAutoAdvance()
+    if (!lesson) return
+    const clamped = Math.max(0, Math.min(playList.length - 1, i))
+    setQIdx(clamped); setLastWrongSrc(null)
+    setSelectedIdx(null); setFillInput(''); setRevealed(false); setIsCorrect(false)
+    setProgress(p => {
+      const cur = p[activeId] || {}
+      const saved = Math.max(cur.qIdx || 0, Math.min(lesson.questions.length, clamped))
+      return { ...p, [activeId]: { ...cur, teachSeen: true, qIdx: saved } }
+    })
+  }
+
+  const backToOverview = () => {
+    cancelAutoAdvance()
+    setActiveId(null); setPhase('teach'); setQIdx(0)
+    setSelectedIdx(null); setFillInput(''); setRevealed(false); setIsCorrect(false)
+  }
+
+  const resetAll = () => {
+    if (!confirm('Reset all Chapter 22 progress?')) return
+    setProgress({}); ch22_saveProgress({})
+    backToOverview()
+  }
+
+  useEffect(() => {
+    if (phase !== 'practice' || !revealed) { cancelAutoAdvance(); return }
+    const total = Math.round(CH22_AUTO_ADVANCE_MS / 1000)
+    setAutoCountdown(total)
+    autoTimerRef.current = setInterval(() => {
+      setAutoCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(autoTimerRef.current); autoTimerRef.current = null
+          advanceRef.current()
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+    return () => { if (autoTimerRef.current) { clearInterval(autoTimerRef.current); autoTimerRef.current = null } }
+  }, [phase, revealed, qIdx, activeId])
+
+  useEffect(() => {
+    if (phase !== 'practice' || !currentQ) return
+    const onKey = (e) => {
+      if (revealed) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); advance() }
+        return
+      }
+      if (currentQ.kind === 'mcq') {
+        const k = e.key
+        if (/^[1-9]$/.test(k)) {
+          const i = parseInt(k, 10) - 1
+          if (i < currentQ.options.length) { e.preventDefault(); pickMcq(i) }
+        }
+      } else if (currentQ.kind?.startsWith('fill')) {
+        if (e.key === 'Enter') { e.preventDefault(); submitFill() }
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [phase, qIdx, revealed, currentQ, fillInput, optionOrder])
+
+  // ────────── Overview ──────────
+  if (!activeId) {
+    const total = CH22_LESSONS.length
+    const done = CH22_LESSONS.filter(l => progress[l.id]?.completed).length
+    return (
+      <div style={{ maxWidth: 760, margin: '0 auto', padding: '1.5rem 1rem', color: 'var(--clr-text)' }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 16 }}>
+          <button className="back-button" onClick={onBack}>← Home</button>
+          <button className="back-button" style={{ marginLeft: 'auto' }} onClick={resetAll}>Reset progress</button>
+        </div>
+        <h1 style={{ marginBottom: 4 }}>Chapter 22 — More Equations, Formulae & Functions</h1>
+        <p className="subtitle" style={{ marginTop: 0 }}>
+          Cambridge IGCSE Mathematics · {done}/{total} lessons complete
+        </p>
+        <p style={{ opacity: 0.85, marginTop: 8 }}>
+          Pick the next lesson. Each one starts with a short explanation, then a stream of multiple-choice and fill-in-the-blank
+          questions — easy warm-ups first, then the actual chapter exercise problems.
+        </p>
+        <ol style={{ listStyle: 'none', padding: 0, marginTop: 16 }}>
+          {CH22_LESSONS.map((l) => {
+            const p = progress[l.id] || {}
+            const completed = p.completed
+            const inProg = !completed && (p.teachSeen || (p.qIdx || 0) > 0)
+            return (
+              <li key={l.id} style={{ marginBottom: 8 }}>
+                <button
+                  onClick={() => startLesson(l.id)}
+                  style={{
+                    width: '100%', textAlign: 'left', padding: '12px 14px',
+                    borderRadius: 10,
+                    borderLeft: completed ? '4px solid #2ea043' : inProg ? '4px solid #388bfd' : '1px solid var(--clr-border, #444)',
+                    borderTop: '1px solid ' + (completed ? '#2ea043' : 'var(--clr-border, #444)'),
+                    borderRight: '1px solid ' + (completed ? '#2ea043' : 'var(--clr-border, #444)'),
+                    borderBottom: '1px solid ' + (completed ? '#2ea043' : 'var(--clr-border, #444)'),
+                    background: completed
+                      ? 'linear-gradient(90deg, rgba(46,160,67,0.32) 0%, rgba(46,160,67,0.18) 100%)'
+                      : inProg ? 'rgba(56,139,253,0.10)' : 'var(--clr-surface, #1c1c1f)',
+                    color: 'var(--clr-text)',
+                    fontWeight: completed ? 600 : 400,
+                    cursor: 'pointer', fontSize: '0.95rem',
+                    boxShadow: completed ? '0 0 0 1px rgba(46,160,67,0.35) inset' : 'none',
+                  }}
+                >
+                  <span style={{ marginRight: 8 }}>{completed ? '✅' : inProg ? '▶' : '○'}</span>
+                  {ch22RenderMath(l.title)}
+                  {completed && (
+                    <span style={{
+                      float: 'right', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.5px',
+                      color: '#fff', background: '#2ea043', padding: '2px 8px', borderRadius: 10,
+                    }}>DONE</span>
+                  )}
+                  {p.qIdx > 0 && !completed && (
+                    <span style={{ float: 'right', fontSize: '0.8rem', opacity: 0.7 }}>{p.qIdx}/{l.questions.length}</span>
+                  )}
+                </button>
+              </li>
+            )
+          })}
+        </ol>
+      </div>
+    )
+  }
+
+  // ────────── Teach ──────────
+  if (phase === 'teach') {
+    return (
+      <div style={{ maxWidth: 720, margin: '0 auto', padding: '1.5rem 1rem', color: 'var(--clr-text)' }}>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+          <button className="back-button" onClick={backToOverview}>← Lessons</button>
+        </div>
+        <h2 style={{ marginBottom: 4 }}>{ch22RenderMath(lesson.title)}</h2>
+        <h3 style={{ color: 'var(--clr-accent, #6cf)', marginTop: 16 }}>{ch22RenderMath(lesson.teach.heading)}</h3>
+        {lesson.teach.body.map((para, i) => (
+          <p key={i} style={{ lineHeight: 1.7, marginBottom: 10, fontSize: '1rem' }}>{ch22RenderMath(para)}</p>
+        ))}
+        <div style={{
+          marginTop: 14, padding: 14, borderRadius: 8,
+          background: 'rgba(108,206,255,0.08)', border: '1px solid rgba(108,206,255,0.25)',
+          fontSize: '1rem', lineHeight: 1.7,
+        }}>
+          <strong>Worked example: </strong>{ch22RenderMath(lesson.teach.example)}
+        </div>
+        {lesson.qFormat && <p style={{ marginTop: 14, fontSize: '0.9rem', opacity: 0.8 }}><em>Note:</em> {lesson.qFormat}</p>}
+        <button onClick={acknowledgeTeach} style={{
+          marginTop: 18, padding: '10px 18px', borderRadius: 8, fontSize: '1rem',
+          background: 'var(--clr-accent, #2ea043)', color: 'white', border: 'none', cursor: 'pointer',
+        }}>I've got it — start questions →</button>
+      </div>
+    )
+  }
+
+  // ────────── Done ──────────
+  if (phase === 'done') {
+    const idx = CH22_LESSONS.findIndex(l => l.id === activeId)
+    const next = CH22_LESSONS[idx + 1]
+    return (
+      <div style={{ maxWidth: 720, margin: '0 auto', padding: '1.5rem 1rem', color: 'var(--clr-text)' }}>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+          <button className="back-button" onClick={backToOverview}>← Lessons</button>
+        </div>
+        <h2>🎉 Lesson complete</h2>
+        <p>You finished <strong>{ch22RenderMath(lesson.title)}</strong>.</p>
+        {next ? (
+          <button onClick={() => startLesson(next.id)} style={{
+            marginTop: 12, padding: '10px 18px', borderRadius: 8, fontSize: '1rem',
+            background: 'var(--clr-accent, #2ea043)', color: 'white', border: 'none', cursor: 'pointer',
+          }}>Next: {ch22RenderMath(next.title)} →</button>
+        ) : (
+          <p style={{ marginTop: 16, fontSize: '1.05rem' }}>🎓 You've completed every lesson in Chapter 22.</p>
+        )}
+        <button onClick={backToOverview} style={{
+          marginTop: 12, marginLeft: 8, padding: '10px 18px', borderRadius: 8,
+          background: 'transparent', color: 'var(--clr-text)', border: '1px solid var(--clr-border, #555)', cursor: 'pointer',
+        }}>Back to lessons</button>
+      </div>
+    )
+  }
+
+  // ────────── Practice ──────────
+  const sliderMax = Math.max(1, playList.length)
+  return (
+    <div style={{ maxWidth: 720, margin: '0 auto', padding: '1.5rem 1rem', color: 'var(--clr-text)' }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 12, alignItems: 'center' }}>
+        <button className="back-button" onClick={backToOverview}>← Lessons</button>
+        <button className="back-button" onClick={() => setPhase('teach')}>📖 Re-read teach</button>
+        <span style={{ marginLeft: 'auto', fontSize: '0.85rem', opacity: 0.75 }}>
+          Question {qIdx + 1} / {sliderMax}
+          {sliderMax > lesson.questions.length && (
+            <span style={{ marginLeft: 6, color: '#f0a020' }}>· {sliderMax - lesson.questions.length} retry queued</span>
+          )}
+        </span>
+      </div>
+      <h3 style={{ marginBottom: 8 }}>{ch22RenderMath(lesson.title)}</h3>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
+        <span style={{ fontSize: '0.78rem', opacity: 0.65, minWidth: 18, textAlign: 'right' }}>1</span>
+        <input
+          type="range"
+          min={1}
+          max={sliderMax}
+          value={qIdx + 1}
+          onChange={e => jumpToQuestion(parseInt(e.target.value, 10) - 1)}
+          aria-label="Jump to question"
+          style={{
+            flex: 1, accentColor: 'var(--clr-accent, #2ea043)',
+            cursor: 'pointer', height: 22,
+          }}
+        />
+        <span style={{ fontSize: '0.78rem', opacity: 0.65, minWidth: 22 }}>{sliderMax}</span>
+      </div>
+
+      <div style={{
+        padding: '22px 24px', borderRadius: 10, background: 'var(--clr-surface, #1c1c1f)',
+        border: '1px solid var(--clr-border, #333)', marginBottom: 16,
+        fontSize: '1.25rem', lineHeight: 2.1, textAlign: 'center',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 80,
+        position: 'relative',
+      }}>
+        {isRetry && (
+          <span style={{
+            position: 'absolute', top: 8, right: 12, fontSize: '0.7rem', fontWeight: 700,
+            letterSpacing: '0.5px', color: '#f0a020', background: 'rgba(240,160,32,0.15)',
+            border: '1px solid rgba(240,160,32,0.45)', padding: '2px 8px', borderRadius: 10,
+          }}>↻ RETRY</span>
+        )}
+        <span>{ch22RenderMath(currentQ.prompt)}</span>
+      </div>
+
+      {currentQ.kind === 'mcq' ? (
+        <div className="options-list">
+          {optionOrder.map((srcIdx, displayIdx) => {
+            const opt = currentQ.options[srcIdx]
+            const isSelected = selectedIdx === displayIdx
+            const isCorrectOpt = revealed && correctDisplayIdx === displayIdx
+            const isWrongPick = revealed && isSelected && !isCorrect
+            return (
+              <button
+                key={displayIdx}
+                className={`option-card ${isSelected ? 'selected' : ''} ${isCorrectOpt ? 'correct-option' : ''} ${isWrongPick ? 'wrong-option' : ''}`}
+                onClick={() => pickMcq(displayIdx)}
+                disabled={revealed}
+                style={{
+                  borderColor: isCorrectOpt ? 'var(--clr-correct, #2ea043)' : isWrongPick ? 'var(--clr-wrong, #f85149)' : undefined,
+                  background: isCorrectOpt ? 'rgba(46,160,67,0.15)' : isWrongPick ? 'rgba(248,81,73,0.15)' : undefined,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  position: 'relative', padding: '18px 24px', minHeight: 64,
+                  fontSize: '1.1rem', lineHeight: 1.9,
+                }}
+              >
+                <span style={{
+                  position: 'absolute', left: 18, top: '50%', transform: 'translateY(-50%)',
+                  fontWeight: 700, opacity: 0.6, fontSize: '0.95rem',
+                }}>{CH22_OPTION_LABEL[displayIdx]}.</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center' }}>{ch22RenderMath(opt)}</span>
+              </button>
+            )
+          })}
+        </div>
+      ) : (
+        <>
+          <input
+            ref={inputRef}
+            type="text"
+            value={fillInput}
+            onChange={e => setFillInput(e.target.value)}
+            disabled={revealed}
+            placeholder="Your answer…"
+            autoComplete="off"
+            style={{
+              width: '100%', padding: '14px 16px', fontSize: '1.15rem', borderRadius: 8,
+              border: '1px solid var(--clr-border, #555)', textAlign: 'center',
+              background: revealed ? 'rgba(255,255,255,0.04)' : 'var(--clr-surface, #1c1c1f)',
+              color: 'var(--clr-text)', boxSizing: 'border-box',
+            }}
+          />
+          {!revealed && (
+            <div style={{ display: 'flex', gap: 8, marginTop: 12, justifyContent: 'center' }}>
+              <button onClick={submitFill} disabled={!fillInput.trim()} style={{
+                padding: '10px 22px', borderRadius: 6, background: 'var(--clr-accent, #2ea043)',
+                color: 'white', border: 'none', cursor: 'pointer', fontSize: '0.95rem',
+                opacity: fillInput.trim() ? 1 : 0.5,
+              }}>Check</button>
+            </div>
+          )}
+        </>
+      )}
+
+      {revealed && (
+        <>
+          <div style={{
+            marginTop: 16, padding: 16, borderRadius: 8,
+            background: isCorrect ? 'rgba(46,160,67,0.15)' : 'rgba(248,81,73,0.15)',
+            border: `1px solid ${isCorrect ? 'rgba(46,160,67,0.45)' : 'rgba(248,81,73,0.45)'}`,
+            fontSize: '1rem', lineHeight: 1.9,
+          }}>
+            <strong>{isCorrect ? '✅ Correct!' : '❌ Not quite.'}</strong>
+            <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+              <strong>Answer:</strong>
+              <span>{currentQ.kind === 'mcq'
+                ? ch22RenderMath(currentQ.options[currentQ.correct])
+                : ch22RenderMath(String(currentQ.answer))}</span>
+            </div>
+            {currentQ.solution && (
+              <div style={{ marginTop: 8, opacity: 0.9, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+                <strong>Working:</strong>
+                <span>{ch22RenderMath(currentQ.solution)}</span>
+              </div>
+            )}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 14, justifyContent: 'center' }}>
+            <button onClick={advance} style={{
+              padding: '12px 28px', borderRadius: 8, background: 'var(--clr-accent, #2ea043)',
+              color: 'white', border: 'none', cursor: 'pointer', fontSize: '1rem', fontWeight: 600,
+            }}>
+              {qIdx + 1 === lesson.questions.length ? 'Finish lesson →' : 'Next →'}
+            </button>
+            <span style={{ fontSize: '0.85rem', opacity: 0.65 }}>
+              auto-advance in {autoCountdown}s · or press <kbd style={{ padding: '1px 6px', border: '1px solid var(--clr-border, #555)', borderRadius: 4, fontSize: '0.78rem' }}>Enter</kbd>
+            </span>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 function App() {
   // Currently selected quiz mode (null = home menu, or key like 'gk', 'addition', etc.)
   const [mode, setMode] = useState(null)
@@ -24888,6 +27352,30 @@ function App() {
           {theme === 'dark' ? '☀️' : '🌙'}
         </button>
         <Chapter20App onBack={() => { window.location.href = '/' }} />
+      </>
+    )
+  }
+
+  // Route: /chapter21 → Cambridge IGCSE Chapter 21 (Ratio, Rate & Proportion)
+  if (pathname === '/chapter21') {
+    return (
+      <>
+        <button className="theme-toggle" onClick={toggleTheme} title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
+          {theme === 'dark' ? '☀️' : '🌙'}
+        </button>
+        <Chapter21App onBack={() => { window.location.href = '/' }} />
+      </>
+    )
+  }
+
+  // Route: /chapter22 → Cambridge IGCSE Chapter 22 (More Equations, Formulae & Functions)
+  if (pathname === '/chapter22') {
+    return (
+      <>
+        <button className="theme-toggle" onClick={toggleTheme} title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
+          {theme === 'dark' ? '☀️' : '🌙'}
+        </button>
+        <Chapter22App onBack={() => { window.location.href = '/' }} />
       </>
     )
   }
