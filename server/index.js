@@ -8939,6 +8939,30 @@ app.get('/enhanced', (_req, res) => {
 // LEARNING TRANSFER CHALLENGES & PROGRESS SYNC API
 // ═══════════════════════════════════════════════════════════════════════════
 
+const inMemoryUserProfiles = {};
+
+function getInMemoryUser(username) {
+  const lowercaseUsername = username.toLowerCase();
+  if (!inMemoryUserProfiles[lowercaseUsername]) {
+    inMemoryUserProfiles[lowercaseUsername] = {
+      username: lowercaseUsername,
+      completedTopics: [],
+      goldMastery: [],
+      coins: 0,
+      achievements: { completedCollections: [] },
+      pinnedBadges: ["", "", ""],
+      totalSolved: 0,
+      streak: 0,
+      lastActiveDate: "",
+      createdAt: new Date(),
+      save: async function() {
+        return this;
+      }
+    };
+  }
+  return inMemoryUserProfiles[lowercaseUsername];
+}
+
 async function getUserFromReq(req) {
   const authHeader = req.get('authorization') || '';
   const m = /^Bearer\s+(.+)$/i.exec(authHeader);
@@ -8947,10 +8971,21 @@ async function getUserFromReq(req) {
     const jwt = require('jsonwebtoken');
     const JWT_SECRET = process.env.JWT_SECRET || 'tenali-dev-secret-change-me';
     const payload = jwt.verify(m[1], JWT_SECRET);
-    if (payload && payload.sub) {
-      return await auth.User.findById(payload.sub);
+    if (payload && payload.username) {
+      const mongoose = require('mongoose');
+      if (mongoose.connection.readyState === 1) {
+        try {
+          const dbUser = await auth.User.findById(payload.sub || payload.username);
+          if (dbUser) return dbUser;
+        } catch (dbErr) {
+          console.error('[auth] Database query failed, falling back to in-memory profile:', dbErr.message);
+        }
+      }
+      return getInMemoryUser(payload.username);
     }
-  } catch (e) {}
+  } catch (e) {
+    console.error('[auth] getUserFromReq error:', e.message);
+  }
   return null;
 }
 
@@ -8995,11 +9030,29 @@ function isStage3CompletedServer(topicKey, completedTopics) {
          completedTopics.includes(`${topicKey}-hard`);
 }
 
-// Compute daily active streak
+function getTopicBadgeLevelServer(topicKey, completedTopics) {
+  if (!completedTopics || !Array.isArray(completedTopics)) return 'locked';
+  const easy = completedTopics.includes(`${topicKey}-easy`);
+  const medium = completedTopics.includes(`${topicKey}-medium`);
+  const hard = completedTopics.includes(`${topicKey}-hard`);
+  const started = completedTopics.includes(`${topicKey}-started`);
+
+  if (easy && medium && hard) return 'gold';
+  if (easy && medium) return 'silver';
+  if (easy) return 'bronze';
+  if (started) return 'blue';
+  return 'locked';
+}
+
+// Compute daily active active practice streak
 function checkDailyStreak(user) {
   const now = new Date();
   const istTime = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
   const todayStr = istTime.toISOString().split('T')[0];
+
+  if (!user.streak || user.streak < 1) {
+    user.streak = 1;
+  }
 
   if (!user.lastActiveDate) {
     user.streak = 1;
@@ -9049,8 +9102,8 @@ app.get('/api/progress', async (req, res) => {
     if (!user) {
       return res.json({ completedTopics: [], goldMastery: [], coins: 0, streak: 0, totalSolved: 0 });
     }
-    checkDailyStreak(user);
-    await user.save();
+    // Do not check daily streak on GET (which runs automatically on page load).
+    // We only update/compute active practice streak on POST progress (active solving).
     res.json({
       completedTopics: user.completedTopics || [],
       goldMastery: user.goldMastery || [],
@@ -9158,8 +9211,11 @@ app.post('/api/profile/pin', express.json(), async (req, res) => {
         isUnlocked = user.achievements && user.achievements.completedCollections
           ? user.achievements.completedCollections.some(c => c.collectionId === badgeId)
           : false;
+      } else if (badgeId.startsWith('streak_')) {
+        const days = parseInt(badgeId.split('_')[1], 10);
+        isUnlocked = (user.streak || 0) >= days;
       } else {
-        isUnlocked = isStage3CompletedServer(badgeId, user.completedTopics);
+        isUnlocked = getTopicBadgeLevelServer(badgeId, user.completedTopics) !== 'locked';
       }
     }
     
@@ -9195,8 +9251,8 @@ app.get('/api/profile/showcase', async (req, res) => {
     const completedTopics = user.completedTopics || [];
     const uniqueMastered = new Set();
     completedTopics.forEach(t => {
-      const base = t.replace(/-(easy|medium|hard)$/, '');
-      if (isStage3CompletedServer(base, completedTopics)) {
+      const base = t.replace(/-(easy|medium|hard|started|adaptive|extrahard)$/, '');
+      if (getTopicBadgeLevelServer(base, completedTopics) !== 'locked') {
         uniqueMastered.add(base);
       }
     });
@@ -9215,6 +9271,17 @@ app.get('/api/profile/showcase', async (req, res) => {
           type: 'collection',
           badgeType: col.badgeType,
           description: col.description
+        };
+      }
+      
+      if (badgeId.startsWith('streak_')) {
+        const days = badgeId.split('_')[1];
+        return {
+          badgeId,
+          name: `${days}-Day Streak`,
+          type: 'streak',
+          badgeType: badgeId,
+          description: `Practiced for ${days} consecutive days!`
         };
       }
       
