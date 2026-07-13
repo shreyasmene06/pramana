@@ -9270,7 +9270,7 @@ const MQ = (() => {
       hard: [
         () => { const x=ri(-3,3),y=ri(-3,3); const a1=ri(1,3),b1=ri(1,3),c1=a1*x+b1*y; let a2,b2,c2; do{a2=ri(1,3);b2=ri(1,3);}while(a1*b2===a2*b1); c2=a2*x+b2*y; return {type:'m6_2x2',answerType:'scalar',prompt:'Solve: '+a1+'x+'+b1+'y='+c1+', '+a2+'x+'+b2+'y='+c2+'. Find x.',answer:String(x),display:String(x),data:{a1,b1,c1,a2,b2,c2,x,y}}; },
         () => { const x=ri(-3,3),y=ri(-3,3); const a1=ri(1,3),b1=ri(1,3),c1=a1*x+b1*y; let a2,b2,c2; do{a2=ri(1,3);b2=ri(1,3);}while(a1*b2===a2*b1); c2=a2*x+b2*y; return {type:'m6_2x2y',answerType:'scalar',prompt:'Solve: '+a1+'x+'+b1+'y='+c1+', '+a2+'x+'+b2+'y='+c2+'. Find y.',answer:String(y),display:String(y),data:{a1,b1,c1,a2,b2,c2,x,y}}; },
-        () => { return {type:'m6_infinite',answerType:'scalar',prompt:'If det(A) = 0, how many solutions does Ax = b have?',answer:'0 or infinite',display:'0 or infinite',data:{}}; },
+        () => { const A=[[ri(1,3),ri(0,2)],[ri(0,2),ri(1,3)]]; const det=A[0][0]*A[1][1]-A[0][1]*A[1][0]; return {type:'m6_det',answerType:'scalar',prompt:'det('+fm2(A)+') = '+det+'. Is det≠0?',answer:det!==0?'1':'0',display:det!==0?'Yes':'No',data:{A,det}}; },
       ],
     },
     // Mission 7: Time Machine (invertible functions)
@@ -9322,9 +9322,9 @@ const MQ = (() => {
         () => { const a=ri(1,4); return {type:'m9_real',answerType:'scalar',prompt:'x^2+'+a+'=0. How many real solutions?',answer:'0',display:'0',data:{a}}; },
       ],
       hard: [
-        () => { const a=ri(1,4); return {type:'m9_formula',answerType:'scalar',prompt:'x^2-'+a+'=0. Solutions are x = ±?',answer:String(Math.round(Math.sqrt(a)*100)/100),display:'±'+String(Math.round(Math.sqrt(a)*100)/100),data:{a}}; },
-        () => { const a=ri(1,5); return {type:'m9_shifted',answerType:'scalar',prompt:'f(x)=(x-2)^2. f^-1(9) = ?',answer:'5 or -1',display:'5 or -1',data:{a}}; },
-        () => { const a=ri(1,4),b=ri(1,5); return {type:'m9_discrim',answerType:'scalar',prompt:'x^2+'+a+'x+'+b+'=0. Discriminant = '+(a*a-4*b)+'. Real roots?',answer:String((a*a-4*b>=0)?'yes':'no'),display:(a*a-4*b>=0)?'Yes':'No',data:{a,b}}; },
+        () => { const a=ri(2,4); return {type:'m9_formula',answerType:'scalar',prompt:'x^2-'+(a*a)+'=0. Positive solution x = ?',answer:String(a),display:String(a),data:{a}}; },
+        () => { const a=ri(1,4); return {type:'m9_shifted',answerType:'scalar',prompt:'f(x)=(x-'+a+')^2. f('+(a+3)+') = ?',answer:String(9),display:'9',data:{a}}; },
+        () => { const a=ri(1,3),b=ri(1,3); const d=a*a-4*b; return {type:'m9_discrim',answerType:'scalar',prompt:'x^2-'+a+'x+'+b+'=0. Discriminant = '+d+'. Roots?',answer:d>0?'2':d===0?'1':'0',display:d>0?'2 real':d===0?'1 repeated':'0 real',data:{a,b,d}}; },
       ],
     },
     // Mission 10: Roller Coaster (cubic equations)
@@ -9342,7 +9342,7 @@ const MQ = (() => {
       hard: [
         () => { const x=ri(1,3); return {type:'m10_factor',answerType:'scalar',prompt:'x^3-'+x+'=0. Factor: x(x-1)(x+1)=0. How many real roots?',answer:'3',display:'3',data:{x}}; },
         () => { const a=ri(1,3); return {type:'m10_complex',answerType:'scalar',prompt:'x^3=1 has 1 real root. How many complex roots total?',answer:'3',display:'3',data:{a}}; },
-        () => { const x=ri(1,4); return {type:'m10_compare',answerType:'scalar',prompt:'x^3='+(x*x*x)+' has how many solutions vs x^2='+(x*x)+'?',answer:'1 vs 2',display:'1 (cubic) vs 2 (quadratic)',data:{x}}; },
+        () => { const x=ri(1,3); return {type:'m10_sum',answerType:'scalar',prompt:'x^3=27. x^3-27=0. Factor: (x-3)(x^2+3x+9)=0. Number of real roots?',answer:'1',display:'1',data:{x}}; },
       ],
     },
     // ═══ Module 1: Dimensions ═══
@@ -9377,9 +9377,9 @@ const MQ = (() => {
         () => { return {type:'m12_cols',answerType:'scalar',prompt:'The columns of a transformation matrix are the images of _____.',answer:'basis vectors',display:'Basis vectors (1,0) and (0,1)',data:{}}; },
       ],
       hard: [
-        () => { const A=[[ri(1,3),ri(0,2)],[ri(0,2),ri(1,3)]]; const v=[ri(1,3),ri(1,3)]; const r=[A[0][0]*v[0]+A[0][1]*v[1],A[1][0]*v[0]+A[1][1]*v[1]]; return {type:'m12_matvec',answerType:'scalar',prompt:'Apply '+fm2(A)+' to '+fv(...v)+'. Result?',answer:fv(...r),display:fv(...r),data:{A,v,r}}; },
-        () => { const A=[[ri(1,4),ri(0,3)],[ri(0,3),ri(1,4)]]; const det=A[0][0]*A[1][1]-A[0][1]*A[1][0]; return {type:'m12_invertible',answerType:'scalar',prompt:'Is matrix '+fm2(A)+' invertible? det='+det+'. (1=yes,0=no)',answer:det!==0?'1':'0',display:det!==0?'Yes':'No',data:{A,det}}; },
-        () => { return {type:'m12_useful',answerType:'scalar',prompt:'Why are matrices useful for representing transformations?',answer:'compact representation',display:'Compact, composable',data:{}}; },
+        () => { const A=[[ri(1,3),ri(0,2)],[ri(0,2),ri(1,3)]]; const x=ri(1,3),y=ri(1,3); const r=[A[0][0]*x+A[0][1]*y,A[1][0]*x+A[1][1]*y]; return {type:'m12_comp',answerType:'scalar',prompt:'A='+fm2(A)+', v=('+x+','+y+'). Av = ?',answer:fv(...r),display:fv(...r),data:{A,x,y,r}}; },
+        () => { return {type:'m12_2x2',answerType:'scalar',prompt:'A 2×2 matrix transforms how many dimensions?',answer:'2',display:'2',data:{}}; },
+        () => { const A=[[1,0],[0,1]]; return {type:'m12_identity',answerType:'scalar',prompt:'Identity matrix I×v = ?',answer:'v',display:'v (unchanged)',data:{A}}; },
       ],
     },
     // Mission 13: Jigsaw Puzzle (determinant & invertibility)
@@ -9395,9 +9395,9 @@ const MQ = (() => {
         () => { return {type:'m13_formula',answerType:'scalar',prompt:'For [[a,b],[c,d]], det = ?',answer:'ad-bc',display:'ad - bc',data:{}}; },
       ],
       hard: [
-        () => { const A=[[ri(1,3),ri(1,3)],[ri(1,3),ri(1,3)]]; return {type:'m13_singular',answerType:'scalar',prompt:'det('+fm2(A)+')=0 means Ax=b has ___ solution(s) for most b.',answer:'no',display:'No',data:{A}}; },
-        () => { const A=[[ri(1,4),ri(0,3)],[ri(0,3),ri(1,4)]]; const det=A[0][0]*A[1][1]-A[0][1]*A[1][0]; return {type:'m13_inverse_det',answerType:'scalar',prompt:'If det(A)='+det+', what is det(A^-1)?',answer:det!==0?String(rnd2(1/det)):'undefined',display:det!==0?String(rnd2(1/det)):'undefined',data:{A,det}}; },
-        () => { return {type:'m13_connection',answerType:'scalar',prompt:'det≠0 ⟺ Ax=b has unique solution ⟺ A is _____.',answer:'invertible',display:'Invertible',data:{}}; },
+        () => { const A=[[ri(1,3),ri(1,3)],[ri(1,3),ri(1,3)]]; return {type:'m13_singular',answerType:'scalar',prompt:'det('+fm2(A)+')=0. Rank of A?',answer:'1',display:'1',data:{A}}; },
+        () => { const A=[[ri(1,4),ri(0,3)],[ri(0,3),ri(1,4)]]; const det=A[0][0]*A[1][1]-A[0][1]*A[1][0]; return {type:'m13_inverse_det',answerType:'scalar',prompt:'det(A)='+det+'. det(A^-1) = ?',answer:det!==0?String(rnd2(1/det)):'0',display:det!==0?String(rnd2(1/det)):'undefined',data:{A,det}}; },
+        () => { const A=[[ri(1,4),ri(0,3)],[ri(0,3),ri(1,4)]]; const det=A[0][0]*A[1][1]-A[0][1]*A[1][0]; return {type:'m13_connection',answerType:'scalar',prompt:'det(A)='+det+'. A is invertible?',answer:det!==0?'1':'0',display:det!==0?'Yes':'No',data:{A,det}}; },
       ],
     },
     // Mission 14: The Vanishing Act (null space / kernel)
@@ -9432,9 +9432,9 @@ const MQ = (() => {
         () => { return {type:'m15_identity',answerType:'scalar',prompt:'Hill cipher with identity matrix changes the message? (1=yes,0=no)',answer:'0',display:'No change',data:{}}; },
       ],
       hard: [
-        () => { const A=[[2,3],[3,4]]; const v=[18,20]; const r=[A[0][0]*v[0]+A[0][1]*v[1],A[1][0]*v[0]+A[1][1]*v[1]]; return {type:'m15_s_u',answerType:'scalar',prompt:'Encrypt (S,U)=(18,20) with [[2,3],[3,4]]. First component?',answer:String(r[0]),display:String(r[0]),data:{A,v,r}}; },
-        () => { return {type:'m15_2x2',answerType:'scalar',prompt:'Basic Hill cipher uses ___x___ matrices.',answer:'2x2',display:'2x2',data:{}}; },
-        () => { const A=[[ri(1,3),ri(0,2)],[ri(0,2),ri(1,3)]]; const det=A[0][0]*A[1][1]-A[0][1]*A[1][0]; return {type:'m15_reason',answerType:'scalar',prompt:'Why must det≠0 for Hill cipher to work?',answer:'need inverse to decrypt',display:'Must have inverse',data:{A,det}}; },
+        () => { const A=[[ri(1,4),ri(0,3)],[ri(0,3),ri(1,4)]]; const det=A[0][0]*A[1][1]-A[0][1]*A[1][0]; return {type:'m15_hill_det',answerType:'scalar',prompt:'Hill cipher matrix '+fm2(A)+'. det='+det+'. Can decrypt?',answer:det!==0?'1':'0',display:det!==0?'Yes':'No',data:{A,det}}; },
+        () => { return {type:'m15_2x2',answerType:'scalar',prompt:'Basic Hill cipher uses ___x___ matrices.',answer:'2x2',display:'2×2',data:{}}; },
+        () => { const A=[[2,3],[3,4]]; const v=[18,20]; const r=[A[0][0]*v[0]+A[0][1]*v[1],A[1][0]*v[0]+A[1][1]*v[1]]; return {type:'m15_encrypt',answerType:'scalar',prompt:'Encrypt (18,20) with [[2,3],[3,4]]. Second component?',answer:String(r[1]),display:String(r[1]),data:{A,v,r}}; },
       ],
     },
     // Mission 16: Baker's Cafe (overdetermined systems)
@@ -9450,9 +9450,9 @@ const MQ = (() => {
         () => { const x=ri(1,5),y=ri(1,5); return {type:'m16_verify',answerType:'scalar',prompt:'Is A='+x+', C='+y+' a solution to A+C='+(x+y)+' and 2A-C='+(2*x-y)+'? (1=yes,0=no)',answer:'1',display:'Yes',data:{x,y}}; },
       ],
       hard: [
-        () => { return {type:'m16_residual',answerType:'scalar',prompt:'r = b - Ax measures the _____ of the least squares solution.',answer:'error',display:'Error / residual',data:{}}; },
-        () => { return {type:'m16_normal',answerType:'scalar',prompt:'Normal equation: A^T Ax = _____.',answer:'A^Tb',display:'A^Tb',data:{}}; },
-        () => { return {type:'m16_rows',answerType:'scalar',prompt:'A 3x2 matrix maps from R^2 to R^3. 3 equations, 2 unknowns is _____.',answer:'overdetermined',display:'Overdetermined',data:{}}; },
+        () => { const A=[[3,1],[1,2],[1,1]]; return {type:'m16_atb',answerType:'scalar',prompt:'A=[[3,1],[1,2],[1,1]]. A^T is ___x___.',answer:'2x3',display:'2×3',data:{A}}; },
+        () => { const A=[[3,1],[1,2],[1,1]]; const AT=[[A[0][0],A[1][0],A[2][0]],[A[0][1],A[1][1],A[2][1]]]; const ATA=[[0,0],[0,0]]; for(let i=0;i<2;i++) for(let j=0;j<2;j++) for(let k=0;k<3;k++) ATA[i][j]+=AT[i][k]*A[k][j]; return {type:'m16_ata',answerType:'scalar',prompt:'A^TA for A=[[3,1],[1,2],[1,1]]. Entry (1,1)?',answer:String(ATA[0][0]),display:String(ATA[0][0]),data:{A,ATA}}; },
+        () => { const x=ri(1,3),y=ri(1,3); return {type:'m16_overdet',answerType:'scalar',prompt:'System: A+C='+(x+y)+', 2A-C='+(2*x-y)+', 3A+2C='+(3*x+2*y)+'. 3 equations, 2 unknowns. Overdetermined?',answer:'1',display:'Yes',data:{x,y}}; },
       ],
     },
     // Mission 17: Markov Chain (state transitions)
@@ -9486,9 +9486,9 @@ const MQ = (() => {
         () => { return {type:'m18_3lines',answerType:'scalar',prompt:'Three random lines in a plane usually meet at ___ point(s).',answer:'0',display:'0',data:{}}; },
       ],
       hard: [
-        () => { return {type:'m18_least',answerType:'scalar',prompt:'When no exact solution exists, we minimize ||b-Ax||^2. This is _____ squares.',answer:'least',display:'Least squares',data:{}}; },
-        () => { const A=[[3,1],[1,2],[1,1]]; return {type:'m18_transpose',answerType:'scalar',prompt:'For A=[[3,1],[1,2],[1,1]], A^T is ___x___.',answer:'2x3',display:'2x3',data:{A}}; },
-        () => { return {type:'m18_geometric',answerType:'scalar',prompt:'In overdetermined systems, b is typically not in the _____ of A.',answer:'column space',display:'Column space',data:{}}; },
+        () => { return {type:'m18_least',answerType:'scalar',prompt:'Minimize ||b-Ax||^2. This is called _____ squares.',answer:'least',display:'Least squares',data:{}}; },
+        () => { const A=[[3,1],[1,2],[1,1]]; return {type:'m18_transpose',answerType:'scalar',prompt:'For A=[[3,1],[1,2],[1,1]], A^T is ___x___.',answer:'2x3',display:'2×3',data:{A}}; },
+        () => { const A=[[3,1],[1,2],[1,1]]; const det=A[0][0]*A[1][1]-A[0][1]*A[1][0]; return {type:'m18_ata_det',answerType:'scalar',prompt:'A=[[3,1],[1,2],[1,1]]. A^T A = [[11,6],[6,6]]. det(A^TA)?',answer:String(11*6-6*6),display:String(11*6-6*6),data:{A}}; },
       ],
     },
     // ═══ Module 2 (cont): Why No Solution? ═══
@@ -9505,9 +9505,9 @@ const MQ = (() => {
         () => { return {type:'m19_residual',answerType:'scalar',prompt:'The closest point to b in col(A) gives the minimum _____.',answer:'residual',display:'Residual',data:{}}; },
       ],
       hard: [
-        () => { return {type:'m19_projection',answerType:'scalar',prompt:'The least squares solution is the _____ of b onto the column space.',answer:'projection',display:'Projection',data:{}}; },
-        () => { const A=[[3,1],[1,2],[1,1]]; return {type:'m19_atb',answerType:'scalar',prompt:'A^T A for A=[[3,1],[1,2],[1,1]] is a ___x___ matrix.',answer:'2x2',display:'2x2',data:{A}}; },
-        () => { return {type:'m19_best',answerType:'scalar',prompt:'The normal equation A^T Ax = A^T b gives the _____ approximate solution.',answer:'best',display:'Best (least squares)',data:{}}; },
+        () => { const A=[[3,1],[1,2],[1,1]]; return {type:'m19_atb',answerType:'scalar',prompt:'A=[[3,1],[1,2],[1,1]]. A^T A is ___x___ matrix.',answer:'2x2',display:'2×2',data:{A}}; },
+        () => { const A=[[3,1],[1,2],[1,1]]; const ATA=[[11,6],[6,6]]; const det=ATA[0][0]*ATA[1][1]-ATA[0][1]*ATA[1][0]; return {type:'m19_ata_det',answerType:'scalar',prompt:'A^T A = [[11,6],[6,6]]. det(A^T A) = ?',answer:String(det),display:String(det),data:{A,ATA,det}}; },
+        () => { const A=[[3,1],[1,2],[1,1]]; return {type:'m19_rows',answerType:'scalar',prompt:'A=[[3,1],[1,2],[1,1]]. Rows of A^T = columns of A. How many rows in A^T?',answer:'2',display:'2',data:{A}}; },
       ],
     },
     // ═══ Module 2: Markov Chains ═══
@@ -9543,8 +9543,8 @@ const MQ = (() => {
       ],
       hard: [
         () => { return {type:'m21_equations',answerType:'scalar',prompt:'πP=π gives ___ independent equations for a 3-state chain.',answer:'3',display:'3',data:{}}; },
-        () => { const P=[[0.5,0.3,0.2],[0.1,0.6,0.3],[0.2,0.2,0.6]]; return {type:'m21_eigen',answerType:'scalar',prompt:'Dominant eigenvalue of any 3x3 Markov matrix?',answer:'1',display:'1',data:{P}}; },
-        () => { return {type:'m21_converge',answerType:'scalar',prompt:'Every regular Markov chain eventually reaches a unique _____.',answer:'steady state',display:'Steady state',data:{}}; },
+        () => { const P=[[0.5,0.3,0.2],[0.1,0.6,0.3],[0.2,0.2,0.6]]; return {type:'m21_row_sum',answerType:'scalar',prompt:'P 3×3 Markov. Row 2 sums to?',answer:'1',display:'1',data:{P}}; },
+        () => { return {type:'m21_converge',answerType:'scalar',prompt:'Regular Markov chain reaches _____ state after many steps.',answer:'steady',display:'Steady',data:{}}; },
       ],
     },
     // ═══ Module 3: Spaces & Transformations ═══
@@ -9579,9 +9579,9 @@ const MQ = (() => {
         () => { return {type:'m23_perp2',answerType:'scalar',prompt:'A plane in R^3 is _____-dimensional.',answer:'2',display:'2',data:{}}; },
       ],
       hard: [
-        () => { const a=ri(1,3),b=ri(1,3),c=ri(1,3); const dot=a*1+b*2+c*3; return {type:'m23_dot',answerType:'scalar',prompt:'('+a+','+b+','+c+')·(1,2,3) = '+String(dot)+'. Perpendicular to plane? (1=yes,0=no)',answer:dot===0?'1':'0',display:dot===0?'Yes':'No',data:{a,b,c}}; },
-        () => { return {type:'m23_intersect',answerType:'scalar',prompt:'Two planes in R^3 typically intersect in a _____.',answer:'line',display:'Line',data:{}}; },
-        () => { return {type:'m23_3eq',answerType:'scalar',prompt:'Three planes in R^3 typically intersect at ___ point(s).',answer:'1',display:'1',data:{}}; },
+        () => { const a=ri(1,3),b=ri(1,3),c=ri(1,3),d=ri(1,3),e=ri(1,3),f=ri(1,3); return {type:'m23_3dot',answerType:'scalar',prompt:'('+a+','+b+','+c+')·('+d+','+e+','+f+') = ?',answer:String(a*d+b*e+c*f),display:String(a*d+b*e+c*f),data:{a,b,c,d,e,f}}; },
+        () => { const x=ri(1,3),y=ri(1,3),z=ri(1,3); return {type:'m23_check2',answerType:'scalar',prompt:'Does ('+x+','+y+','+z+') satisfy x+2y+3z='+(x+2*y+3*z)+'? (1=yes,0=no)',answer:'1',display:'Yes',data:{x,y,z}}; },
+        () => { return {type:'m23_3planes',answerType:'scalar',prompt:'3 planes in R^3: each equation removes ___ dimension.',answer:'1',display:'1',data:{}}; },
       ],
     },
     // Mission 24: Span & Null Space (perp set of plane in 3D)
@@ -9597,9 +9597,9 @@ const MQ = (() => {
         () => { return {type:'m24_plane',answerType:'scalar',prompt:'Span of 2 independent vectors in R^3 is a _____.',answer:'plane',display:'Plane',data:{}}; },
       ],
       hard: [
-        () => { return {type:'m24_ftoc',answerType:'scalar',prompt:'rank + nullity = number of _____.',answer:'columns',display:'Columns',data:{}}; },
-        () => { return {type:'m24_independent',answerType:'scalar',prompt:'2 linearly independent vectors in R^3 span a plane. Their null space is ___-D.',answer:'1',display:'1D (a line)',data:{}}; },
-        () => { return {type:'m24_perp2',answerType:'scalar',prompt:'Every null space vector is perpendicular to every _____.',answer:'row',display:'Row of the matrix',data:{}}; },
+        () => { return {type:'m24_rn',answerType:'scalar',prompt:'rank + nullity = number of _____.',answer:'columns',display:'Columns',data:{}}; },
+        () => { const r=ri(1,3); return {type:'m24_null_check',answerType:'scalar',prompt:'3 columns, rank '+r+'. Nullity = ?',answer:String(3-r),display:String(3-r),data:{r}}; },
+        () => { const r=ri(1,3); return {type:'m24_dim',answerType:'scalar',prompt:'rank '+r+' in R^3. Null space is ___-dimensional.',answer:String(3-r),display:String(3-r)+'D',data:{r}}; },
       ],
     },
     // Mission 25: Matrix Null Space (3x3 singular)
@@ -9615,9 +9615,9 @@ const MQ = (() => {
         () => { return {type:'m25_perp',answerType:'scalar',prompt:'Null space is perpendicular to every row of the matrix? (1=yes,0=no)',answer:'1',display:'Yes',data:{}}; },
       ],
       hard: [
-        () => { return {type:'m25_verify',answerType:'scalar',prompt:'Check: (1,2,3)·(1,-2,1) = 1-4+3 = ?',answer:'0',display:'0',data:{}}; },
-        () => { const A=[[1,2,3],[4,5,6],[7,8,9]]; return {type:'m25_rank_n',answerType:'scalar',prompt:'For 3x3 rank-2 matrix, null space is ___-dimensional.',answer:'1',display:'1',data:{A}}; },
-        () => { return {type:'m25_redundant',answerType:'scalar',prompt:'Row 3 = 2×Row2 - Row1 means row 3 is _____.',answer:'redundant',display:'Redundant',data:{}}; },
+        () => { return {type:'m25_check',answerType:'scalar',prompt:'(1,2,3)·(1,-2,1) = 1-4+3 = ?',answer:'0',display:'0',data:{}}; },
+        () => { return {type:'m25_rank_null',answerType:'scalar',prompt:'3x3 rank-2: nullity = ?',answer:'1',display:'1',data:{}}; },
+        () => { const r=ri(1,3); return {type:'m25_null_dim',answerType:'scalar',prompt:'3 columns, rank '+r+'. Null space dim = ?',answer:String(3-r),display:String(3-r),data:{r}}; },
       ],
     },
     // Mission 26: Three Subspaces (row, column, null)
@@ -9669,9 +9669,9 @@ const MQ = (() => {
         () => { return {type:'m28_r3',answerType:'scalar',prompt:'To span all of R^3, you need at least ___ independent vectors.',answer:'3',display:'3',data:{}}; },
       ],
       hard: [
-        () => { return {type:'m28_subspace',answerType:'scalar',prompt:'The span of any set of vectors in R^3 is always a _____.',answer:'subspace',display:'Subspace',data:{}}; },
-        () => { return {type:'m28_dim',answerType:'scalar',prompt:'If 3 vectors in R^3 are dependent, their span has dimension < ___.',answer:'3',display:'3',data:{}}; },
-        () => { return {type:'m28_close',answerType:'scalar',prompt:'A subspace must be closed under addition and _____.',answer:'scaling',display:'Scaling (scalar multiplication)',data:{}}; },
+        () => { const a=ri(1,3),b=ri(1,3); return {type:'m28_dim_check',answerType:'scalar',prompt:'Span of '+a+' vectors in R^'+b+'. Max possible dim?',answer:String(Math.min(a,b)),display:String(Math.min(a,b)),data:{a,b}}; },
+        () => { return {type:'m28_3vec',answerType:'scalar',prompt:'3 linearly independent vectors in R^3 span a ___-D object.',answer:'3',display:'3',data:{}}; },
+        () => { return {type:'m28_dim_dep',answerType:'scalar',prompt:'If 3 vectors in R^3 are dependent, span dim < ?',answer:'3',display:'3',data:{}}; },
       ],
     },
     // Mission 29: Perpendicular to Plane (null space in 3D)
@@ -9687,9 +9687,9 @@ const MQ = (() => {
         () => { return {type:'m29_perp',answerType:'scalar',prompt:'Is null space perpendicular to every vector in the plane? (1=yes,0=no)',answer:'1',display:'Yes',data:{}}; },
       ],
       hard: [
-        () => { return {type:'m29_dim_null',answerType:'scalar',prompt:'2 equations, 3 unknowns, rank 2. Null space dimension = ?',answer:'1',display:'1',data:{}}; },
-        () => { return {type:'m29_direction',answerType:'scalar',prompt:'The null space direction is perpendicular to the _____ space.',answer:'row',display:'Row space',data:{}}; },
-        () => { return {type:'m29_cross',answerType:'scalar',prompt:'The cross product of two vectors in the plane gives the _____ direction.',answer:'normal',display:'Normal (null space)',data:{}}; },
+        () => { return {type:'m29_dim',answerType:'scalar',prompt:'2 equations, 3 unknowns, rank 2. Null space dim = ?',answer:'1',display:'1',data:{}}; },
+        () => { return {type:'m29_rank_null',answerType:'scalar',prompt:'3 unknowns, nullity 1. Rank = ?',answer:'2',display:'2',data:{}}; },
+        () => { const u=[ri(1,3),ri(1,3),ri(1,3)],v=[ri(1,3),ri(1,3),ri(1,3)]; const cp=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]]; return {type:'m29_cross',answerType:'scalar',prompt:'('+u.join(',')+')×('+v.join(',')+') first component?',answer:String(cp[0]),display:String(cp[0]),data:{u,v,cp}}; },
       ],
     },
     // Mission 30: Null Space Again (different 3x3 singular)
@@ -9723,9 +9723,9 @@ const MQ = (() => {
         () => { return {type:'m31_col',answerType:'scalar',prompt:'Column space of a 3×3 rank-2 matrix is a ___-dimensional subspace of R^3.',answer:'2',display:'2',data:{}}; },
       ],
       hard: [
-        () => { return {type:'m31_perp',answerType:'scalar',prompt:'Row space ⊥ null space. Column space ⊥ _____.',answer:'left null space',display:'Left null space N(A^T)',data:{}}; },
-        () => { return {type:'m31_4sub',answerType:'scalar',prompt:'How many fundamental subspaces does every matrix have?',answer:'4',display:'4',data:{}}; },
-        () => { return {type:'m31_equal',answerType:'scalar',prompt:'dim(R(A)) = dim(C(A)) always? (1=yes,0=no)',answer:'1',display:'Yes (both = rank)',data:{}}; },
+        () => { const r=ri(1,3),n=ri(1,3); return {type:'m31_rank_null',answerType:'scalar',prompt:'dim(R)='+r+', dim(N)='+n+'. Number of columns = ?',answer:String(r+n),display:String(r+n),data:{r,n}}; },
+        () => { return {type:'m31_count',answerType:'scalar',prompt:'How many fundamental subspaces does every matrix have?',answer:'4',display:'4',data:{}}; },
+        () => { const A=[[ri(1,3),ri(1,3)],[ri(1,3),ri(1,3)]]; return {type:'m31_dim_check',answerType:'scalar',prompt:'A 2×2 rank-1 matrix: dim(R)=1, dim(C)=1, dim(N)=1, dim(N^T)=1. Sum input?',answer:'2',display:'2 (R+N)',data:{A}}; },
       ],
     },
     // Mission 32: Check Orthogonality (Fundamental Theorem)
@@ -9741,9 +9741,9 @@ const MQ = (() => {
         () => { return {type:'m32_why',answerType:'scalar',prompt:'Why? Because Ax=0 means each row·x = _____.',answer:'0',display:'0',data:{}}; },
       ],
       hard: [
-        () => { return {type:'m32_verify',answerType:'scalar',prompt:'Row (7,8,9)·null(1,-2,1) = 7-16+9 = ?',answer:'0',display:'0',data:{}}; },
-        () => { return {type:'m32_both',answerType:'scalar',prompt:'Fundamental theorem has TWO pairs. Name the other pair.',answer:'col space perp left null space',display:'C(A) ⊥ N(A^T)',data:{}}; },
-        () => { return {type:'m32_dim',answerType:'scalar',prompt:'dim(R) + dim(N) = n and dim(C) + dim(N^T) = ___',answer:'m',display:'m (number of rows)',data:{}}; },
+        () => { return {type:'m32_dot',answerType:'scalar',prompt:'(7,8,9)·(1,-2,1) = 7-16+9 = ?',answer:'0',display:'0',data:{}}; },
+        () => { const n=ri(3,5),r=ri(1,n); return {type:'m32_sum',answerType:'scalar',prompt:n+'×'+n+' rank '+r+'. dim(R)+dim(N) = '+r+'+'+(n-r)+' = ?',answer:String(n),display:String(n),data:{n,r}}; },
+        () => { const m=ri(3,5),n=ri(3,5),r=ri(1,Math.min(m,n)); return {type:'m32_sum2',answerType:'scalar',prompt:m+'×'+n+' rank '+r+'. dim(C)+dim(N^T) = '+(m-r)+'+'+r+' = ?',answer:String(m),display:String(m),data:{m,n,r}}; },
       ],
     },
     // ═══ Module 3 (cont): Collapse series ═══
@@ -9760,9 +9760,9 @@ const MQ = (() => {
         () => { return {type:'m33_range',answerType:'scalar',prompt:'The output (4,8) lies in the _____ of B.',answer:'range',display:'Range',data:{}}; },
       ],
       hard: [
-        () => { const k=ri(1,6); return {type:'m33_general',answerType:'scalar',prompt:'Line 2y+x='+k+' maps to point?',answer:'('+k+','+(2*k)+')',display:'('+k+','+(2*k)+')',data:{k}}; },
-        () => { return {type:'m33_perp_line',answerType:'scalar',prompt:'The line 2y+x=k is perpendicular to the range direction (1,2)? (1=yes,0=no)',answer:'0',display:'No - parallel to null space (-2,1)',data:{}}; },
-        () => { return {type:'m33_dim_in_out',answerType:'scalar',prompt:'Rank-1 in 2D: 1D input line → ___D output point.',answer:'0',display:'0D (a point)',data:{}}; },
+        () => { const k=ri(1,5); const pts=[[k,0],[0,k/2]]; return {type:'m33_intercept',answerType:'scalar',prompt:'Line 2y+x='+k+'. x-intercept + y-intercept = ?',answer:String(k+Math.round(k/2*100)/100),display:String(k+k/2),data:{k}}; },
+        () => { const B=[[1,2],[2,4]]; const x=ri(1,3),y=ri(1,3); const r=[B[0][0]*x+B[0][1]*y,B[1][0]*x+B[1][1]*y]; return {type:'m33_apply',answerType:'scalar',prompt:'B=[[1,2],[2,4]], ('+x+','+y+'). Bv = ?',answer:fv(...r),display:fv(...r),data:{B,x,y,r}}; },
+        () => { const B=[[1,2],[2,4]]; return {type:'m33_rank',answerType:'scalar',prompt:'B=[[1,2],[2,4]]. Rank = ?',answer:'1',display:'1',data:{B}}; },
       ],
     },
     // Mission 34: Many Lines Collapse
@@ -9778,9 +9778,9 @@ const MQ = (() => {
         () => { return {type:'m34_parallel',answerType:'scalar',prompt:'Each parallel line maps to a _____ output point.',answer:'different',display:'Different',data:{}}; },
       ],
       hard: [
-        () => { const k1=ri(1,5),k2=k1+ri(1,5); return {type:'m34_two',answerType:'scalar',prompt:'Lines 2y+x='+k1+' and 2y+x='+k2+' map to points separated by?',answer:'('+String(k2-k1)+','+String(2*(k2-k1))+')',display:'('+String(k2-k1)+','+String(2*(k2-k1))+')',data:{k1,k2}}; },
-        () => { return {type:'m34_all_output',answerType:'scalar',prompt:'The union of all output points forms a _____.',answer:'line',display:'Line through origin',data:{}}; },
-        () => { return {type:'m34_surjective',answerType:'scalar',prompt:'Is the map onto the entire range line? (1=yes,0=no)',answer:'1',display:'Yes (surjective onto range)',data:{}}; },
+        () => { const B=[[1,2],[2,4]]; const x=ri(1,3),y=ri(1,3); const r=[B[0][0]*x+B[0][1]*y,B[1][0]*x+B[1][1]*y]; return {type:'m34_apply',answerType:'scalar',prompt:'B=[[1,2],[2,4]], v=('+x+','+y+'). Bv = ?',answer:fv(...r),display:fv(...r),data:{B,x,y,r}}; },
+        () => { const B=[[1,2],[2,4]]; return {type:'m34_rank',answerType:'scalar',prompt:'Range of B=[[1,2],[2,4]]: dim = ?',answer:'1',display:'1',data:{B}}; },
+        () => { const x=ri(1,3),y=ri(1,3); return {type:'m34_check',answerType:'scalar',prompt:'(1,2)·('+x+','+y+') = '+(x+2*y)+'. Is this in range? (1=yes,0=no)',answer:'1',display:'Yes',data:{x,y}}; },
       ],
     },
     // Mission 35: General Collapse Formula
@@ -9796,9 +9796,9 @@ const MQ = (() => {
         () => { return {type:'m35_collapse',answerType:'scalar',prompt:'General formula: B maps 2y+x=k to (k, ___).',answer:String(2),display:'2k',data:{}}; },
       ],
       hard: [
-        () => { const x=ri(1,5),y=ri(1,5); const B=[[1,2],[2,4]]; const r0=B[0][0]*x+B[0][1]*y, r1=B[1][0]*x+B[1][1]*y; return {type:'m35_general',answerType:'scalar',prompt:'B=[[1,2],[2,4]], input ('+x+','+y+'). Second component of output?',answer:String(r1),display:String(r1),data:{x,y,B}}; },
-        () => { return {type:'m35_projection',answerType:'scalar',prompt:'The mapping collapses along _____ and projects onto range.',answer:'null space',display:'Null space',data:{}}; },
+        () => { const B=[[1,2],[2,4]]; const x=ri(1,5),y=ri(1,5); const r=[B[0][0]*x+B[0][1]*y,B[1][0]*x+B[1][1]*y]; return {type:'m35_output',answerType:'scalar',prompt:'B=[[1,2],[2,4]], v=('+x+','+y+'). Second component of Bv?',answer:String(r[1]),display:String(r[1]),data:{B,x,y,r}}; },
         () => { const B=[[1,2],[2,4]]; return {type:'m35_rank1',answerType:'scalar',prompt:'B=[[1,2],[2,4]] has rank = ?',answer:'1',display:'1',data:{B}}; },
+        () => { const B=[[1,2],[2,4]]; return {type:'m35_det',answerType:'scalar',prompt:'B=[[1,2],[2,4]]. det(B) = ?',answer:'0',display:'0',data:{B}}; },
       ],
     },
     // Mission 36: Dimension Collapse (2D → 1D)
@@ -9905,9 +9905,9 @@ const MQ = (() => {
         () => { return {type:'m41_lns',answerType:'scalar',prompt:'N(A^T) for rank-2 3×3 is ___-dimensional.',answer:'1',display:'1',data:{}}; },
       ],
       hard: [
-        () => { return {type:'m41_types',answerType:'scalar',prompt:'Are all 4 subspaces either 1D lines or 2D planes? (1=yes,0=no)',answer:'1',display:'Yes',data:{}}; },
-        () => { return {type:'m41_verify',answerType:'scalar',prompt:'dim(R)+dim(N) = 2+1 = 3 = number of _____',answer:'columns',display:'Columns',data:{}}; },
-        () => { return {type:'m41_perp',answerType:'scalar',prompt:'N(A) = span{(1,-2,1)} is perpendicular to both rows of A. Verify: (1,4,7)·(1,-2,1)=?',answer:'0',display:'0',data:{}}; },
+        () => { return {type:'m41_types',answerType:'scalar',prompt:'3×3 rank-2: R=2D, N=1D. C=2D, N^T=1D. dim(R)+dim(N)=?',answer:'3',display:'3',data:{}}; },
+        () => { const n=ri(3,5),r=ri(1,n); return {type:'m41_sum',answerType:'scalar',prompt:n+'×'+n+' rank '+r+'. dim(R)+dim(N) = '+r+'+'+(n-r)+' = ?',answer:String(n),display:String(n),data:{n,r}}; },
+        () => { return {type:'m41_verify',answerType:'scalar',prompt:'(1,4,7)·(1,-2,1) = 1-8+7 = ?',answer:'0',display:'0',data:{}}; },
       ],
     },
     // Mission 42: Rank by Example (4×4 matrices)
@@ -9977,9 +9977,9 @@ const MQ = (() => {
         () => { return {type:'m45_dim',answerType:'scalar',prompt:'Dimension of span = number of _____ vectors.',answer:'linearly independent',display:'Linearly independent',data:{}}; },
       ],
       hard: [
-        () => { return {type:'m45_rank',answerType:'scalar',prompt:'dim(span of columns) = _____.',answer:'rank',display:'Rank',data:{}}; },
-        () => { return {type:'m45_three',answerType:'scalar',prompt:'(1,0,0), (0,1,0), (0,0,1) span R^3. They form a _____.',answer:'basis',display:'Basis',data:{}}; },
-        () => { return {type:'m45_nullity',answerType:'scalar',prompt:'If dim(span) < n, the remaining dimensions form the _____.',answer:'null space',display:'Null space',data:{}}; },
+        () => { const n=ri(3,5),r=ri(1,n); return {type:'m45_rank',answerType:'scalar',prompt:n+' vectors in R^'+n+', '+r+' independent. dim(span) = ?',answer:String(r),display:String(r),data:{n,r}}; },
+        () => { return {type:'m45_three',answerType:'scalar',prompt:'(1,0,0),(0,1,0),(0,0,1) span R^3. dim = ?',answer:'3',display:'3',data:{}}; },
+        () => { const n=ri(3,5),r=ri(1,n-1); return {type:'m45_nullity',answerType:'scalar',prompt:n+' vectors in R^'+n+', dim(span)='+r+'. Nullity = ?',answer:String(n-r),display:String(n-r),data:{n,r}}; },
       ],
     },
     // ═══ Module 5: Capstone Review ═══
@@ -10032,9 +10032,9 @@ const MQ = (() => {
         () => { return {type:'m48_rank0',answerType:'scalar',prompt:'n×n zero matrix: rank=0, nullity=___',answer:String(ri(2,5)),display:'n',data:{}}; },
       ],
       hard: [
-        () => { return {type:'m48_name',answerType:'scalar',prompt:'rank + nullity = n is called the _____ Theorem.',answer:'Rank-Nullity',display:'Rank-Nullity Theorem',data:{}}; },
-        () => { const r=ri(1,3); return {type:'m48_3x3',answerType:'scalar',prompt:'3×3 rank-'+r+' matrix has nullity ___.',answer:String(3-r),display:String(3-r),data:{r}}; },
-        () => { return {type:'m48_id',answerType:'scalar',prompt:'I_3: rank=3, nullity=0. This means I_3 is _____.',answer:'invertible',display:'Invertible',data:{}}; },
+        () => { const n=ri(3,5),r=ri(1,n); return {type:'m48_calc',answerType:'scalar',prompt:n+'×'+n+' matrix rank '+r+'. nullity = ?',answer:String(n-r),display:String(n-r),data:{n,r}}; },
+        () => { const n=ri(3,5); return {type:'m48_full',answerType:'scalar',prompt:n+'×'+n+' full rank. nullity = ?',answer:'0',display:'0',data:{n}}; },
+        () => { return {type:'m48_zero',answerType:'scalar',prompt:'3×3 zero matrix: rank=0, nullity = ?',answer:'3',display:'3',data:{}}; },
       ],
     },
     // Mission 49: Capstone Challenge
@@ -10087,9 +10087,9 @@ const MQ = (() => {
         () => { return {type:'m51_compress',answerType:'scalar',prompt:'A 1000×5000 rating matrix with rank 10 can be compressed significantly? (1=yes,0=no)',answer:'1',display:'Yes',data:{}}; },
       ],
       hard: [
-        () => { return {type:'m51_svd',answerType:'scalar',prompt:'The SVD of the rating matrix reveals user and item _____.',answer:'vectors',display:'Singular vectors',data:{}}; },
-        () => { return {type:'m51_approx',answerType:'scalar',prompt:'Best rank-k approximation keeps k largest _____ values.',answer:'singular',display:'Singular values',data:{}}; },
-        () => { return {type:'m51_missing',answerType:'scalar',prompt:'Matrix factorization helps predict missing _____ in rating matrices.',answer:'entries',display:'Entries / ratings',data:{}}; },
+        () => { const m=ri(2,5),n=ri(2,5); return {type:'m51_maxrank',answerType:'scalar',prompt:m+'×'+n+' rating matrix. Max rank?',answer:String(Math.min(m,n)),display:String(Math.min(m,n)),data:{m,n}}; },
+        () => { const r=ri(1,3),m=ri(r+1,r+3),n=ri(r+1,r+3); const full=m*n; const low=r*(m+n); return {type:'m51_compress',answerType:'scalar',prompt:m+'×'+n+' rank-'+r+'. Full storage='+full+', low-rank='+low+'. Saved?',answer:String(full-low),display:String(full-low)+' entries',data:{m,n,r,full,low}}; },
+        () => { return {type:'m51_rank_low',answerType:'scalar',prompt:'100×500 matrix rank 5. Elements = 50000. Low-rank needs ___ params.',answer:String(5*(100+500)),display:String(5*(100+500)),data:{}}; },
       ],
     },
     // Mission 52: Collaborative Filtering
@@ -10105,9 +10105,9 @@ const MQ = (() => {
         () => { return {type:'m52_predict',answerType:'scalar',prompt:'To predict a missing rating, use dot product with similar _____.',answer:'users',display:'Users',data:{}}; },
       ],
       hard: [
-        () => { const u=[ri(1,4),ri(1,4)],v=[ri(1,4),ri(1,4)]; const dot=u[0]*v[0]+u[1]*v[1]; const mU=Math.sqrt(u[0]*u[0]+u[1]*u[1]),mV=Math.sqrt(v[0]*v[0]+v[1]*v[1]); return {type:'m52_cos',answerType:'scalar',prompt:'Cosine sim of '+fv(...u)+' and '+fv(...v)+'?',answer:String(rnd2(dot/(mU*mV))),display:String(rnd2(dot/(mU*mV))),data:{u,v}}; },
-        () => { return {type:'m52_knn',answerType:'scalar',prompt:'k-NN collaborative filtering finds k most _____ users.',answer:'similar',display:'Similar',data:{}}; },
-        () => { return {type:'m52_matrix',answerType:'scalar',prompt:'User-item matrix has users as ___ and items as columns.',answer:'rows',display:'Rows',data:{}}; },
+        () => { const u=[ri(1,5),ri(1,5)],v=[ri(1,5),ri(1,5)]; const dot=u[0]*v[0]+u[1]*v[1]; const mU=Math.sqrt(u[0]*u[0]+u[1]*u[1]),mV=Math.sqrt(v[0]*v[0]+v[1]*v[1]); return {type:'m52_cos',answerType:'scalar',prompt:'Cosine sim of '+fv(...u)+' and '+fv(...v)+'?',answer:String(rnd2(dot/(mU*mV))),display:String(rnd2(dot/(mU*mV))),data:{u,v}}; },
+        () => { const u=[ri(1,5),ri(1,5)],v=[ri(1,5),ri(1,5)]; const dot=u[0]*v[0]+u[1]*v[1]; return {type:'m52_dot_calc',answerType:'scalar',prompt:'Dot product of '+fv(...u)+' and '+fv(...v)+'?',answer:String(dot),display:String(dot),data:{u,v}}; },
+        () => { const users=ri(3,6),items=ri(3,6); return {type:'m52_matrix',answerType:'scalar',prompt:users+' users, '+items+' items. Rating matrix size?',answer:users+'x'+items,display:users+'×'+items,data:{users,items}}; },
       ],
     },
     // Mission 53: Web as a Graph (PageRank)
@@ -10184,20 +10184,168 @@ const MQ = (() => {
     },
   };
 
-  return function generateMissionQuestion(missionId, difficulty) {
+  function generateChoices(correctAnswer, prompt) {
+    const correct = String(correctAnswer).trim();
+    const isNum = !isNaN(parseFloat(correct)) && isFinite(correct);
+    const choices = [correct];
+    const seen = new Set([correct]);
+    let attempts = 0;
+
+    while (choices.length < 4 && attempts < 80) {
+      attempts++;
+      let wrong;
+      if (isNum) {
+        const v = parseFloat(correct);
+        const offsets = [-3,-2,-1,1,2,3,-5,5];
+        wrong = String(v + pick(offsets));
+      } else if (correct.match(/^\(.*\)$/)) {
+        const inner = correct.replace(/^\(/, '').replace(/\)$/, '').split(',').map(Number);
+        if (inner.every(n => !isNaN(n))) {
+          const variants = inner.map((n,i) => { const v=[...inner]; v[i]=n+(Math.random()>0.5?1:-1); return '('+v.join(',')+')'; });
+          variants.push('(0,0)');
+          wrong = pick(variants);
+        } else { continue; }
+      } else if (correct.includes(':')) {
+        const parts = correct.split(':');
+        const a = parseInt(parts[0]) || 1, b = parseInt(parts[1]) || 1;
+        wrong = pick([a+1+':'+b, a+':'+(b+1), (a>1?a-1:1)+':'+b, b+':'+a]);
+      } else if (correct.includes('x')) {
+        const m = correct.match(/(\d+)x(\d+)/);
+        if (m) { const a=parseInt(m[1]),b=parseInt(m[2]); wrong = pick([a+'x'+(b+1), (a+1)+'x'+b, a+'x'+(b>1?b-1:1)]); }
+        else { continue; }
+      } else {
+        const textPool = {
+          'columns':['rows','diagonals','entries'], 'rows':['columns','diagonals','entries'],
+          'rank':['nullity','dimension','determinant'], 'nullity':['rank','dimension','determinant'],
+          '1':['2','3','0'], '2':['1','3','4'], '3':['2','4','1'], '0':['1','2','3'],
+          '4':['3','5','2'], '5':['4','6','3'], '6':['5','7','4'],
+          'yes':['no','sometimes','never'], 'no':['yes','sometimes','always'],
+          'true':['false','sometimes','never'], 'false':['true','sometimes','always'],
+          'plane':['line','point','space'], 'line':['plane','point','space'],
+          'point':['line','plane','space'], 'space':['line','plane','point'],
+          'perpendicular':['parallel','equal','skew'], 'parallel':['perpendicular','equal','skew'],
+          'subspace':['matrix','vector','scalar'], 'projection':['rotation','reflection','scaling'],
+          'addition':['multiplication','subtraction','division'], 'scaling':['addition','subtraction','rotation'],
+          'overdetermined':['underdetermined','square','consistent'],
+          'underdetermined':['overdetermined','square','inconsistent'],
+          'basis':['matrix','vector','scalar'], 'invertible':['singular','diagonal','symmetric'],
+          'sparse':['dense','full','empty'], 'dominant':['smallest','average','median'],
+          'eigenvalues':['singular values','determinants','rank'],
+          'variance':['mean','median','standard deviation'],
+          'covariance':['correlation','variance','mean'],
+          'transition':['adjacency','identity','diagonal'], 'steady':['random','initial','uniform'],
+          'input':['output','column','row'], 'output':['input','column','row'],
+          'kernel':['range','image','domain'], 'range':['kernel','image','domain'],
+          'column space':['row space','null space','left null space'],
+          'row space':['column space','null space','left null space'],
+          'null space':['column space','row space','left null space'],
+          'left null space':['column space','row space','null space'],
+          'multiplication':['addition','subtraction','division'],
+          'concurrent':['parallel','skew','perpendicular'],
+          'intersect':['parallel','diverge','collapse'],
+          'infinite':['zero','one','finite'],
+          'least squares':['maximum likelihood','least absolute','regularization'],
+          'least':['most','average','median'],
+          'best':['worst','average','random'],
+          'error':['correct','result','output'],
+          'linearly dependent':['linearly independent','orthogonal','parallel'],
+          'linearly independent':['linearly dependent','orthogonal','parallel'],
+          'magnitude':['direction','angle','phase'],
+          'Markov':['Euclidean','Gaussian','Bayesian'],
+          'eigenvectors':['eigenvalues','determinants','singular values'],
+          'users':['items','ratings','features'],
+          'entries':['rows','columns','matrices'],
+          'vectors':['scalars','matrices','tensors'],
+          'singular':['invertible','diagonal','symmetric'],
+          'inverse':['transpose','adjugate','cofactor'],
+          'input space':['output space','column space','row space'],
+          'output space':['input space','column space','row space'],
+          'domain':['codomain','range','image'],
+          'codomain':['domain','range','image'],
+          'image':['domain','codomain','kernel'],
+          'adjacency':['transition','incidence','identity'],
+          'euclidean':['manhattan','cosine','hamming'],
+          'cosine':['euclidean','manhattan','hamming'],
+          'best':['worst','random','average'],
+          'worst':['best','average','random'],
+          'similar':['different','opposite','orthogonal'],
+          'independent':['dependent','parallel','collinear'],
+          'dependent':['independent','parallel','collinear'],
+          'consistent':['inconsistent','singular','overdetermined'],
+          'invertible':['singular','nilpotent','idempotent'],
+          'normal':['tangent','secant','parallel'],
+          'null space direction is on the line':['parallel to range','orthogonal to range','perpendicular to range'],
+          'πP=π':['Pπ=π','πP=0','det(P)=1'],
+          'π':['σ','λ','μ'],
+          '(1,2)':['(2,1)','(1,-2)','(-1,2)'],
+          '(1,3)':['(3,1)','(1,-3)','(-1,3)'],
+          '(2,1)':['(1,2)','(2,-1)','(-2,1)'],
+          '(3,1)':['(1,3)','(3,-1)','(-3,1)'],
+          '(1,-2,1)': ['(1,2,1)','(-1,2,1)','(1,-2,-1)'],
+          '(-3,1)': ['(3,1)','(-1,3)','(3,-1)'],
+          '(-2,1)': ['(2,1)','(-1,2)','(2,-1)'],
+          '(1,1,1)': ['(1,1,2)','(1,2,1)','(2,1,1)'],
+          '(1,-2,1)': ['(1,2,-1)','(-1,2,1)','(2,1,-1)'],
+          '2x2': ['3x3','2x3','3x2'],
+          '3x3': ['2x2','3x2','2x3'],
+          '3': ['2','4','5'],
+          '2': ['1','3','4'],
+          '1': ['2','3','0'],
+          '0': ['1','2','3'],
+          '4': ['3','5','6'],
+          '5': ['4','6','7'],
+          '7': ['5','6','8'],
+          'R^3': ['R^2','R^4','R^1'],
+          'R^2': ['R^3','R^4','R^1'],
+          'R⊥N, C⊥N^T': ['R⊥C, N⊥N^T','R⊥N^T, C⊥N','R⊥N, C⊥N'],
+          'least squares': ['least absolute','maximum likelihood','least cubes'],
+        };
+        const lower = correct.toLowerCase();
+        if (textPool[lower]) {
+          wrong = pick(textPool[lower]);
+        } else { continue; }
+      }
+      if (!seen.has(wrong)) { seen.add(wrong); choices.push(wrong); }
+    }
+    while (choices.length < 4) {
+      choices.push('—');
+    }
+    for (let i = choices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [choices[i], choices[j]] = [choices[j], choices[i]];
+    }
+    return choices;
+  }
+
+  return function generateMissionQuestion(missionId, difficulty, seen) {
     const mg = missionGens[missionId];
     if (!mg) return missionGens[1].easy[0]();
     const pool = mg[difficulty] || mg.easy;
-    return pick(pool)();
+    let q;
+    if (seen && seen.size > 0 && pool.length > 1) {
+      const unseen = pool.filter((_, i) => {
+        const test = pool[i]();
+        return !seen.has(test.type);
+      });
+      q = (unseen.length > 0 ? unseen : pool)[Math.floor(Math.random() * (unseen.length > 0 ? unseen.length : pool.length))]();
+    } else {
+      q = pick(pool)();
+    }
+    if (difficulty === 'easy' || difficulty === 'medium') {
+      q.choices = generateChoices(q.answer, q.prompt);
+    }
+    return q;
   };
 })();
 
 app.get('/la-mission-quiz-api/question', (req, res) => {
   const missionId = parseInt(req.query.missionId) || 1;
   const difficulty = req.query.difficulty || 'easy';
+  const seenStr = req.query.seen || '';
+  const seen = new Set(seenStr.split(',').filter(Boolean));
   const id = Date.now();
   try {
-    const q = MQ(missionId, difficulty);
+    const q = MQ(missionId, difficulty, seen);
     res.json({ id, missionId, difficulty, ...q });
   } catch (e) {
     console.error('Mission quiz question error:', e);

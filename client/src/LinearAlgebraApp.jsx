@@ -2045,6 +2045,8 @@ function LinearAlgebraApp({ onBack }) {
   const mqSubmittedRef = useRef(false);
   const mqAdvancedRef = useRef(false);
   const mqAdvanceRef = useRef(null);
+  const mqSubmitRef = useRef(null);
+  const mqSeenRef = useRef(new Set());
 
   function shuffle(arr) {
     const a = [...arr];
@@ -2179,16 +2181,18 @@ function LinearAlgebraApp({ onBack }) {
     setMqStarted(false); setMqFinished(false); setMqQuestion(null);
     setMqAnswer(''); setMqScore(0); setMqQNum(0); setMqResults([]);
     setMqFeedback(''); setMqIsCorrect(null); setMqRevealed(false);
-    setMqDifficulty('easy'); mqSubmittedRef.current = false; mqAdvancedRef.current = false;
+    setMqDifficulty('easy'); mqSubmittedRef.current = false; mqAdvancedRef.current = false; mqSeenRef.current = new Set();
   };
 
   const loadMqQuestion = async () => {
     setMqLoading(true); setMqLoadError('');
     try {
-      const r = await fetch(`/la-mission-quiz-api/question?missionId=${currentMission}&difficulty=${mqDifficulty}`);
+      const seenParam = mqSeenRef.current.size > 0 ? '&seen=' + encodeURIComponent([...mqSeenRef.current].join(',')) : '';
+      const r = await fetch(`/la-mission-quiz-api/question?missionId=${currentMission}&difficulty=${mqDifficulty}${seenParam}`);
       if (!r.ok) throw new Error(`Server returned ${r.status}`);
       const data = await r.json();
       if (!data || !data.prompt) throw new Error('No prompt');
+      if (data.type) mqSeenRef.current.add(data.type);
       setMqQuestion(data); setMqAnswer(''); setMqFeedback(''); setMqIsCorrect(null); setMqRevealed(false);
       mqSubmittedRef.current = false; mqAdvancedRef.current = false;
     } catch (e) {
@@ -2211,17 +2215,18 @@ function LinearAlgebraApp({ onBack }) {
 
   useEffect(() => { if (phase === 'missionquiz' && mqStarted && !mqFinished && mqQNum > 0) loadMqQuestion(); }, [phase, mqStarted, mqQNum, mqFinished]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const mqSubmit = async () => {
-    if (!mqQuestion || mqRevealed || !mqAnswer.trim() || mqSubmittedRef.current) return;
+  const mqSubmit = async (overrideAnswer) => {
+    const ans = overrideAnswer || mqAnswer;
+    if (!mqQuestion || mqRevealed || !String(ans).trim() || mqSubmittedRef.current) return;
     mqSubmittedRef.current = true;
-    const payload = { ...mqQuestion, userAnswer: mqAnswer.trim() };
+    const payload = { ...mqQuestion, userAnswer: String(ans).trim() };
     try {
       const r = await fetch('/la-mission-quiz-api/check', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       const data = await r.json();
       setMqIsCorrect(data.correct); setMqRevealed(true);
       if (data.correct) setMqScore(s => s + 1);
       setMqFeedback(data.correct ? `Correct! ${data.display}` : `Incorrect. Answer: ${data.display}`);
-      setMqResults(prev => [...prev, { prompt: mqQuestion.prompt, userAnswer: mqAnswer.trim(), correctAnswer: data.display, correct: data.correct }]);
+      setMqResults(prev => [...prev, { prompt: mqQuestion.prompt, userAnswer: String(ans).trim(), correctAnswer: data.display, correct: data.correct }]);
     } catch (e) { mqSubmittedRef.current = false; }
   };
 
@@ -2612,25 +2617,11 @@ function LinearAlgebraApp({ onBack }) {
           {guidancePanel()}
           {answerArea()}
           {feedbackArea()}
-          {feedback && feedback.correct && !quizSubmitted && (
+          {feedback && feedback.correct && (
             <div style={{ textAlign: 'center', marginTop: 12 }}>
-              <button className="la-quiz-next-btn" onClick={() => { setPhase('quiz'); setQuizAnswers({}); setQuizSubmitted(false); setQuizPassed(false); setQuizDifficulty(null); setShuffledQuiz([]); }} style={{ maxWidth: 300, margin: '0 auto' }}>Take the Quick Test</button>
-              <button className="la-quiz-next-btn" onClick={startMissionQuiz} style={{ maxWidth: 300, margin: '8px auto 0', background: 'linear-gradient(135deg, #ff9800, #f44336)', color: '#fff', border: 'none' }}>Take Mission Quiz (10 questions)</button>
+              <button className="la-quiz-next-btn" onClick={startMissionQuiz} style={{ maxWidth: 300, margin: '0 auto', background: 'linear-gradient(135deg, #4caf50, #2e7d32)', color: '#fff', border: 'none' }}>Take Quiz (10 questions)</button>
             </div>
           )}
-        </div>
-      )}
-
-      {phase === 'quiz' && (
-        <div className="la-mission">
-          {quizSection()}
-        </div>
-      )}
-
-      {phase === 'quiz' && quizSubmitted && quizPassed && (
-        <div className="la-mission">
-          <div className="la-reallife-title" style={{ textAlign: 'center', marginBottom: 12 }}>Unlocked: Real-Life Applications</div>
-          {realLifeSection()}
         </div>
       )}
 
@@ -2660,7 +2651,29 @@ function LinearAlgebraApp({ onBack }) {
               {mqQuestion && (
                 <div>
                   <div style={{ fontSize: '1.2rem', margin: '16px 0', lineHeight: 1.5 }}>{mqQuestion.prompt}</div>
-                  <input className="answer-input" type="text" value={mqAnswer} onChange={e => { if (!mqRevealed) setMqAnswer(e.target.value) }} disabled={mqRevealed} placeholder={mqQuestion.answerType === 'vector' ? '(x, y)' : mqQuestion.answerType === 'matrix' ? '[a,b;c,d]' : 'Type answer'} onKeyDown={mqKeyDown} autoFocus style={{ maxWidth: 400 }} />
+                  {mqQuestion.choices && mqQuestion.choices.length > 0 ? (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center', margin: '12px 0' }}>
+                      {mqQuestion.choices.map((c, ci) => {
+                        const selected = mqAnswer === String(c);
+                        const showResult = mqRevealed;
+                        const isCorrectChoice = String(c).trim() === String(mqQuestion.answer).trim();
+                        let bg = 'var(--clr-card)';
+                        let border = '1px solid var(--clr-border)';
+                        let color = 'var(--clr-text)';
+                        if (showResult && isCorrectChoice) { bg = 'rgba(76,175,80,0.2)'; border = '2px solid #4caf50'; color = '#4caf50'; }
+                        else if (showResult && selected && !isCorrectChoice) { bg = 'rgba(244,67,54,0.2)'; border = '2px solid #f44336'; color = '#f44336'; }
+                        else if (selected) { bg = 'rgba(33,150,243,0.15)'; border = '2px solid var(--clr-accent)'; }
+                        return (
+                          <button key={ci} disabled={mqRevealed} onClick={() => { if (!mqRevealed) { setMqAnswer(String(c)); mqSubmit(String(c)); } }}
+                            style={{ padding: '10px 20px', borderRadius: 8, background: bg, border, color, cursor: mqRevealed ? 'default' : 'pointer', fontSize: '1rem', fontWeight: 600, minWidth: 80, transition: 'all 0.15s' }}>
+                            {c}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <input className="answer-input" type="text" value={mqAnswer} onChange={e => { if (!mqRevealed) setMqAnswer(e.target.value) }} disabled={mqRevealed} placeholder={mqQuestion.answerType === 'vector' ? '(x, y)' : mqQuestion.answerType === 'matrix' ? '[a,b;c,d]' : 'Type answer'} onKeyDown={mqKeyDown} autoFocus style={{ maxWidth: 400 }} />
+                  )}
                   {mqFeedback && (
                     <div style={{ margin: '12px 0', padding: '10px 16px', borderRadius: 8, background: mqIsCorrect ? 'rgba(76,175,80,0.12)' : 'rgba(244,67,54,0.12)', color: mqIsCorrect ? 'var(--clr-correct)' : 'var(--clr-wrong)', fontWeight: 600 }}>
                       {mqFeedback}
@@ -2669,7 +2682,7 @@ function LinearAlgebraApp({ onBack }) {
                   <div className="button-row" style={{ marginTop: 8 }}>
                     {!mqRevealed ? (
                       <>
-                        <button onClick={mqSubmit} disabled={mqLoading || !mqAnswer.trim()}>Submit</button>
+                        <button onClick={() => mqSubmit()} disabled={mqLoading || !mqAnswer.trim()}>Submit</button>
                         <button onClick={mqSolve} disabled={mqLoading} style={{ background: 'transparent', border: '1px solid var(--clr-accent)', color: 'var(--clr-accent)' }}>Solve</button>
                         <button onClick={mqSkip} disabled={mqLoading} style={{ background: 'transparent', border: '1px solid var(--clr-text-soft)', color: 'var(--clr-text-soft)' }}>Skip</button>
                       </>
@@ -2686,30 +2699,38 @@ function LinearAlgebraApp({ onBack }) {
             const passed = pct >= 80;
             const hasNext = currentMission < mod.end || MODULES.some(m => m.id === currentModule + 1);
             return (
-            <div style={{ textAlign: 'center', padding: '16px 0' }}>
-              <h4>Quiz Complete!</h4>
-              <p style={{ fontSize: '1.2rem', fontWeight: 700, margin: '8px 0' }}>Score: {mqScore}/{mqTotal} ({pct}%)</p>
-              {passed && <p style={{ fontSize: '0.95rem', color: 'var(--clr-correct)', fontWeight: 600, margin: '4px 0' }}>Great job! You scored above 80%!</p>}
-              {!passed && <p style={{ fontSize: '0.9rem', color: 'var(--clr-dim)', margin: '4px 0' }}>Score at least 80% to unlock the next mission.</p>}
-              {mqResults.length > 0 && (
-                <table style={{ width: '100%', borderCollapse: 'collapse', margin: '12px 0', fontSize: '0.85rem' }}>
-                  <thead><tr style={{ borderBottom: '2px solid var(--clr-border)' }}><th style={{ textAlign: 'left', padding: 6 }}>#</th><th style={{ textAlign: 'left', padding: 6 }}>Question</th><th style={{ padding: 6 }}>Result</th></tr></thead>
-                  <tbody>{mqResults.map((r, i) => (
-                    <tr key={i} style={{ borderBottom: '1px solid var(--clr-border)' }}>
-                      <td style={{ padding: 6 }}>{i + 1}</td>
-                      <td style={{ textAlign: 'left', padding: 6, maxWidth: 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.prompt}</td>
-                      <td style={{ padding: 6, color: r.correct ? 'var(--clr-correct)' : 'var(--clr-wrong)', fontWeight: 600 }}>{r.correct ? '✓' : '✗'}</td>
-                    </tr>
-                  ))}</tbody>
-                </table>
-              )}
-              <div className="button-row" style={{ marginTop: 12 }}>
-                {passed && hasNext && (
-                  <button onClick={() => { nextMission(); setMqStarted(false); setMqFinished(false); }} style={{ background: 'linear-gradient(135deg, #4caf50, #2e7d32)', color: '#fff', border: 'none' }}>Next Mission &rarr;</button>
+            <div>
+              <div style={{ textAlign: 'center', padding: '16px 0' }}>
+                <h4>Quiz Complete!</h4>
+                <p style={{ fontSize: '1.2rem', fontWeight: 700, margin: '8px 0' }}>Score: {mqScore}/{mqTotal} ({pct}%)</p>
+                {passed && <p style={{ fontSize: '0.95rem', color: 'var(--clr-correct)', fontWeight: 600, margin: '4px 0' }}>Great job! You scored above 80%!</p>}
+                {!passed && <p style={{ fontSize: '0.9rem', color: 'var(--clr-dim)', margin: '4px 0' }}>Score at least 80% to unlock real-life applications and the next mission.</p>}
+                {mqResults.length > 0 && (
+                  <table style={{ width: '100%', borderCollapse: 'collapse', margin: '12px 0', fontSize: '0.85rem' }}>
+                    <thead><tr style={{ borderBottom: '2px solid var(--clr-border)' }}><th style={{ textAlign: 'left', padding: 6 }}>#</th><th style={{ textAlign: 'left', padding: 6 }}>Question</th><th style={{ padding: 6 }}>Result</th></tr></thead>
+                    <tbody>{mqResults.map((r, i) => (
+                      <tr key={i} style={{ borderBottom: '1px solid var(--clr-border)' }}>
+                        <td style={{ padding: 6 }}>{i + 1}</td>
+                        <td style={{ textAlign: 'left', padding: 6, maxWidth: 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.prompt}</td>
+                        <td style={{ padding: 6, color: r.correct ? 'var(--clr-correct)' : 'var(--clr-wrong)', fontWeight: 600 }}>{r.correct ? '✓' : '✗'}</td>
+                      </tr>
+                    ))}</tbody>
+                  </table>
                 )}
-                <button onClick={() => { setMqStarted(false); setMqFinished(false); }}>Try Again</button>
-                <button onClick={() => setPhase('intro')} style={{ background: 'transparent', border: '1px solid var(--clr-accent)', color: 'var(--clr-accent)' }}>Back to Mission</button>
+                <div className="button-row" style={{ marginTop: 12 }}>
+                  {passed && hasNext && (
+                    <button onClick={() => { nextMission(); setMqStarted(false); setMqFinished(false); }} style={{ background: 'linear-gradient(135deg, #4caf50, #2e7d32)', color: '#fff', border: 'none' }}>Next Mission &rarr;</button>
+                  )}
+                  {!passed && <button onClick={() => { setMqStarted(false); setMqFinished(false); }}>Try Again</button>}
+                  <button onClick={() => setPhase('intro')} style={{ background: 'transparent', border: '1px solid var(--clr-accent)', color: 'var(--clr-accent)' }}>Back to Mission</button>
+                </div>
               </div>
+              {passed && (
+                <div className="la-mission">
+                  <div className="la-reallife-title" style={{ textAlign: 'center', marginBottom: 12 }}>Real-Life Applications</div>
+                  {realLifeSection()}
+                </div>
+              )}
             </div>
             );
           })()}
