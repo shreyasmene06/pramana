@@ -1,15 +1,24 @@
 /**
- * VisualMathLabRedux.jsx – Premium EdTech Visual Math Lab
- * Duolingo / Khan Academy Kids quality
- * Requires: framer-motion, canvas-confetti
+ * VisualMathLabRedux.jsx – High-Performance Visual Math Lab
+ * Target: <16ms frame time, <50ms question swap
+ *
+ * Strategy:
+ *  - Double-buffered prefetch: next question fetched while current is displayed
+ *  - Stable DOM: templates never unmount between questions; data swaps, DOM doesn't
+ *  - No stagger animations during gameplay
+ *  - React.memo on every template component
+ *  - useCallback / useMemo for all handlers and derived data
+ *  - Instant swap via state update only (no AnimatePresence on visuals)
  */
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, {
+  useState, useEffect, useRef, useCallback, useMemo, memo,
+} from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 
 const API = '/api';
 
-/* ── Colour tokens ─────────────────────────────────────────────── */
+/* ── Colour tokens ───────────────────────────────────────────────── */
 const C = {
   bg: '#181512', card: '#2D2520', border: '#4A4038',
   orange: '#F08C46', orange2: '#F08C46', blue: '#4F8DFF',
@@ -17,18 +26,22 @@ const C = {
 };
 const FONT = "'Inter', system-ui, sans-serif";
 
-/* ── Timer ─────────────────────────────────────────────────────── */
+/* ── Timer ───────────────────────────────────────────────────────── */
 function useTimer() {
   const [elapsed, setElapsed] = useState(0);
   const ref = useRef(null);
-  const start = () => { setElapsed(0); clearInterval(ref.current); ref.current = setInterval(() => setElapsed(e => e + 1), 1000); };
-  const stop  = () => { const v = elapsed; clearInterval(ref.current); return v; };
-  const reset = () => { clearInterval(ref.current); setElapsed(0); };
+  const start = useCallback(() => {
+    setElapsed(0);
+    clearInterval(ref.current);
+    ref.current = setInterval(() => setElapsed(e => e + 1), 1000);
+  }, []);
+  const stop  = useCallback(() => { const v = elapsed; clearInterval(ref.current); return v; }, [elapsed]);
+  const reset = useCallback(() => { clearInterval(ref.current); setElapsed(0); }, []);
   useEffect(() => () => clearInterval(ref.current), []);
   return { elapsed, start, stop, reset };
 }
 
-/* ── Confetti ──────────────────────────────────────────────────── */
+/* ── Confetti ────────────────────────────────────────────────────── */
 function fireConfetti() {
   const end = Date.now() + 1600;
   const colors = ['#F97316','#FF9A44','#22C55E','#4F8DFF','#F8F7F5'];
@@ -39,9 +52,9 @@ function fireConfetti() {
   })();
 }
 
-/* ── Floating BG symbols ───────────────────────────────────────── */
+/* ── Floating BG symbols (stable — never re-renders) ─────────────── */
 const BG_SYMS = ['×','÷','+','=','%','π','√','∑','3','5','9'];
-function FloatingBg() {
+const FloatingBg = memo(function FloatingBg() {
   const items = useRef(Array.from({ length: 16 }, (_, i) => ({
     id: i, sym: BG_SYMS[i % BG_SYMS.length],
     x: Math.random() * 100, y: Math.random() * 100,
@@ -59,10 +72,10 @@ function FloatingBg() {
       ))}
     </div>
   );
-}
+});
 
-/* ── XP Popup ──────────────────────────────────────────────────── */
-function XPPopup({ show }) {
+/* ── XP Popup ────────────────────────────────────────────────────── */
+const XPPopup = memo(function XPPopup({ show }) {
   return (
     <AnimatePresence>
       {show && (
@@ -75,36 +88,15 @@ function XPPopup({ show }) {
       )}
     </AnimatePresence>
   );
-}
+});
 
-function RibbonPopup({ show }) {
-  return (
-    <AnimatePresence>
-      {show && (
-        <motion.div
-          initial={{ y:-150, opacity:0, x:'-50%' }}
-          animate={{ y:0, opacity:1, x:'-50%' }}
-          exit={{ y:-150, opacity:0, x:'-50%' }}
-          transition={{ type:'spring', stiffness:200, damping:16 }}
-          style={{ position:'fixed', top:0, left:'50%', zIndex:9999, pointerEvents:'none' }}
-        >
-          <div style={{ background:'linear-gradient(135deg, #10b981, #059669)', padding:'14px 70px', borderRadius:'0 0 30px 30px', boxShadow:'0 15px 40px rgba(16, 185, 129, 0.5)', border:'2px solid rgba(255,255,255,0.3)', borderTop:'none', color:'white', fontSize:'2rem', fontWeight:900, fontFamily:FONT, display:'flex', alignItems:'center', gap:'16px', textShadow:'0 3px 6px rgba(0,0,0,0.3)' }}>
-            <span>🏅</span> BRILLIANT! <span>🏅</span>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-}
-
-/* ── SVG Frog ──────────────────────────────────────────────────── */
-function FrogSVG({ size = 80, happy, sad }) {
+/* ── SVG Frog (memoized) ─────────────────────────────────────────── */
+const FrogSVG = memo(function FrogSVG({ size = 80, happy, sad }) {
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" fill="none">
       <ellipse cx="50" cy="62" rx="30" ry="26" fill="#4ADE80"/>
       <ellipse cx="50" cy="60" rx="26" ry="22" fill="#22C55E"/>
       <ellipse cx="50" cy="66" rx="16" ry="14" fill="#BBF7D0" opacity="0.7"/>
-      {/* Eyes */}
       <ellipse cx="34" cy="42" rx="10" ry="11" fill="#4ADE80"/>
       <ellipse cx="34" cy="42" rx="8"  ry="9"  fill="#16A34A"/>
       <circle  cx="34" cy="42" r="5"   fill="white"/>
@@ -115,22 +107,20 @@ function FrogSVG({ size = 80, happy, sad }) {
       <circle  cx="66" cy="42" r="5"   fill="white"/>
       <circle  cx={happy?67:65} cy="42" r="3" fill="#1C1815"/>
       <circle  cx="68" cy="40" r="1.2" fill="white"/>
-      {/* Mouth */}
       {happy ? <path d="M40 70 Q50 80 60 70" stroke="#166534" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
              : sad ? <path d="M40 76 Q50 68 60 76" stroke="#166534" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
              : <path d="M42 72 Q50 76 58 72" stroke="#166534" strokeWidth="2" strokeLinecap="round" fill="none"/>}
-      {/* Legs */}
       <ellipse cx="24" cy="78" rx="10" ry="6" fill="#4ADE80" transform="rotate(-20 24 78)"/>
       <ellipse cx="76" cy="78" rx="10" ry="6" fill="#4ADE80" transform="rotate(20 76 78)"/>
     </svg>
   );
-}
+});
 
-/* ── Frog Jump Template ─────────────────────────────────────────── */
-export function FrogJumpTemplate({ q, ans, setAns, revealed }) {
+/* ── Frog Jump Template ──────────────────────────────────────────── */
+export const FrogJumpTemplate = memo(function FrogJumpTemplate({ q, ans, setAns, revealed }) {
   const total  = q.jumps * q.step;
   const maxNum = total + q.step;
-  const nums   = Array.from({ length: maxNum + 1 }, (_, i) => i);
+  const nums   = useMemo(() => Array.from({ length: maxNum + 1 }, (_, i) => i), [maxNum]);
   const trackRef    = useRef(null);
   const [tw, setTw] = useState(0);
   const [frogPos, setFrogPos]   = useState(0);
@@ -150,36 +140,31 @@ export function FrogJumpTemplate({ q, ans, setAns, revealed }) {
     setFrogPos(0); setGhostPos(null); setJumps(0); setAnimating(false); setVisited([0]);
   }, [q.id]);
 
-  const n2x = n => tw ? (n / maxNum) * tw : 0;
-  const x2n = x => Math.max(0, Math.min(maxNum, Math.round((x / tw) * maxNum)));
+  const n2x = useCallback(n => tw ? (n / maxNum) * tw : 0, [tw, maxNum]);
+  const x2n = useCallback(x => Math.max(0, Math.min(maxNum, Math.round((x / tw) * maxNum))), [tw, maxNum]);
 
-  const animateJumps = useCallback(async (target) => {
-    const numJumps = q.jumps;
+  const animateJumps = useCallback(async () => {
     setAnimating(true);
     const v = [0];
-    for (let j = 1; j <= numJumps; j++) {
+    for (let j = 1; j <= q.jumps; j++) {
       await new Promise(r => setTimeout(r, 450));
       const pos = j * q.step;
       setFrogPos(pos); setJumps(j); v.push(pos); setVisited([...v]);
     }
     setAnimating(false);
-  }, [q]);
+  }, [q.jumps, q.step]);
 
   useEffect(() => {
     if (revealed) {
-      setFrogPos(0);
-      setJumps(0);
-      setVisited([0]);
-      const t = setTimeout(() => animateJumps(total), 400);
+      setFrogPos(0); setJumps(0); setVisited([0]);
+      const t = setTimeout(() => animateJumps(), 400);
       return () => clearTimeout(t);
     }
-  }, [revealed, animateJumps, total]);
+  }, [revealed, animateJumps]);
 
   return (
     <div style={{ width:'100%', display:'flex', flexDirection:'column', alignItems:'center', gap:'18px' }}>
-      {/* Environment */}
       <div style={{ width:'100%', background:'linear-gradient(180deg,#3D322B 0%,#1D1815 100%)', borderRadius:'20px', padding:'28px 20px 36px', position:'relative', overflow:'hidden', boxShadow:'0 15px 40px rgba(0,0,0,0.5)', border:'2px solid rgba(240,140,70,0.25)' }}>
-        {/* Sky details */}
         {[{l:4,t:4,s:1.1},{l:52,t:6,s:0.8},{l:74,t:3,s:1}].map((c,i)=>(
           <motion.div key={i} style={{position:'absolute',left:`${c.l}%`,top:`${c.t}%`,fontSize:`${c.s*2.2}rem`,opacity:0.3}} animate={{x:[0,18,0]}} transition={{duration:12+i*3,repeat:Infinity,ease:'easeInOut'}}>☁️</motion.div>
         ))}
@@ -189,20 +174,12 @@ export function FrogJumpTemplate({ q, ans, setAns, revealed }) {
             {['🌸','🌼','🌺','🌻'][i]}
           </div>
         ))}
-
-        {/* Frog layer */}
         <div style={{ position:'relative', height:'100px' }}>
-          {/* Ghost preview */}
           {ghostPos !== null && !animating && (
             <div style={{ position:'absolute', bottom:0, left:0, transform:`translateX(${n2x(ghostPos)-28}px)`, opacity:0.35, pointerEvents:'none' }}>
               <FrogSVG size={56}/>
-              <div style={{textAlign:'center',fontSize:'0.75rem',color:'#F08C46',fontWeight:700,marginTop:'-4px', textShadow:'0 2px 4px rgba(0,0,0,0.8)'}}>
-                {ghostPos}
-              </div>
             </div>
           )}
-
-          {/* Real frog (draggable) */}
           <motion.div
             drag={!revealed && !animating ? 'x' : false}
             dragConstraints={trackRef}
@@ -211,40 +188,26 @@ export function FrogJumpTemplate({ q, ans, setAns, revealed }) {
             onDrag={(_, info) => {
               if (!trackRef.current) return;
               const rect = trackRef.current.getBoundingClientRect();
-              const x = info.point.x - rect.left;
-              setGhostPos(x2n(x));
+              setGhostPos(x2n(info.point.x - rect.left));
             }}
             onDragEnd={(_, info) => {
               setIsDrag(false);
               if (!trackRef.current) return;
               const rect = trackRef.current.getBoundingClientRect();
-              const x    = info.point.x - rect.left;
               setGhostPos(null);
-              const droppedOn = x2n(x);
-              setFrogPos(droppedOn);
-              setAns(String(droppedOn));
+              const dropped = x2n(info.point.x - rect.left);
+              setFrogPos(dropped);
+              setAns(String(dropped));
             }}
-            animate={{
-              x: n2x(frogPos) - 28,
-              y: animating ? [0,-42,0] : 0,
-              rotate: isDrag ? 14 : 0,
-              scale:  isDrag ? 1.18 : 1,
-            }}
-            transition={{
-              x: { type:'spring', stiffness:180, damping:18 },
-              y: { duration:0.38, times:[0,0.45,1] },
-            }}
+            animate={{ x: n2x(frogPos) - 28, y: animating ? [0,-42,0] : 0, rotate: isDrag ? 14 : 0, scale: isDrag ? 1.18 : 1 }}
+            transition={{ x: { type:'spring', stiffness:180, damping:18 }, y: { duration:0.38, times:[0,0.45,1] } }}
             style={{ position:'absolute', bottom:0, left:0, cursor: revealed?'default':'grab', userSelect:'none',
               filter: revealed ? 'drop-shadow(0 0 14px rgba(240,140,70,0.9))' : 'drop-shadow(0 4px 8px rgba(0,0,0,0.45))' }}>
             <motion.div animate={{ y:[0,-6,0] }} transition={{ duration:2.2, repeat:Infinity, ease:'easeInOut' }}>
-              <FrogSVG size={60}
-                happy={revealed && String(frogPos)===String(q.answer)}
-                sad={revealed && String(frogPos)!==String(q.answer)}/>
+              <FrogSVG size={60} happy={revealed && String(frogPos)===String(q.answer)} sad={revealed && String(frogPos)!==String(q.answer)}/>
             </motion.div>
           </motion.div>
         </div>
-
-        {/* Jump arc SVG */}
         <svg style={{ position:'absolute', bottom:'26px', left:'20px', width:'calc(100% - 40px)', height:'80px', overflow:'visible', pointerEvents:'none' }}>
           {Array.from({ length: jumps }).map((_, i) => {
             const x1 = (i * q.step / maxNum) * (tw || 300);
@@ -258,8 +221,6 @@ export function FrogJumpTemplate({ q, ans, setAns, revealed }) {
             );
           })}
         </svg>
-
-        {/* Number line */}
         <div ref={trackRef} style={{ position:'relative', width:'100%', height:'38px' }}>
           <div style={{ position:'absolute', top:'50%', transform:'translateY(-50%)', left:0, right:0, height:'4px', background:'#F08C46', borderRadius:'2px', zIndex:1 }}/>
           {nums.map(n => {
@@ -282,25 +243,20 @@ export function FrogJumpTemplate({ q, ans, setAns, revealed }) {
           })}
         </div>
       </div>
-
-      {/* Jump counter pills */}
       <div style={{ display:'flex', gap:'8px', flexWrap:'wrap', justifyContent:'center' }}>
         {Array.from({ length: q.jumps }).map((_, i) => (
-          <motion.div key={i}
-            animate={{ background: i<jumps?'rgba(240,140,70,0.25)':'rgba(255,255,255,0.05)', borderColor: i<jumps?C.orange:'rgba(255,255,255,0.1)' }}
-            style={{ padding:'6px 14px', borderRadius:'20px', border:'2px solid', fontSize:'0.88rem', fontWeight:700, color: i<jumps?C.orange:C.muted, fontFamily:FONT }}
-            transition={{ duration:0.3 }}>
+          <div key={i}
+            style={{ padding:'6px 14px', borderRadius:'20px', border:`2px solid ${i<jumps?C.orange:'rgba(255,255,255,0.1)'}`,
+              background: i<jumps?'rgba(240,140,70,0.25)':'rgba(255,255,255,0.05)',
+              fontSize:'0.88rem', fontWeight:700, color: i<jumps?C.orange:C.muted, fontFamily:FONT }}>
             Jump {i+1}: +{q.step}
-          </motion.div>
+          </div>
         ))}
       </div>
-
-      {/* Hint / current pos */}
       {frogPos === 0 && !revealed && (
-        <motion.p animate={{ opacity:[0.5,1,0.5] }} transition={{ duration:2, repeat:Infinity }}
-          style={{ color:C.muted, fontSize:'0.9rem', fontFamily:FONT, textAlign:'center', margin:0 }}>
+        <p style={{ color:C.muted, fontSize:'0.9rem', fontFamily:FONT, textAlign:'center', margin:0 }}>
           🐸 Drag Freddy to where he'll land after {q.jumps} jumps!
-        </motion.p>
+        </p>
       )}
       {frogPos > 0 && (
         <div style={{ display:'flex', alignItems:'center', gap:'10px', background:'rgba(34,197,94,0.08)', border:'2px solid rgba(34,197,94,0.25)', borderRadius:'14px', padding:'10px 22px' }}>
@@ -310,25 +266,17 @@ export function FrogJumpTemplate({ q, ans, setAns, revealed }) {
       )}
     </div>
   );
-}
+});
 
-/* ── Math Machine Template ─────────────────────────────────────── */
-export function MathMachineTemplate({ q, ans, setAns, revealed }) {
+/* ── Math Machine Template (memoized, no mount animation) ────────── */
+export const MathMachineTemplate = memo(function MathMachineTemplate({ q, revealed }) {
   return (
     <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:'6px', padding:'8px 0' }}>
-      {/* Input */}
-      <motion.div initial={{ y:-36, opacity:0 }} animate={{ y:0, opacity:1 }}
-        transition={{ type:'spring', stiffness:280, damping:20 }}
-        style={{ width:'88px', height:'88px', background:'linear-gradient(135deg,#5B5048,#463B34)', borderRadius:'20px', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'2.6rem', fontWeight:900, color:'white', fontFamily:FONT, boxShadow:'0 10px 28px rgba(0,0,0,0.5)', border:'3px solid #F08C46' }}>
+      <div style={{ width:'88px', height:'88px', background:'linear-gradient(135deg,#5B5048,#463B34)', borderRadius:'20px', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'2.6rem', fontWeight:900, color:'white', fontFamily:FONT, boxShadow:'0 10px 28px rgba(0,0,0,0.5)', border:'3px solid #F08C46' }}>
         {q.input}
-      </motion.div>
-
+      </div>
       <motion.div animate={{ y:[0,8,0] }} transition={{ duration:1.5, repeat:Infinity }} style={{ color:'#F08C46', fontSize:'1.7rem', lineHeight:1 }}>↓</motion.div>
-
-      {/* Machine body */}
-      <motion.div initial={{ scale:0.85, opacity:0 }} animate={{ scale:1, opacity:1 }}
-        transition={{ type:'spring', stiffness:200, damping:15, delay:0.2 }}
-        style={{ background:'#2D2520', border:'4px solid #5B5048', borderRadius:'24px', padding:'18px 30px', display:'flex', alignItems:'center', gap:'14px', boxShadow:'0 0 40px rgba(0,0,0,0.5)', position:'relative' }}>
+      <div style={{ background:'#2D2520', border:'4px solid #5B5048', borderRadius:'24px', padding:'18px 30px', display:'flex', alignItems:'center', gap:'14px', boxShadow:'0 0 40px rgba(0,0,0,0.5)', position:'relative' }}>
         <div style={{ position:'absolute', inset:-1, borderRadius:'24px', background:'linear-gradient(135deg,rgba(240,140,70,0.12),transparent)', pointerEvents:'none' }}/>
         <motion.span style={{ fontSize:'2.6rem' }} animate={{ rotate:360 }} transition={{ duration:4, repeat:Infinity, ease:'linear' }}>⚙️</motion.span>
         <div style={{ background:'#181512', border:'2px inset #4A4038', borderRadius:'12px', padding:'8px 18px', textAlign:'center' }}>
@@ -336,136 +284,159 @@ export function MathMachineTemplate({ q, ans, setAns, revealed }) {
           <div style={{ fontSize:'2.1rem', fontWeight:900, fontFamily:FONT, color:'#F08C46', textShadow:'0 0 12px rgba(240,140,70,0.8)' }}>×{q.multiplier}</div>
         </div>
         <motion.span style={{ fontSize:'2.6rem' }} animate={{ rotate:-360 }} transition={{ duration:3, repeat:Infinity, ease:'linear' }}>⚙️</motion.span>
-      </motion.div>
-
+      </div>
       <motion.div animate={{ y:[0,8,0] }} transition={{ duration:1.5, repeat:Infinity, delay:0.3 }} style={{ color:'#F08C46', fontSize:'1.7rem', lineHeight:1 }}>↓</motion.div>
-
-      {/* Output */}
-      <motion.div
-        animate={{ scale: revealed?1:0.85, opacity: revealed?1:0.55,
-          background: revealed?'linear-gradient(135deg,#F08C46,#D97706)':'#463B34',
-          boxShadow: revealed?'0 10px 28px rgba(240,140,70,0.5)':'0 10px 28px rgba(0,0,0,0.4)',
-          border: revealed?'3px solid rgba(255,255,255,0.2)':'3px dashed #F08C46' }}
-        transition={{ type:'spring', stiffness:280, damping:20 }}
-        style={{ width:'88px', height:'88px', borderRadius:'20px', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'2.6rem', fontWeight:900, color:'white', fontFamily:FONT }}>
+      <div style={{ width:'88px', height:'88px', borderRadius:'20px', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'2.6rem', fontWeight:900, color:'white', fontFamily:FONT,
+        background: revealed ? 'linear-gradient(135deg,#F08C46,#D97706)' : '#463B34',
+        boxShadow: revealed ? '0 10px 28px rgba(240,140,70,0.5)' : '0 10px 28px rgba(0,0,0,0.4)',
+        border: revealed ? '3px solid rgba(255,255,255,0.2)' : '3px dashed #F08C46',
+        transition: 'all 0.2s' }}>
         {revealed ? q.answer : '?'}
-      </motion.div>
+      </div>
     </div>
   );
-}
+});
 
-/* ── Plant Arrays ──────────────────────────────────────────────── */
-export function PlantArrayTemplate({ q, ans, setAns, revealed }) {
+/* ── Plant Arrays (memoized, no stagger) ─────────────────────────── */
+export const PlantArrayTemplate = memo(function PlantArrayTemplate({ q, revealed }) {
   const [planted, setPlanted] = useState([]);
   const total = q.rows * q.cols;
+
   useEffect(() => setPlanted([]), [q.id]);
-  const plant = i => { if (revealed) return; setPlanted(p => p.includes(i)?p.filter(x=>x!==i):[...p,i]); };
+
+  const plant = useCallback(i => {
+    setPlanted(p => p.includes(i) ? p.filter(x => x !== i) : [...p, i]);
+  }, []);
+
+  const cells = useMemo(() => Array.from({ length: total }, (_, i) => i), [total]);
+
   return (
     <div style={{ background:'linear-gradient(135deg,#3D322B,#1D1815)', borderRadius:'20px', padding:'26px 22px', display:'flex', flexDirection:'column', alignItems:'center', gap:'14px', boxShadow:'0 15px 40px rgba(0,0,0,0.5)', border:'2px solid rgba(240,140,70,0.25)' }}>
       <p style={{ color:'#F08C46', fontFamily:FONT, fontWeight:700, margin:0, fontSize:'0.9rem' }}>
         {revealed ? `✅ ${total} plants!` : '👆 Tap each patch to plant a seed!'}
       </p>
       <div style={{ display:'grid', gridTemplateColumns:`repeat(${q.cols},1fr)`, gap:'10px', background:'rgba(0,0,0,0.2)', padding:'14px', borderRadius:'14px' }}>
-        {Array.from({ length: total }).map((_, i) => (
-          <motion.div key={i} onClick={() => plant(i)}
-            whileHover={{ scale:1.1 }} whileTap={{ scale:0.92 }}
-            animate={{ background: (planted.includes(i)||revealed)?'rgba(240,140,70,0.3)':'rgba(255,255,255,0.05)' }}
-            style={{ width:'50px', height:'50px', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1.7rem', cursor: revealed?'default':'pointer', border:'2px solid rgba(240,140,70,0.3)', boxShadow: (planted.includes(i)||revealed)?'0 0 12px rgba(240,140,70,0.4)':'none' }}>
+        {cells.map(i => (
+          <div key={i} onClick={revealed ? undefined : () => plant(i)}
+            style={{ width:'50px', height:'50px', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1.7rem', cursor: revealed?'default':'pointer',
+              border:'2px solid rgba(240,140,70,0.3)',
+              background: (planted.includes(i)||revealed) ? 'rgba(240,140,70,0.3)' : 'rgba(255,255,255,0.05)',
+              boxShadow: (planted.includes(i)||revealed) ? '0 0 12px rgba(240,140,70,0.4)' : 'none',
+              transition: 'background 0.15s, box-shadow 0.15s' }}>
             {(planted.includes(i)||revealed) ? q.emoji : '🪨'}
-          </motion.div>
+          </div>
         ))}
       </div>
     </div>
   );
-}
+});
 
-/* ── Candy Sharing ─────────────────────────────────────────────── */
-export function CandySharingTemplate({ q, ans, setAns, revealed }) {
+/* ── Candy Sharing (memoized, no stagger on candies) ─────────────── */
+export const CandySharingTemplate = memo(function CandySharingTemplate({ q, revealed }) {
   const [shared, setShared] = useState(0);
   useEffect(() => setShared(0), [q.id]);
-  const share = () => { if (revealed || shared >= q.total) return; setShared(s => s+1); };
+
+  const share = useCallback(() => {
+    if (revealed) return;
+    setShared(s => Math.min(s + 1, q.total));
+  }, [revealed, q.total]);
+
+  const boxes = useMemo(() => Array.from({ length: q.boxes }, (_, i) => i), [q.boxes]);
+
   return (
     <div style={{ background:'linear-gradient(135deg,#451a03,#78350f)', borderRadius:'20px', padding:'26px 22px', display:'flex', flexDirection:'column', alignItems:'center', gap:'14px', boxShadow:'0 15px 40px rgba(0,0,0,0.4)' }}>
-      <motion.div onClick={share} whileHover={{ scale:1.15 }} whileTap={{ scale:0.9 }}
-        style={{ fontSize:'3.4rem', cursor:revealed?'default':'pointer', filter:'drop-shadow(0 4px 12px rgba(249,115,22,0.5))' }}>
+      <div onClick={share} style={{ fontSize:'3.4rem', cursor:revealed?'default':'pointer', filter:'drop-shadow(0 4px 12px rgba(249,115,22,0.5))', userSelect:'none' }}>
         {shared < q.total ? q.emoji : '✨'}
-      </motion.div>
+      </div>
       <p style={{ color:'#fcd34d', fontFamily:FONT, fontWeight:700, margin:0, fontSize:'0.88rem' }}>
         {revealed ? `✅ ${q.total/q.boxes} per basket!` : `Tap to share! (${shared}/${q.total})`}
       </p>
       <div style={{ display:'flex', gap:'14px', flexWrap:'wrap', justifyContent:'center' }}>
-        {Array.from({ length: q.boxes }).map((_, i) => {
+        {boxes.map(i => {
           const cnt = revealed ? (q.total/q.boxes) : Math.floor(shared/q.boxes)+(shared%q.boxes>i?1:0);
           return (
-            <div key={`${q.id}-box-${i}`} style={{ background:'rgba(254,240,138,0.12)', border:'3px solid #eab308', borderRadius:'12px 12px 36px 36px', width:'78px', minHeight:'64px', display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap', gap:'3px', padding:'10px' }}>
-              {Array.from({ length: cnt }).map((_, j) => (
-                <motion.span key={`${q.id}-box-${i}-candy-${j}`} initial={{ scale:0 }} animate={{ scale:1 }} transition={{ type:'spring', stiffness:400, delay:j*0.06 }} style={{ fontSize:'1.25rem' }}>{q.emoji || '🍬'}</motion.span>
-              ))}
+            <div key={`box-${i}`} style={{ background:'rgba(254,240,138,0.12)', border:'3px solid #eab308', borderRadius:'12px 12px 36px 36px', width:'78px', minHeight:'64px', display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap', gap:'3px', padding:'10px' }}>
+              {/* Use a single text span instead of mapping individual elements */}
+              {cnt > 0 && (
+                <span style={{ fontSize: cnt <= 6 ? '1.25rem' : '0.95rem', lineHeight:'1.4', letterSpacing:'2px' }}>
+                  {(q.emoji || '🍬').repeat(cnt)}
+                </span>
+              )}
             </div>
           );
         })}
       </div>
     </div>
   );
-}
+});
 
-/* ── Equal Groups ──────────────────────────────────────────────── */
-export function EqualGroupsTemplate({ q }) {
+/* ── Equal Groups (memoized, CSS-only rendering, no spring stagger) ─ */
+export const EqualGroupsTemplate = memo(function EqualGroupsTemplate({ q }) {
   const n = q.itemsPerGroup || 1;
-  // Scale circle size based on how many items need to fit
   const circleSize = n <= 4 ? 120 : n <= 6 ? 150 : n <= 9 ? 180 : n <= 12 ? 210 : 240;
-  const emojiSize = n <= 4 ? '1.4rem' : n <= 6 ? '1.25rem' : n <= 9 ? '1.1rem' : '0.95rem';
-  const pad = n <= 4 ? '18px' : n <= 9 ? '14px' : '10px';
+  const emojiSize  = n <= 4 ? '1.4rem' : n <= 6 ? '1.25rem' : n <= 9 ? '1.1rem' : '0.95rem';
+  const pad  = n <= 4 ? '18px' : n <= 9 ? '14px' : '10px';
   const gapPx = n <= 4 ? '6px' : '4px';
+
+  const groups = useMemo(() => Array.from({ length: q.groups }, (_, i) => i), [q.groups]);
+  // Pre-render item string once per question
+  const itemsStr = useMemo(() => (q.emoji || '🍪').repeat(n), [q.emoji, n]);
+
   return (
     <div style={{ background:'linear-gradient(135deg,#3D322B,#1D1815)', borderRadius:'20px', padding:'26px 22px', display:'flex', flexDirection:'column', alignItems:'center', gap:'16px', boxShadow:'0 15px 40px rgba(0,0,0,0.5)', border:`2px solid rgba(240,140,70,0.25)` }}>
       <div style={{ display:'flex', gap:'14px', flexWrap:'wrap', justifyContent:'center' }}>
-        {Array.from({ length: q.groups }).map((_, i) => (
-          <motion.div key={`${q.id}-group-${i}`} initial={{ scale:0, rotate:-18 }} animate={{ scale:1, rotate:0 }}
-            transition={{ type:'spring', stiffness:280, delay:i*0.1 }}
-            style={{ background:'rgba(255,255,255,0.04)', border:'3px solid rgba(240,140,70,0.5)', borderRadius:'50%', width:`${circleSize}px`, height:`${circleSize}px`, display:'flex', alignItems:'center', justifyContent:'center', alignContent:'center', flexWrap:'wrap', gap:gapPx, padding:pad, boxShadow:'0 0 20px rgba(240,140,70,0.25)' }}>
-            {Array.from({ length: n }).map((_, j) => (
-              <span key={`${q.id}-group-${i}-item-${j}`} style={{ fontSize:emojiSize, lineHeight:'1' }}>{q.emoji || '🍪'}</span>
-            ))}
-          </motion.div>
+        {groups.map(i => (
+          <div key={i}
+            style={{ background:'rgba(255,255,255,0.04)', border:'3px solid rgba(240,140,70,0.5)', borderRadius:'50%',
+              width:`${circleSize}px`, height:`${circleSize}px`, display:'flex', alignItems:'center', justifyContent:'center',
+              alignContent:'center', flexWrap:'wrap', gap:gapPx, padding:pad,
+              boxShadow:'0 0 20px rgba(240,140,70,0.25)' }}>
+            <span style={{ fontSize:emojiSize, lineHeight:'1.3', letterSpacing:'1px', wordBreak:'break-all', textAlign:'center' }}>
+              {itemsStr}
+            </span>
+          </div>
         ))}
       </div>
     </div>
   );
-}
+});
 
-/* ── Picture Multi ─────────────────────────────────────────────── */
-export function PictureMultiTemplate({ q }) {
+/* ── Picture Multi (memoized, no stagger) ────────────────────────── */
+export const PictureMultiTemplate = memo(function PictureMultiTemplate({ q }) {
+  const items = useMemo(() => Array.from({ length: q.n }, (_, i) => i), [q.n]);
   return (
     <div style={{ background:'linear-gradient(135deg,#3D322B,#1D1815)', borderRadius:'20px', padding:'30px 22px', display:'flex', flexDirection:'column', alignItems:'center', gap:'18px', boxShadow:'0 15px 40px rgba(0,0,0,0.5)', border:`2px solid rgba(240,140,70,0.25)` }}>
       <div style={{ display:'flex', gap:'14px', flexWrap:'wrap', justifyContent:'center', alignItems:'center' }}>
-        {Array.from({ length: q.n }).map((_, i) => (
-          <motion.div key={`${q.id}-item-${i}`} initial={{ scale:0, y:20 }} animate={{ scale:1, y:0 }}
-            transition={{ type:'spring', stiffness:280, delay:i*0.08 }}
-            style={{ fontSize:'3.8rem', lineHeight:'1.2', display:'flex', alignItems:'center', justifyContent:'center', filter:'drop-shadow(0 8px 20px rgba(240,140,70,0.45))', paddingBottom:'4px' }}>
+        {items.map(i => (
+          <div key={i} style={{ fontSize:'3.8rem', lineHeight:'1.2', display:'flex', alignItems:'center', justifyContent:'center', filter:'drop-shadow(0 8px 20px rgba(240,140,70,0.45))', paddingBottom:'4px' }}>
             {q.icon}
-          </motion.div>
+          </div>
         ))}
       </div>
     </div>
   );
-}
+});
 
-/* ── Answer Input ──────────────────────────────────────────────── */
-export function AnswerInput({ ans, setAns, submitAns, revealed, correctAnswer, shake, options }) {
-  const rawCorrect = String(correctAnswer).includes('=')
-    ? String(correctAnswer).split('=').pop().trim()
-    : String(correctAnswer).trim();
+/* ── Answer Input (memoized) ─────────────────────────────────────── */
+export const AnswerInput = memo(function AnswerInput({ ans, setAns, submitAns, revealed, correctAnswer, shake, options }) {
+  const rawCorrect = useMemo(() => {
+    const s = String(correctAnswer);
+    return s.includes('=') ? s.split('=').pop().trim() : s.trim();
+  }, [correctAnswer]);
   const isRight = String(ans).trim() === rawCorrect;
   const ref = useRef(null);
   useEffect(() => { if (ref.current && !revealed && (!options || options.length===0)) ref.current.focus(); }, [revealed, options]);
+
+  const handleChange = useCallback(e => { if (!revealed) setAns(e.target.value); }, [revealed, setAns]);
+  const handleKey    = useCallback(e => { if (e.key==='Enter' && !revealed && ans) submitAns(); }, [revealed, ans, submitAns]);
+  const handleOpt    = useCallback(opt => { if (!revealed) setAns(String(opt)); }, [revealed, setAns]);
+
   return (
     <motion.div
       animate={shake ? { x:[-14,14,-10,10,-6,6,0] } : { x:0 }}
       transition={{ duration:0.5 }}
       style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:'10px', width:'100%', marginTop:'6px' }}>
       <label style={{ fontSize:'0.72rem', fontWeight:800, letterSpacing:'0.12em', textTransform:'uppercase', color:C.muted, fontFamily:FONT }}>Your Answer</label>
-      
       {options && options.length > 0 ? (
         <div style={{ display:'flex', gap:'14px', flexWrap:'wrap', justifyContent:'center' }}>
           {options.map((opt, i) => {
@@ -475,57 +446,40 @@ export function AnswerInput({ ans, setAns, submitAns, revealed, correctAnswer, s
             let borderColor = selected ? C.orange : 'rgba(255,255,255,0.1)';
             let color = selected ? C.orange : C.white;
             let shadow = selected ? '0 0 20px rgba(249,115,22,0.3)' : 'none';
-            
             if (revealed) {
-              if (isCorrectOption) {
-                bg = 'rgba(34,197,94,0.15)';
-                borderColor = C.green;
-                color = C.green;
-                shadow = '0 0 20px rgba(34,197,94,0.35)';
-              } else if (selected) {
-                bg = 'rgba(239,68,68,0.15)';
-                borderColor = C.red;
-                color = C.red;
-                shadow = '0 0 20px rgba(239,68,68,0.35)';
-              }
+              if (isCorrectOption) { bg='rgba(34,197,94,0.15)'; borderColor=C.green; color=C.green; shadow='0 0 20px rgba(34,197,94,0.35)'; }
+              else if (selected)   { bg='rgba(239,68,68,0.15)';  borderColor=C.red;   color=C.red;   shadow='0 0 20px rgba(239,68,68,0.35)'; }
             }
-
             return (
-              <motion.button key={i} onClick={() => { if(!revealed) setAns(String(opt)); }}
-                whileHover={!revealed ? { scale:1.06, y:-2 } : {}} whileTap={!revealed ? { scale:0.95 } : {}}
-                disabled={revealed}
-                style={{ width:'80px', height:'64px', borderRadius:'16px', background:bg, border:`2px solid ${borderColor}`, color:color, fontSize:'1.8rem', fontWeight:900, fontFamily:FONT, cursor:revealed?'default':'pointer', boxShadow:shadow, transition:'all 0.2s', display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <button key={i} onClick={() => handleOpt(opt)} disabled={revealed}
+                style={{ width:'80px', height:'64px', borderRadius:'16px', background:bg, border:`2px solid ${borderColor}`, color, fontSize:'1.8rem', fontWeight:900, fontFamily:FONT, cursor:revealed?'default':'pointer', boxShadow:shadow, transition:'all 0.15s', display:'flex', alignItems:'center', justifyContent:'center' }}>
                 {opt}
-              </motion.button>
+              </button>
             );
           })}
         </div>
       ) : (
         <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
-          <input ref={ref} type="number" value={ans||''} onChange={e => !revealed && setAns(e.target.value)}
-            onKeyDown={e => { if (e.key==='Enter' && !revealed && ans) submitAns(); }}
+          <input ref={ref} type="number" value={ans||''} onChange={handleChange} onKeyDown={handleKey}
             disabled={revealed} placeholder="?"
             style={{ width:'116px', height:'68px', fontSize:'2.4rem', fontWeight:900, textAlign:'center',
               border:`2px solid ${revealed?(isRight?C.green:C.red):'rgba(255,255,255,0.18)'}`,
               borderRadius:'18px', background: revealed?(isRight?'rgba(34,197,94,0.1)':'rgba(239,68,68,0.1)'):'rgba(255,255,255,0.04)',
               color: revealed?(isRight?C.green:C.red):C.white,
-              outline:'none', fontFamily:FONT, transition:'all 0.25s',
+              outline:'none', fontFamily:FONT, transition:'all 0.2s',
               boxShadow: revealed?(isRight?`0 0 24px rgba(34,197,94,0.35)`:`0 0 24px rgba(239,68,68,0.35)`):'none',
               MozAppearance:'textfield' }}/>
           {revealed && (
-            <motion.div initial={{ scale:0, rotate:-30 }} animate={{ scale:1, rotate:0 }}
-              transition={{ type:'spring', stiffness:400 }} style={{ fontSize:'2.6rem' }}>
-              {isRight ? '✅' : '❌'}
-            </motion.div>
+            <div style={{ fontSize:'2.6rem' }}>{isRight ? '✅' : '❌'}</div>
           )}
         </div>
       )}
     </motion.div>
   );
-}
+});
 
-/* ── Results Table ─────────────────────────────────────────────── */
-function ResultsTable({ results }) {
+/* ── Results Table (memoized) ────────────────────────────────────── */
+const ResultsTable = memo(function ResultsTable({ results }) {
   if (!results.length) return null;
   return (
     <div style={{ width:'100%', marginTop:'14px', overflowX:'auto' }}>
@@ -551,19 +505,37 @@ function ResultsTable({ results }) {
       </table>
     </div>
   );
+});
+
+/* ── Equation formatter ──────────────────────────────────────────── */
+function getEquation(qObj, ans) {
+  switch (qObj?.template) {
+    case 'plant_arrays':  return `${qObj.rows} × ${qObj.cols} = ${ans}`;
+    case 'frog_jumps':    return `${qObj.jumps} × ${qObj.step} = ${ans}`;
+    case 'candy_sharing': return `${qObj.total} ÷ ${qObj.boxes} = ${ans}`;
+    case 'equal_groups':  return `${qObj.groups} × ${qObj.itemsPerGroup} = ${ans}`;
+    case 'picture_multi': return `${qObj.n} × ${qObj.count} = ${ans}`;
+    case 'math_machine':  return `${qObj.input} × ${qObj.multiplier} = ${ans}`;
+    default: return String(ans);
+  }
 }
 
-/* ── Card wrapper ──────────────────────────────────────────── */
-const Card = ({ children, style }) => (
-  <motion.div
-    initial={{ opacity:0, y:28, scale:0.97 }} animate={{ opacity:1, y:0, scale:1 }}
-    transition={{ type:'spring', stiffness:200, damping:20 }}
-    style={{ maxWidth:'870px', width:'100%', background:C.card, border:`1px solid ${C.border}`, borderRadius:'28px', padding:'40px 44px', boxShadow:'0 25px 60px rgba(0,0,0,0.65)', position:'relative', ...style }}>
-    {children}
-  </motion.div>
-);
+/* ── Template renderer (stable function, no AnimatePresence) ─────── */
+const RenderVisual = memo(function RenderVisual({ question, answer, setAnswer, submitAns, revealed }) {
+  if (!question) return null;
+  const props = { q: question, ans: answer, setAns: setAnswer, submitAns, revealed };
+  switch (question.template) {
+    case 'frog_jumps':    return <FrogJumpTemplate    {...props}/>;
+    case 'math_machine':  return <MathMachineTemplate  {...props}/>;
+    case 'plant_arrays':  return <PlantArrayTemplate   {...props}/>;
+    case 'candy_sharing': return <CandySharingTemplate {...props}/>;
+    case 'equal_groups':  return <EqualGroupsTemplate  {...props}/>;
+    case 'picture_multi': return <PictureMultiTemplate {...props}/>;
+    default: return null;
+  }
+});
 
-/* ── MAIN EXPORT ───────────────────────────────────────────────── */
+/* ── Template labels ─────────────────────────────────────────────── */
 const TEMPLATE_LABELS = {
   plant_arrays:  '🌱 Planting Arrays',
   frog_jumps:    '🐸 Frog Jumps',
@@ -573,52 +545,124 @@ const TEMPLATE_LABELS = {
   math_machine:  '⚙️ Math Machine',
 };
 
+/* ── MAIN EXPORT ─────────────────────────────────────────────────── */
 export default function VisualMathLabRedux({ onBack, initialDifficulty, initialNumQuestions, initialStarted }) {
-  const [difficulty,    setDifficulty]    = useState(initialDifficulty || 'easy');
-  const [numQuestions,  setNumQuestions]  = useState(initialNumQuestions || '5');
-  const [started,       setStarted]       = useState(initialStarted || false);
-  const [finished,      setFinished]      = useState(false);
-  const [question,      setQuestion]      = useState(null);
-  const [answer,        setAnswer]        = useState('');
-  const [score,         setScore]         = useState(0);
-  const [questionNumber,setQuestionNumber]= useState(0);
-  const [totalQ,        setTotalQ]        = useState(5);
-  const [feedback,      setFeedback]      = useState('');
-  const [isCorrect,     setIsCorrect]     = useState(null);
-  const [loading,       setLoading]       = useState(false);
-  const [revealed,      setRevealed]      = useState(false);
-  const [results,       setResults]       = useState([]);
-  const [shake,         setShake]         = useState(false);
-  const [showXP,        setShowXP]        = useState(false);
+  const [difficulty,     setDifficulty]     = useState(initialDifficulty || 'easy');
+  const [numQuestions,   setNumQuestions]   = useState(initialNumQuestions || '5');
+  const [started,        setStarted]        = useState(initialStarted || false);
+  const [finished,       setFinished]       = useState(false);
+  const [question,       setQuestion]       = useState(null);
+  const [answer,         setAnswer]         = useState('');
+  const [score,          setScore]          = useState(0);
+  const [questionNumber, setQuestionNumber] = useState(0);
+  const [totalQ,         setTotalQ]         = useState(5);
+  const [feedback,       setFeedback]       = useState('');
+  const [isCorrect,      setIsCorrect]      = useState(null);
+  const [loading,        setLoading]        = useState(false);
+  const [revealed,       setRevealed]       = useState(false);
+  const [results,        setResults]        = useState([]);
+  const [shake,          setShake]          = useState(false);
+  const [showXP,         setShowXP]         = useState(false);
   const timer = useTimer();
 
-  const fetchQuestion = async () => {
-    if (questionNumber >= totalQ) { setFinished(true); timer.reset(); return; }
-    setLoading(true); setFeedback(''); setAnswer('');
-    setRevealed(false); setIsCorrect(null); setShake(false);
-    const lastTemplate = question ? question.template : '';
-    const res  = await fetch(`${API}/visual-math-lab-redux/generate?difficulty=${difficulty}&lastTemplate=${lastTemplate}`);
-    const data = await res.json();
-    setQuestion(data);
-    setQuestionNumber(n => n+1);
-    setLoading(false);
-    timer.start();
-  };
+  // ── Double-buffer: prefetch next question while current is shown ──
+  const prefetchRef  = useRef(null);   // holds prefetched question data
+  const fetchingRef  = useRef(false);  // guard against concurrent fetches
+  const difficultyRef = useRef(difficulty);
+  useEffect(() => { difficultyRef.current = difficulty; }, [difficulty]);
 
-  const startQuiz = () => {
-    setTotalQ(Number(numQuestions)||5); setStarted(true); setFinished(false);
-    setScore(0); setQuestionNumber(0); setResults([]);
-  };
+  const fetchFromServer = useCallback(async (diff, lastTemplate) => {
+    const res = await fetch(
+      `${API}/visual-math-lab-redux/generate?difficulty=${diff}&lastTemplate=${lastTemplate||''}`
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  }, []);
+
+  // Kick off prefetch in background immediately
+  const prefetchNext = useCallback((lastTemplate) => {
+    fetchFromServer(difficultyRef.current, lastTemplate)
+      .then(data => { prefetchRef.current = data; })
+      .catch(() => {});
+  }, [fetchFromServer]);
+
+  const fetchQuestion = useCallback(async (currentTemplate) => {
+    if (fetchingRef.current) return;
+    fetchingRef.current = true;
+    setLoading(true);
+    setFeedback('');
+    setAnswer('');
+    setRevealed(false);
+    setIsCorrect(null);
+    setShake(false);
+
+    try {
+      // Use prefetched data if available — zero network wait
+      let data = prefetchRef.current;
+      prefetchRef.current = null;
+
+      if (!data) {
+        // No prefetch ready — fetch now (only happens on first question or cache miss)
+        data = await fetchFromServer(difficultyRef.current, currentTemplate || '');
+      }
+
+      setQuestion(data);
+      setQuestionNumber(n => n + 1);
+      setLoading(false);
+      timer.start();
+
+      // Immediately prefetch the next question in the background
+      prefetchNext(data.template);
+    } catch (err) {
+      console.error('fetchQuestion error:', err);
+      setLoading(false);
+    } finally {
+      fetchingRef.current = false;
+    }
+  }, [fetchFromServer, prefetchNext, timer]);
+
+  // qRef holds the current question template for prefetch chaining
+  const questionRef = useRef(null);
+  useEffect(() => { questionRef.current = question; }, [question]);
+
+  const questionNumberRef = useRef(0);
+  useEffect(() => { questionNumberRef.current = questionNumber; }, [questionNumber]);
+
+  const totalQRef = useRef(totalQ);
+  useEffect(() => { totalQRef.current = totalQ; }, [totalQ]);
+
+  const startQuiz = useCallback(() => {
+    const count = Number(numQuestions) || 5;
+    setTotalQ(count);
+    setStarted(true);
+    setFinished(false);
+    setScore(0);
+    setQuestionNumber(0);
+    setResults([]);
+    prefetchRef.current = null;
+    fetchingRef.current = false;
+  }, [numQuestions]);
 
   useEffect(() => {
-    if (started && !finished && questionNumber === 0) fetchQuestion();
-  }, [started]);
+    if (started && !finished && questionNumber === 0) {
+      fetchQuestion('');
+    }
+  }, [started]); // eslint-disable-line
 
-  const submitAns = async (optAns) => {
+  // Handle finish condition separately to avoid re-triggering fetch
+  useEffect(() => {
+    if (started && !finished && questionNumber > 0 && questionNumber > totalQ) {
+      setFinished(true);
+      timer.reset();
+    }
+  }, [questionNumber, totalQ, started, finished, timer]);
+
+  const submitAns = useCallback(async (optAns) => {
     if (!question || revealed) return;
     const finalAns  = optAns !== undefined ? optAns : answer;
     const timeTaken = timer.stop();
     setAnswer(finalAns);
+
     const res  = await fetch(`${API}/visual-math-lab-redux/check`, {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ answerOption: finalAns, expected: question.answer }),
@@ -626,7 +670,7 @@ export default function VisualMathLabRedux({ onBack, initialDifficulty, initialN
     const data = await res.json();
     setIsCorrect(data.correct);
     if (data.correct) {
-      setScore(s => s+1);
+      setScore(s => s + 1);
       fireConfetti();
       setShowXP(true);
       setTimeout(() => setShowXP(false), 1600);
@@ -634,25 +678,14 @@ export default function VisualMathLabRedux({ onBack, initialDifficulty, initialN
       setShake(true);
       setTimeout(() => setShake(false), 600);
     }
-    const getEquation = (qObj, ans) => {
-      switch (qObj.template) {
-        case 'plant_arrays': return `${qObj.rows} × ${qObj.cols} = ${ans}`;
-        case 'frog_jumps': return `${qObj.jumps} × ${qObj.step} = ${ans}`;
-        case 'candy_sharing': return `${qObj.total} ÷ ${qObj.boxes} = ${ans}`;
-        case 'equal_groups': return `${qObj.groups} × ${qObj.itemsPerGroup} = ${ans}`;
-        case 'picture_multi': return `${qObj.n} × ${qObj.count} = ${ans}`;
-        case 'math_machine': return `${qObj.input} × ${qObj.multiplier} = ${ans}`;
-        default: return ans;
-      }
-    };
     const eqn = getEquation(question, data.correctAnswer);
     setFeedback(data.correct ? `Correct! 🎉 ${eqn}` : `Not quite! ${eqn}`);
     setResults(prev => [...prev, { question:question.prompt, userAnswer:finalAns, correctAnswer:eqn, correct:data.correct, time:timeTaken }]);
     setRevealed(true);
-  };
+  }, [question, revealed, answer, timer]);
 
-  const handleSolve = async () => {
-    if (revealed) return;
+  const handleSolve = useCallback(async () => {
+    if (revealed || !question) return;
     const timeTaken = timer.stop();
     const res = await fetch(`${API}/visual-math-lab-redux/check`, {
       method:'POST', headers:{'Content-Type':'application/json'},
@@ -660,281 +693,191 @@ export default function VisualMathLabRedux({ onBack, initialDifficulty, initialN
     });
     const data = await res.json();
     setIsCorrect(false);
-    const getEquation = (qObj, ans) => {
-      switch (qObj.template) {
-        case 'plant_arrays': return `${qObj.rows} × ${qObj.cols} = ${ans}`;
-        case 'frog_jumps': return `${qObj.jumps} × ${qObj.step} = ${ans}`;
-        case 'candy_sharing': return `${qObj.total} ÷ ${qObj.boxes} = ${ans}`;
-        case 'equal_groups': return `${qObj.groups} × ${qObj.itemsPerGroup} = ${ans}`;
-        case 'picture_multi': return `${qObj.n} × ${qObj.count} = ${ans}`;
-        case 'math_machine': return `${qObj.input} × ${qObj.multiplier} = ${ans}`;
-        default: return ans;
-      }
-    };
     const eqn = getEquation(question, data.correctAnswer);
     setFeedback(`The answer is ${eqn}`);
     setResults(prev => [...prev, { question:question.prompt, userAnswer:'—', correctAnswer:eqn, correct:false, time:timeTaken }]);
     setRevealed(true);
-  };
+  }, [revealed, question, timer]);
 
-  const renderVisual = () => {
-    if (!question) return null;
-    const props = { q:question, ans:answer, setAns:setAnswer, submitAns, revealed };
-    if (question.template==='frog_jumps')    return <FrogJumpTemplate    {...props}/>;
-    if (question.template==='math_machine')  return <MathMachineTemplate  {...props}/>;
-    if (question.template==='plant_arrays')  return <PlantArrayTemplate   {...props}/>;
-    if (question.template==='candy_sharing') return <CandySharingTemplate {...props}/>;
-    if (question.template==='equal_groups')  return <EqualGroupsTemplate  {...props}/>;
-    if (question.template==='picture_multi') return <PictureMultiTemplate {...props}/>;
-    return null;
-  };
+  // Next question: instant — uses prefetched data
+  const handleNext = useCallback(() => {
+    if (questionNumberRef.current >= totalQRef.current) {
+      setFinished(true);
+      timer.reset();
+      return;
+    }
+    fetchQuestion(questionRef.current?.template);
+  }, [fetchQuestion, timer]);
 
+  // Prompt highlighting
+  const promptParts = useMemo(() => {
+    if (!question) return [];
+    return question.prompt.split(/(\d+)/g);
+  }, [question?.prompt]);
+
+  const correctAnswerLabel = useMemo(() => question ? getEquation(question, question.answer) : '', [question]);
 
   return (
     <div style={{ minHeight:'100vh', background:'#181512', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'flex-start', padding:'24px 16px 48px', position:'relative' }}>
       <FloatingBg/>
 
-      <AnimatePresence mode="wait">
-
-        {/* ── START ─────────────────────────────────── */}
-        {!started && !finished && (
-        <div style={{
-          background: '#2D2520', border: '1.5px solid #4A4038', borderRadius: '28px',
-          boxShadow: '0 20px 40px rgba(0,0,0,.45)', padding: '48px 40px', maxWidth: '720px', width: '100%',
-          textAlign: 'center', position: 'relative', margin: 'auto', zIndex: 10
-        }}>
-          <button onClick={onBack} style={{
-            position: 'absolute', top: '24px', left: '24px', background: 'transparent',
-            border: '1px solid #5B5048', borderRadius: '6px', padding: '6px 14px',
-            color: '#A89C93', fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', zIndex: 20
-          }}>← Home</button>
-
-          <h1 style={{ fontFamily: 'Georgia, "Times New Roman", serif', fontWeight: 700, fontSize: '48px', color: '#F4F1ED', margin: '0 0 12px', lineHeight: 1.1 }}>
-            Multiplication & division
-          </h1>
-          <p style={{ color: '#988D84', fontSize: '0.9rem', margin: '0 0 40px', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            Multiplication & Division
-          </p>
-          <p style={{ color: '#988D84', fontSize: '0.9rem', margin: '0 0 24px', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            Practice multiplication and division!
-          </p>
-          
-          <div style={{ marginBottom: '24px' }}>
-            <h3 style={{ color: '#F4F1ED', fontSize: '0.9rem', margin: '0 0 16px', fontFamily: 'Inter, sans-serif', fontWeight: 700 }}>
-              Select Difficulty:
-            </h3>
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '12px' }}>
-              {[['Easy', 'easy'], ['Medium', 'medium'], ['Hard', 'hard']].map(([lbl, val]) => (
-                <button key={val} onClick={() => setDifficulty(val)} style={{
-                  background: difficulty === val ? '#F08C46' : 'transparent',
-                  border: difficulty === val ? '1px solid #F08C46' : '1px solid #5B5048',
-                  borderRadius: '50px', padding: '8px 16px',
-                  color: difficulty === val ? '#FFF' : '#988D84', fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer'
-                }}>
-                  {lbl}
-                </button>
+      {/* ── START ───────────────────────────────────────────────── */}
+      {!started && !finished && (
+        <div style={{ background:'#2D2520', border:'1.5px solid #4A4038', borderRadius:'28px', boxShadow:'0 20px 40px rgba(0,0,0,.45)', padding:'48px 40px', maxWidth:'720px', width:'100%', textAlign:'center', position:'relative', margin:'auto', zIndex:10 }}>
+          <button onClick={onBack} style={{ position:'absolute', top:'24px', left:'24px', background:'transparent', border:'1px solid #5B5048', borderRadius:'6px', padding:'6px 14px', color:'#A89C93', fontFamily:'Inter, sans-serif', fontWeight:600, fontSize:'0.85rem', cursor:'pointer', zIndex:20 }}>← Home</button>
+          <h1 style={{ fontFamily:'Georgia, "Times New Roman", serif', fontWeight:700, fontSize:'48px', color:'#F4F1ED', margin:'0 0 12px', lineHeight:1.1 }}>Multiplication &amp; division</h1>
+          <p style={{ color:'#988D84', fontSize:'0.9rem', margin:'0 0 40px', fontFamily:'Inter, sans-serif', fontWeight:400 }}>Practice multiplication and division!</p>
+          <div style={{ marginBottom:'24px' }}>
+            <h3 style={{ color:'#F4F1ED', fontSize:'0.9rem', margin:'0 0 16px', fontFamily:'Inter, sans-serif', fontWeight:700 }}>Select Difficulty:</h3>
+            <div style={{ display:'flex', gap:'12px', justifyContent:'center', flexWrap:'wrap', marginBottom:'12px' }}>
+              {[['Easy','easy'],['Medium','medium'],['Hard','hard']].map(([lbl,val]) => (
+                <button key={val} onClick={() => setDifficulty(val)} style={{ background:difficulty===val?'#F08C46':'transparent', border:difficulty===val?'1px solid #F08C46':'1px solid #5B5048', borderRadius:'50px', padding:'8px 16px', color:difficulty===val?'#FFF':'#988D84', fontFamily:'Inter, sans-serif', fontWeight:600, fontSize:'0.85rem', cursor:'pointer' }}>{lbl}</button>
               ))}
             </div>
           </div>
-          
-          <div style={{ marginBottom: '32px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <label style={{ color: '#988D84', fontSize: '0.85rem', margin: '0 0 12px', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-              How many questions?
-            </label>
-            <input type="text" value={numQuestions} onChange={(e) => { const v = e.target.value; if (v === '' || /^\d+$/.test(v)) setNumQuestions(v) }} style={{
-              background: '#463B34', border: '1px solid #5B5048', borderRadius: '6px',
-              padding: '10px', color: '#FFF', fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: '0.9rem',
-              width: '100px', textAlign: 'center', outline: 'none'
-            }} placeholder="5" />
+          <div style={{ marginBottom:'32px', display:'flex', flexDirection:'column', alignItems:'center' }}>
+            <label style={{ color:'#988D84', fontSize:'0.85rem', margin:'0 0 12px', fontFamily:'Inter, sans-serif', fontWeight:400 }}>How many questions?</label>
+            <input type="text" value={numQuestions} onChange={e => { const v=e.target.value; if(v===''||/^\d+$/.test(v)) setNumQuestions(v); }} style={{ background:'#463B34', border:'1px solid #5B5048', borderRadius:'6px', padding:'10px', color:'#FFF', fontFamily:'Inter, sans-serif', fontWeight:600, fontSize:'0.9rem', width:'100px', textAlign:'center', outline:'none' }} placeholder="5"/>
           </div>
-
-          <button onClick={startQuiz} style={{
-            background: '#F08C46', border: 'none', borderRadius: '6px',
-            padding: '10px 24px', color: '#FFF', fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer'
-          }}>
-            Start Quiz
-          </button>
+          <button onClick={startQuiz} style={{ background:'#F08C46', border:'none', borderRadius:'6px', padding:'10px 24px', color:'#FFF', fontFamily:'Inter, sans-serif', fontWeight:600, fontSize:'0.9rem', cursor:'pointer' }}>Start Quiz</button>
         </div>
-        )}
+      )}
 
-        {/* ── QUESTION ──────────────────────────────── */}
-        {started && !finished && (
-          <Card key="question" style={{ marginTop:'4vh' }}>            <XPPopup show={showXP}/>
-            <RibbonPopup show={showXP}/>
+      {/* ── QUESTION ────────────────────────────────────────────── */}
+      {started && !finished && (
+        <div style={{ maxWidth:'870px', width:'100%', background:C.card, border:`1px solid ${C.border}`, borderRadius:'28px', padding:'40px 44px', boxShadow:'0 25px 60px rgba(0,0,0,0.65)', position:'relative', marginTop:'4vh', zIndex:1 }}>
+          <XPPopup show={showXP}/>
 
-            {/* Header row */}
-            <div style={{ display:'flex', alignItems:'center', gap:'14px', marginBottom:'18px', flexWrap:'wrap' }}>
-              <motion.button onClick={onBack} whileHover={{ scale:1.05, x:-2 }} whileTap={{ scale:0.95 }}
-                style={{ background:`linear-gradient(135deg,${C.orange},${C.orange2})`, border:'none', borderRadius:'50px',
-                  padding:'10px 20px', color:'white', fontFamily:FONT, fontWeight:700, fontSize:'0.88rem', cursor:'pointer',
-                  boxShadow:'0 6px 18px rgba(249,115,22,0.3)', whiteSpace:'nowrap' }}>
-                ← Back
-              </motion.button>
-              <div style={{ flex:1, minWidth:'100px' }}>
-                <div style={{ background:'rgba(255,255,255,0.07)', borderRadius:'99px', height:'9px', overflow:'hidden' }}>
-                  <motion.div animate={{ width:`${((questionNumber-1)/totalQ)*100}%` }}
-                    transition={{ duration:0.6, ease:'easeOut' }}
-                    style={{ height:'100%', background:`linear-gradient(90deg,${C.orange},${C.orange2})`, borderRadius:'99px',
-                      boxShadow:`0 0 10px rgba(249,115,22,0.5)` }}/>
-                </div>
+          {/* Header */}
+          <div style={{ display:'flex', alignItems:'center', gap:'14px', marginBottom:'18px', flexWrap:'wrap' }}>
+            <button onClick={onBack} style={{ background:`linear-gradient(135deg,${C.orange},${C.orange2})`, border:'none', borderRadius:'50px', padding:'10px 20px', color:'white', fontFamily:FONT, fontWeight:700, fontSize:'0.88rem', cursor:'pointer', boxShadow:'0 6px 18px rgba(249,115,22,0.3)', whiteSpace:'nowrap' }}>← Back</button>
+            <div style={{ flex:1, minWidth:'100px' }}>
+              <div style={{ background:'rgba(255,255,255,0.07)', borderRadius:'99px', height:'9px', overflow:'hidden' }}>
+                <motion.div animate={{ width:`${((questionNumber-1)/totalQ)*100}%` }} transition={{ duration:0.4, ease:'easeOut' }}
+                  style={{ height:'100%', background:`linear-gradient(90deg,${C.orange},${C.orange2})`, borderRadius:'99px', boxShadow:`0 0 10px rgba(249,115,22,0.5)` }}/>
               </div>
-              <span style={{ color:C.muted, fontSize:'0.82rem', fontWeight:700, whiteSpace:'nowrap' }}>
-                {questionNumber} / {totalQ}
+            </div>
+            <span style={{ color:C.muted, fontSize:'0.82rem', fontWeight:700, whiteSpace:'nowrap' }}>{questionNumber} / {totalQ}</span>
+            <div style={{ border:'2px solid', borderColor: timer.elapsed>=20?'rgba(239,68,68,0.5)':'rgba(255,255,255,0.1)', background: timer.elapsed>=20?'rgba(239,68,68,0.2)':'rgba(255,255,255,0.07)', borderRadius:'50px', padding:'8px 14px', display:'flex', alignItems:'center', gap:'6px', fontSize:'0.82rem', fontWeight:700, fontFamily:FONT, color: timer.elapsed>=20?C.red:C.white }}>
+              ⏱️ {timer.elapsed}s
+            </div>
+          </div>
+
+          {/* Score stars */}
+          <div style={{ display:'flex', gap:'3px', marginBottom:'18px' }}>
+            {Array.from({ length: totalQ }).map((_, i) => (
+              <div key={i} style={{ fontSize:'0.85rem', opacity: i<score?1:0.18 }}>⭐</div>
+            ))}
+          </div>
+
+          {/* Template label */}
+          {question && (
+            <div style={{ marginBottom:'8px' }}>
+              <span style={{ background:'rgba(249,115,22,0.14)', border:'1px solid rgba(249,115,22,0.28)', borderRadius:'8px', padding:'4px 12px', fontSize:'0.75rem', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.1em', color:C.orange, fontFamily:FONT }}>
+                {TEMPLATE_LABELS[question.template] || '🧮 Math'}
               </span>
-              <motion.div
-                animate={{ background: timer.elapsed>=20?'rgba(239,68,68,0.2)':'rgba(255,255,255,0.07)',
-                  borderColor: timer.elapsed>=20?'rgba(239,68,68,0.5)':'rgba(255,255,255,0.1)' }}
-                style={{ border:'2px solid', borderRadius:'50px', padding:'8px 14px',
-                  display:'flex', alignItems:'center', gap:'6px', fontSize:'0.82rem', fontWeight:700, fontFamily:FONT,
-                  color: timer.elapsed>=20?C.red:C.white }}>
-                <motion.span animate={{ scale: timer.elapsed>=20?[1,1.2,1]:1 }}
-                  transition={{ duration:0.7, repeat: timer.elapsed>=20?Infinity:0 }}>⏱️</motion.span>
-                {timer.elapsed}s
-              </motion.div>
             </div>
+          )}
 
-            {/* Score stars */}
-            <div style={{ display:'flex', gap:'3px', marginBottom:'18px' }}>
-              {Array.from({ length: totalQ }).map((_, i) => (
-                <motion.div key={i} animate={{ scale:i<score?1:0.75, opacity:i<score?1:0.18 }} style={{ fontSize:'0.85rem' }}>⭐</motion.div>
-              ))}
-            </div>
-
-            {/* Template label */}
-            {question && (
-              <div style={{ marginBottom:'8px' }}>
-                <span style={{ background:'rgba(249,115,22,0.14)', border:'1px solid rgba(249,115,22,0.28)', borderRadius:'8px',
-                  padding:'4px 12px', fontSize:'0.75rem', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.1em',
-                  color:C.orange, fontFamily:FONT }}>
-                  {TEMPLATE_LABELS[question.template] || '🧮 Math'}
-                </span>
-              </div>
-            )}
-
-            {/* Question text */}
-            <AnimatePresence mode="wait">
-              <motion.div key={question?.id} initial={{ opacity:0, y:14 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-14 }}
-                transition={{ duration:0.32 }} style={{ marginBottom:'22px' }}>
-                {loading || !question ? (
-                  <div style={{ color:C.muted, fontSize:'1.5rem', textAlign:'center', padding:'36px' }}>
-                    <motion.span animate={{ opacity:[0.4,1,0.4] }} transition={{ duration:1.2, repeat:Infinity }}>Loading...</motion.span>
-                  </div>
-                ) : (
-                  <h2 style={{ fontSize:'1.85rem', fontWeight:800, color:C.white, margin:0, lineHeight:1.35 }}>
-                    {question.prompt.split(/(\d+)/g).map((part, i) =>
-                      /^\d+$/.test(part)
-                        ? <span key={i} style={{ color:C.orange, textShadow:`0 0 18px rgba(249,115,22,0.45)` }}>{part}</span>
-                        : part
-                    )}
-                  </h2>
+          {/* Question text — instant swap, no AnimatePresence */}
+          <div style={{ marginBottom:'22px', minHeight:'60px' }}>
+            {loading || !question ? (
+              <div style={{ color:C.muted, fontSize:'1.5rem', textAlign:'center', padding:'20px' }}>Loading…</div>
+            ) : (
+              <h2 style={{ fontSize:'1.85rem', fontWeight:800, color:C.white, margin:0, lineHeight:1.35 }}>
+                {promptParts.map((part, i) =>
+                  /^\d+$/.test(part)
+                    ? <span key={i} style={{ color:C.orange, textShadow:`0 0 18px rgba(249,115,22,0.45)` }}>{part}</span>
+                    : part
                 )}
-              </motion.div>
-            </AnimatePresence>
+              </h2>
+            )}
+          </div>
 
-            {/* Visual */}
-            <AnimatePresence mode="wait">
-              {question && !loading && (
-                <motion.div key={question.id+'-v'} initial={{ opacity:0, scale:0.96 }} animate={{ opacity:1, scale:1 }}
-                  exit={{ opacity:0, scale:0.96 }} transition={{ duration:0.38 }}>
-                  {renderVisual()}
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Answer input */}
+          {/* Visual — instant swap, stable DOM, no AnimatePresence */}
+          <div style={{ minHeight:'160px' }}>
             {question && !loading && (
-              <div style={{ marginTop:'20px' }}>
-                <AnswerInput ans={answer} setAns={setAnswer} submitAns={submitAns}
-                  revealed={revealed} correctAnswer={getEquation(question, question.answer)} shake={shake} options={question.options}/>
-              </div>
+              <RenderVisual
+                question={question}
+                answer={answer}
+                setAnswer={setAnswer}
+                submitAns={submitAns}
+                revealed={revealed}
+              />
             )}
+          </div>
 
-            {/* Feedback */}
-            <AnimatePresence>
-              {feedback && (
-                <motion.div initial={{ opacity:0, y:10, scale:0.96 }} animate={{ opacity:1, y:0, scale:1 }}
-                  exit={{ opacity:0 }} transition={{ type:'spring', stiffness:280 }}
-                  style={{ marginTop:'14px', padding:'14px 18px', borderRadius:'14px',
-                    background: isCorrect?'rgba(34,197,94,0.08)':'rgba(239,68,68,0.08)',
-                    border:`2px solid ${isCorrect?'rgba(34,197,94,0.35)':'rgba(239,68,68,0.35)'}`,
-                    fontSize:'0.98rem', fontWeight:700, color: isCorrect?'#86efac':'#fca5a5', fontFamily:FONT, textAlign:'center' }}>
-                  {isCorrect ? '🎉 ' : '💡 '}{feedback}
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Buttons */}
-            <div style={{ display:'flex', gap:'12px', marginTop:'22px', flexWrap:'wrap' }}>
-              {!revealed ? (
-                <>
-                  <motion.button onClick={handleSolve} whileHover={{ scale:1.02 }} whileTap={{ scale:0.97 }}
-                    style={{ flex:1, background:`linear-gradient(135deg,${C.orange},${C.orange2})`,
-                      border:'none', borderRadius:'16px', padding:'16px 18px', opacity: 0.72,
-                      color:'white', fontFamily:FONT, fontWeight:700, fontSize:'0.92rem', cursor:'pointer',
-                      boxShadow:'0 8px 24px rgba(249,115,22,0.22)', transition:'all 0.2s' }}>
-                    Show Answer
-                  </motion.button>
-                  <motion.button onClick={() => submitAns()} disabled={loading||!answer}
-                    whileHover={!loading&&answer ? { scale:1.04, boxShadow:'0 14px 36px rgba(249,115,22,0.48)' } : {}}
-                    whileTap={{ scale:0.96 }}
-                    style={{ flex:1, background: loading||!answer?'rgba(255,255,255,0.07)':`linear-gradient(135deg,${C.orange},${C.orange2})`,
-                      border:'none', borderRadius:'16px', padding:'16px 20px',
-                      color: loading||!answer?C.muted:'white', fontFamily:FONT, fontWeight:800, fontSize:'1rem',
-                      cursor: loading||!answer?'not-allowed':'pointer', boxShadow: loading||!answer?'none':'0 8px 24px rgba(249,115,22,0.32)', transition:'all 0.2s' }}>
-                    Submit ✓
-                  </motion.button>
-                </>
-              ) : (
-                <motion.button onClick={fetchQuestion}
-                  whileHover={{ scale:1.05, boxShadow:'0 14px 36px rgba(249,115,22,0.48)' }} whileTap={{ scale:0.96 }}
-                  style={{ flex:1, background:`linear-gradient(135deg,${C.orange},${C.orange2})`, border:'none',
-                    borderRadius:'16px', padding:'18px 22px', color:'white', fontFamily:FONT, fontWeight:800,
-                    fontSize:'1.05rem', cursor:'pointer', boxShadow:'0 8px 24px rgba(249,115,22,0.35)' }}>
-                  {questionNumber >= totalQ ? 'Finish Lab 🏁' : 'Next Question →'}
-                </motion.button>
-              )}
+          {/* Answer input */}
+          {question && !loading && (
+            <div style={{ marginTop:'20px' }}>
+              <AnswerInput ans={answer} setAns={setAnswer} submitAns={submitAns}
+                revealed={revealed} correctAnswer={correctAnswerLabel} shake={shake} options={question.options}/>
             </div>
+          )}
 
-            {/* Mini results */}
-            {results.length > 0 && (
-              <div style={{ marginTop:'22px', borderTop:`1px solid ${C.border}`, paddingTop:'18px' }}>
-                <ResultsTable results={results}/>
-              </div>
+          {/* Feedback */}
+          {feedback && (
+            <div style={{ marginTop:'14px', padding:'14px 18px', borderRadius:'14px',
+              background: isCorrect?'rgba(34,197,94,0.08)':'rgba(239,68,68,0.08)',
+              border:`2px solid ${isCorrect?'rgba(34,197,94,0.35)':'rgba(239,68,68,0.35)'}`,
+              fontSize:'0.98rem', fontWeight:700, color: isCorrect?'#86efac':'#fca5a5', fontFamily:FONT, textAlign:'center' }}>
+              {isCorrect ? '🎉 ' : '💡 '}{feedback}
+            </div>
+          )}
+
+          {/* Buttons */}
+          <div style={{ display:'flex', gap:'12px', marginTop:'22px', flexWrap:'wrap' }}>
+            {!revealed ? (
+              <>
+                <button onClick={handleSolve}
+                  style={{ flex:1, background:`linear-gradient(135deg,${C.orange},${C.orange2})`, border:'none', borderRadius:'16px', padding:'16px 18px', opacity:0.72, color:'white', fontFamily:FONT, fontWeight:700, fontSize:'0.92rem', cursor:'pointer', boxShadow:'0 8px 24px rgba(249,115,22,0.22)' }}>
+                  Show Answer
+                </button>
+                <button onClick={() => submitAns()} disabled={loading||!answer}
+                  style={{ flex:1, background: loading||!answer?'rgba(255,255,255,0.07)':`linear-gradient(135deg,${C.orange},${C.orange2})`, border:'none', borderRadius:'16px', padding:'16px 20px', color: loading||!answer?C.muted:'white', fontFamily:FONT, fontWeight:800, fontSize:'1rem', cursor: loading||!answer?'not-allowed':'pointer', boxShadow: loading||!answer?'none':'0 8px 24px rgba(249,115,22,0.32)' }}>
+                  Submit ✓
+                </button>
+              </>
+            ) : (
+              <button onClick={handleNext}
+                style={{ flex:1, background:`linear-gradient(135deg,${C.orange},${C.orange2})`, border:'none', borderRadius:'16px', padding:'18px 22px', color:'white', fontFamily:FONT, fontWeight:800, fontSize:'1.05rem', cursor:'pointer', boxShadow:'0 8px 24px rgba(249,115,22,0.35)' }}>
+                {questionNumber >= totalQ ? 'Finish Lab 🏁' : 'Next Question →'}
+              </button>
             )}
-          </Card>
-        )}
+          </div>
 
-        {/* ── FINISH ────────────────────────────────── */}
-        {finished && (
-          <Card key="finish" style={{ textAlign:'center', marginTop:'8vh' }}>
-            <motion.div animate={{ y:[0,-18,0], rotate:[0,8,-8,0] }} transition={{ duration:1.4, repeat:Infinity }}
-              style={{ fontSize:'5rem', marginBottom:'14px' }}>🏆</motion.div>
-            <h1 style={{ fontSize:'2.8rem', fontWeight:900, color:C.white, margin:'0 0 8px' }}>Lab Complete!</h1>
-            <p style={{ fontSize:'1.25rem', color:C.muted, margin:'0 0 12px' }}>
-              Final Score: <span style={{ color:C.orange, fontWeight:900 }}>{score} / {totalQ}</span>
-            </p>
-            <div style={{ background:'rgba(255,255,255,0.07)', borderRadius:'99px', height:'12px', overflow:'hidden', maxWidth:'400px', margin:'0 auto 30px' }}>
-              <motion.div initial={{ width:0 }} animate={{ width:`${(score/totalQ)*100}%` }} transition={{ duration:1.2, delay:0.3 }}
-                style={{ height:'100%', background:`linear-gradient(90deg,${C.orange},${C.green})`, borderRadius:'99px' }}/>
+          {/* Mini results */}
+          {results.length > 0 && (
+            <div style={{ marginTop:'22px', borderTop:`1px solid ${C.border}`, paddingTop:'18px' }}>
+              <ResultsTable results={results}/>
             </div>
-            <ResultsTable results={results}/>
-            <div style={{ display:'flex', gap:'14px', justifyContent:'center', marginTop:'30px', flexWrap:'wrap' }}>
-              <motion.button whileHover={{ scale:1.05 }} whileTap={{ scale:0.96 }}
-                onClick={() => { setStarted(false); setFinished(false); setScore(0); setQuestionNumber(0); setResults([]); }}
-                style={{ background:`linear-gradient(135deg,${C.orange},${C.orange2})`, border:'none', borderRadius:'16px',
-                  padding:'16px 32px', color:'white', fontFamily:FONT, fontWeight:800, fontSize:'1rem', cursor:'pointer',
-                  boxShadow:'0 8px 24px rgba(249,115,22,0.35)' }}>
-                Play Again 🔄
-              </motion.button>
-              <motion.button onClick={onBack} whileHover={{ scale:1.03 }} whileTap={{ scale:0.97 }}
-                style={{ background:'rgba(255,255,255,0.05)', border:`2px solid ${C.border}`, borderRadius:'16px',
-                  padding:'16px 24px', color:C.muted, fontFamily:FONT, fontWeight:700, fontSize:'1rem', cursor:'pointer' }}>
-                ← Home
-              </motion.button>
-            </div>
-          </Card>
-        )}
-      </AnimatePresence>
+          )}
+        </div>
+      )}
+
+      {/* ── FINISH ──────────────────────────────────────────────── */}
+      {finished && (
+        <div style={{ maxWidth:'870px', width:'100%', background:C.card, border:`1px solid ${C.border}`, borderRadius:'28px', padding:'40px 44px', boxShadow:'0 25px 60px rgba(0,0,0,0.65)', position:'relative', marginTop:'8vh', textAlign:'center', zIndex:1 }}>
+          <motion.div animate={{ y:[0,-18,0], rotate:[0,8,-8,0] }} transition={{ duration:1.4, repeat:Infinity }} style={{ fontSize:'5rem', marginBottom:'14px' }}>🏆</motion.div>
+          <h1 style={{ fontSize:'2.8rem', fontWeight:900, color:C.white, margin:'0 0 8px' }}>Lab Complete!</h1>
+          <p style={{ fontSize:'1.25rem', color:C.muted, margin:'0 0 12px' }}>Final Score: <span style={{ color:C.orange, fontWeight:900 }}>{score} / {totalQ}</span></p>
+          <div style={{ background:'rgba(255,255,255,0.07)', borderRadius:'99px', height:'12px', overflow:'hidden', maxWidth:'400px', margin:'0 auto 30px' }}>
+            <motion.div initial={{ width:0 }} animate={{ width:`${(score/totalQ)*100}%` }} transition={{ duration:1.2, delay:0.3 }}
+              style={{ height:'100%', background:`linear-gradient(90deg,${C.orange},${C.green})`, borderRadius:'99px' }}/>
+          </div>
+          <ResultsTable results={results}/>
+          <div style={{ display:'flex', gap:'14px', justifyContent:'center', marginTop:'30px', flexWrap:'wrap' }}>
+            <button onClick={() => { setStarted(false); setFinished(false); setScore(0); setQuestionNumber(0); setResults([]); prefetchRef.current=null; }}
+              style={{ background:`linear-gradient(135deg,${C.orange},${C.orange2})`, border:'none', borderRadius:'16px', padding:'16px 32px', color:'white', fontFamily:FONT, fontWeight:800, fontSize:'1rem', cursor:'pointer', boxShadow:'0 8px 24px rgba(249,115,22,0.35)' }}>
+              Play Again 🔄
+            </button>
+            <button onClick={onBack}
+              style={{ background:'rgba(255,255,255,0.05)', border:`2px solid ${C.border}`, borderRadius:'16px', padding:'16px 24px', color:C.muted, fontFamily:FONT, fontWeight:700, fontSize:'1rem', cursor:'pointer' }}>
+              ← Home
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

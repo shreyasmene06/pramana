@@ -328,8 +328,14 @@ app.get('/addition-api/question', (req, res) => {
   // Sanitize digits to valid options; default to 1 if invalid
   const safeDigits = [1, 2, 3, 4].includes(digits) ? digits : 1;
   const range = digitRange(safeDigits);
-  const a = randomInt(range.min, range.max);
-  const b = randomInt(range.min, range.max);
+
+  // Optional sumMax: when set, cap each operand so a + b <= sumMax
+  const sumMax = req.query.sumMax ? Number(req.query.sumMax) : null;
+  const effectiveMax = sumMax ? Math.min(range.max, Math.floor(sumMax / 2)) : range.max;
+  const effectiveMin = Math.min(range.min, effectiveMax);
+
+  const a = randomInt(effectiveMin, effectiveMax);
+  const b = randomInt(effectiveMin, effectiveMax);
   const prompt = WordProblemGenerator.addition(a, b);
   res.json({ id: `${safeDigits}-${Date.now()}-${Math.random()}`, digits: safeDigits, a, b, prompt, answer: a + b });
 });
@@ -857,7 +863,8 @@ app.get('/visual-math-api/question', (req, res) => {
     if (type === 'multiply' && mode === 'array') {
       // "Build rows × cols by tapping empty cells"
       const rows = vmRandInt(2, diff === 'easy' ? 4 : diff === 'medium' ? 6 : 8);
-      const cols = vmRandInt(2, diff === 'easy' ? 4 : diff === 'medium' ? 6 : 8);
+      const maxCols = diff === 'easy' ? 4 : Math.max(2, Math.floor(30 / rows));
+      const cols = vmRandInt(2, Math.min(diff === 'easy' ? 4 : diff === 'medium' ? 6 : 8, maxCols));
       return res.json({ id, type, mode, emoji, rows, cols,
         prompt: `Fill ${rows} rows of ${cols} ${emoji} each. Total = ?`,
         answer: rows * cols, a: rows, b: cols });
@@ -866,7 +873,8 @@ app.get('/visual-math-api/question', (req, res) => {
     if (type === 'multiply' && mode === 'groups') {
       // "Put M items into each of N buckets"
       const numGroups = vmRandInt(2, diff === 'easy' ? 4 : diff === 'medium' ? 6 : 8);
-      const perGroup  = vmRandInt(2, diff === 'easy' ? 5 : diff === 'medium' ? 8 : 10);
+      const maxPerGroup = diff === 'easy' ? 5 : Math.max(2, Math.floor(30 / numGroups));
+      const perGroup  = vmRandInt(2, Math.min(diff === 'easy' ? 5 : diff === 'medium' ? 8 : 10, maxPerGroup));
       return res.json({ id, type, mode, emoji, numGroups, perGroup,
         prompt: `Put ${perGroup} ${emoji} into each of ${numGroups} buckets. Total?`,
         answer: numGroups * perGroup, a: numGroups, b: perGroup });
@@ -906,7 +914,8 @@ app.get('/visual-math-api/question', (req, res) => {
     if (type === 'divide' && mode === 'share') {
       // "Share total items equally among N plates"
       const divisor  = vmRandInt(2, diff === 'easy' ? 4 : diff === 'medium' ? 6 : 8);
-      const quotient = vmRandInt(2, diff === 'easy' ? 5 : diff === 'medium' ? 8 : 10);
+      const maxQuotient = diff === 'easy' ? 5 : Math.max(2, Math.floor(30 / divisor));
+      const quotient = vmRandInt(2, Math.min(diff === 'easy' ? 5 : diff === 'medium' ? 8 : 10, maxQuotient));
       const total    = divisor * quotient;
       return res.json({ id, type, mode, emoji, total, divisor, quotient,
         prompt: `Share ${total} ${emoji} equally among ${divisor} plates. How many on each?`,
@@ -916,7 +925,8 @@ app.get('/visual-math-api/question', (req, res) => {
     if (type === 'divide' && mode === 'grouping') {
       // "Put items into groups of size B — how many groups?"
       const groupSize = vmRandInt(2, diff === 'easy' ? 4 : diff === 'medium' ? 6 : 8);
-      const numGroups = vmRandInt(2, diff === 'easy' ? 5 : diff === 'medium' ? 7 : 10);
+      const maxGroups = diff === 'easy' ? 5 : Math.max(2, Math.floor(30 / groupSize));
+      const numGroups = vmRandInt(2, Math.min(diff === 'easy' ? 5 : diff === 'medium' ? 7 : 10, maxGroups));
       const total     = groupSize * numGroups;
       return res.json({ id, type, mode, emoji, total, groupSize, numGroups,
         prompt: `Put ${total} ${emoji} into groups of ${groupSize}. How many groups?`,

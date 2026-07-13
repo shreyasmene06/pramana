@@ -42022,7 +42022,11 @@ function AdditionApp({ onBack, initialMode, initialDifficulty, initialNumQuestio
     const diffLevel = isAdaptive ? adaptiveLevel(adaptScoreRef.current) : selectedDifficulty
     const digits = digitMap[diffLevel]
 
-    const res = await fetch(`${API}/addition-api/question?digits=${digits}`)
+    const sumMaxMap = { easy: null, medium: 30, hard: 50 }
+    const sumMax = additionMode === 'counting' ? sumMaxMap[diffLevel] : null
+    const sumMaxParam = sumMax ? `&sumMax=${sumMax}` : ''
+
+    const res = await fetch(`${API}/addition-api/question?digits=${digits}${sumMaxParam}`)
     const data = await res.json()
     setQuestion(data)
 
