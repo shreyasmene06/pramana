@@ -43566,6 +43566,7 @@ const fetchQuestion = async (selectedDifficulty = difficulty) => {
       if (isAdaptive) {
         setAdaptScore(prev => { const next = data.correct ? Math.min(3, prev + 0.25) : Math.max(0, prev - 0.35); adaptScoreRef.current = next; return next })
       }
+      setRevealed(true)
       return
     }
 
