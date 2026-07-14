@@ -39990,8 +39990,8 @@ function App() {
     )
   }
 
-  // Route: /language → Language Puzzles dashboard and modules
-  if (pathname === '/language') {
+  // Route: */language → Language Puzzles dashboard and modules (matches any path ending with /language)
+  if (/\/language$/.test(pathname)) {
     return (
       <div className="app-shell">
         <button className="theme-toggle" onClick={toggleTheme} title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
@@ -41321,11 +41321,11 @@ function Home({ onSelect, isGoalSelection = false, onBack }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [search, setSearch] = useState('')
 
-  // Special featured apps (shown in first row — Visual Learning Universe removed to hamburger menu only)
+  // Special featured apps (shown in hamburger menu)
   const featuredApps = [
-    { key: 'addition', name: 'Addition', subtitle: '20-question addition practice', color: 'blue' },
-    { key: 'mensuration-lab', name: 'Mensuration', subtitle: 'Geometry & Shape Puzzles', color: 'green' },
-    { key: 'coordgeom', name: 'Coordinate Geometry', subtitle: 'Discovery Sandbox Mode', color: 'blue' },
+    { key: 'randommix', name: 'Random Mix', subtitle: 'Adaptive cross-topic quiz', color: 'featured' },
+    { key: 'custom', name: 'Custom Lesson', subtitle: 'Build your own mixed quiz', color: 'featured' },
+    { key: 'gym', name: 'Gym', subtitle: 'Adaptive workout across all 7 gym puzzles', color: 'featured' },
   ]
   // Visual Learning Universe lives only in the hamburger menu
   const mathLabEntry = { key: 'math-lab', name: '🔬 Visual Learning Universe', subtitle: 'Visual, Mensuration & Addition labs', color: 'orange' }
@@ -41333,10 +41333,9 @@ function Home({ onSelect, isGoalSelection = false, onBack }) {
   // All regular quiz apps sorted alphabetically by name
   const regularApps = [
     { key: 'comic-addition', name: 'Comic Addition', subtitle: 'Story Mode', color: 'purple' },
-    { key: 'custom', name: 'Custom Lesson', subtitle: 'Build your own mixed quiz', color: 'blue' },
-    { key: 'gym', name: 'Gym', subtitle: 'Adaptive workout across all 7 gym puzzles', color: 'green' },
-    { key: 'randommix', name: 'Random Mix', subtitle: 'Adaptive cross-topic quiz', color: 'purple' },
+    { key: 'addition', name: 'Addition', subtitle: '20-question addition practice', color: 'blue' },
     { key: 'angles', name: 'Angles', subtitle: 'Lines, points, parallel lines', color: 'green' },
+    { key: 'basicarith', name: 'Arithmetic', subtitle: '+, −, ×, ÷ with positive & negative', color: 'purple' },
     { key: 'banking', name: 'Banking (RD)', subtitle: 'Interest & recurring deposits', color: 'blue' },
     { key: 'bearings', name: 'Bearings', subtitle: 'Three-figure bearings', color: 'green' },
     { key: 'binomial', name: 'Binomial Theorem', subtitle: 'Expansions & coefficients', color: 'purple' },
@@ -41346,6 +41345,7 @@ function Home({ onSelect, isGoalSelection = false, onBack }) {
     { key: 'complex', name: 'Complex Numbers', subtitle: 'Add, multiply, modulus', color: 'blue' },
     { key: 'congruence', name: 'Congruence', subtitle: 'SSS, SAS, ASA, RHS', color: 'green' },
     { key: 'conics', name: 'Conic Sections', subtitle: 'Circle, parabola, ellipse, hyperbola', color: 'purple' },
+    { key: 'coordgeom', name: 'Coord. Geometry', subtitle: 'Midpoint, distance, gradient', color: 'blue' },
     { key: 'decimals', name: 'Decimals', subtitle: 'Add, subtract, multiply, divide', color: 'blue' },
     { key: 'diff', name: 'Differentiation', subtitle: 'Power rule, turning points', color: 'purple' },
     { key: 'diffeq', name: 'Differential Eq.', subtitle: 'Order, degree, solve DEs', color: 'green' },
@@ -41361,7 +41361,6 @@ function Home({ onSelect, isGoalSelection = false, onBack }) {
     { key: 'ineq', name: 'Inequalities', subtitle: 'Linear & quadratic inequalities', color: 'green' },
     { key: 'integ', name: 'Integration', subtitle: 'Reverse differentiation & areas', color: 'blue' },
     { key: 'invtrig', name: 'Inverse Trig', subtitle: 'arcsin, arccos, arctan', color: 'green' },
-    { key: 'language', name: 'Language Puzzles', subtitle: 'Fill in the blanks to create new words', color: 'green' },
     { key: 'limits', name: 'Limits', subtitle: 'Evaluate limits', color: 'purple' },
     { key: 'linearalgebra', name: 'Linear Algebra', subtitle: '56 missions across 6 modules', color: 'orange' },
     { key: 'lineareq', name: 'Linear Equations', subtitle: 'Solve for x in one variable', color: 'blue' },
@@ -41369,6 +41368,7 @@ function Home({ onSelect, isGoalSelection = false, onBack }) {
     { key: 'linprog', name: 'Linear Programming', subtitle: 'Optimize objective functions', color: 'green' },
     { key: 'log', name: 'Logarithms', subtitle: 'Evaluate, simplify, solve', color: 'purple' },
     { key: 'matrix', name: 'Matrices', subtitle: 'Add, multiply, determinant', color: 'blue' },
+    { key: 'mensur', name: 'Mensuration', subtitle: 'Area, volume, surface area', color: 'green' },
     { key: 'multiply', name: 'Multiplication', subtitle: 'Practice any times table (2–19)', color: 'purple' },
     { key: 'bases', name: 'Number Bases', subtitle: 'Binary, decimal, hexadecimal', color: 'green' },
     { key: 'basic-arith-lab', name: 'Origin', subtitle: 'Practice +, -, ×, ÷ with varied templates', color: 'blue' },
@@ -41447,7 +41447,7 @@ function Home({ onSelect, isGoalSelection = false, onBack }) {
   const filteredRegular = isSearching ? regularApps.filter(matchFilter) : regularApps
   
   // Decide which items to show on the main grid list
-  const displayGridApps = isGoalSelection ? filteredRegular : [...filteredFeatured, ...filteredRegular]
+  const displayGridApps = isGoalSelection ? filteredRegular : [...filteredRegular]
 
   // Grid layout tracking (for responsive display)
   const gridRef = useRef(null)
@@ -41532,8 +41532,31 @@ function Home({ onSelect, isGoalSelection = false, onBack }) {
             ))}
             <div style={{ height: '1px', background: 'var(--clr-border)', margin: '4px 0' }} />
 
+            <button onClick={() => { setMenuOpen(false); onSelect('goalpractice') }} style={{
+              display: 'block', width: '100%', textAlign: 'left', padding: '10px 16px',
+              background: 'none', border: 'none', cursor: 'pointer', color: 'var(--clr-text)',
+              fontFamily: 'var(--font-body)', fontSize: '0.95rem', transition: 'background var(--transition)'
+            }} onMouseEnter={e => e.target.style.background = 'var(--clr-hover-strong)'}
+               onMouseLeave={e => e.target.style.background = 'none'}>
+              <strong style={{ color: 'var(--clr-accent)' }}>🎯 Goal Practice</strong>
+              <span style={{ display: 'block', fontSize: '0.78rem', color: 'var(--clr-text-soft)', marginTop: '2px' }}>Practice with targets & limits</span>
+            </button>
 
-            <button onClick={() => { setMenuOpen(false); window.location.href = '/language'; }} style={{
+            {featuredApps.map(app => (
+              <button key={app.key} onClick={() => { setMenuOpen(false); onSelect(app.key) }} style={{
+                display: 'block', width: '100%', textAlign: 'left', padding: '10px 16px',
+                background: 'none', border: 'none', cursor: 'pointer', color: 'var(--clr-text)',
+                fontFamily: 'var(--font-body)', fontSize: '0.95rem', transition: 'background var(--transition)'
+              }} onMouseEnter={e => e.target.style.background = 'var(--clr-hover-strong)'}
+                 onMouseLeave={e => e.target.style.background = 'none'}>
+                <strong style={{ color: 'var(--clr-accent)' }}>{app.name}</strong>
+                <span style={{ display: 'block', fontSize: '0.78rem', color: 'var(--clr-text-soft)', marginTop: '2px' }}>{app.subtitle}</span>
+              </button>
+            ))}
+
+            <div style={{ height: '1px', background: 'var(--clr-border)', margin: '4px 0' }} />
+
+            <button onClick={() => { setMenuOpen(false); window.location.href = window.location.pathname.replace(/\/$/, '') + '/language'; }} style={{
               display: 'block', width: '100%', textAlign: 'left', padding: '10px 16px',
               background: 'none', border: 'none', cursor: 'pointer', color: 'var(--clr-text)',
               fontFamily: 'var(--font-body)', fontSize: '0.95rem', transition: 'background var(--transition)'
@@ -42030,10 +42053,13 @@ function MixedLabApp({ onBack, selectedActivities, initialDifficulty, initialNum
   // Prefetch cache: holds the next question already fetched in background
   const prefetchRef = useRef(null)
 
+  // Relative paths only — the `${API}` base is applied once at each fetch site
+  // (below). Including it here too caused a double `/summership` prefix under
+  // subpath deploys, so requests 404'd to index.html and broke question loading.
   const endpoints = {
-    'visual-math-lab-redux': `${API || ''}/api/visual-math-lab-redux`,
-    'mensuration-lab': `${API || ''}/api/mensuration-lab`,
-    addition: `${API || ''}/addition-api`,
+    'visual-math-lab-redux': `/api/visual-math-lab-redux`,
+    'mensuration-lab': `/api/mensuration-lab`,
+    addition: `/addition-api`,
   }
 
   const chooseActivityKey = () => {
