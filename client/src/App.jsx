@@ -43747,9 +43747,12 @@ function ColumnMultiplicationApp({ onBack, initialDifficulty, initialNumQuestion
     next[ppIdx][colIdx] = val
     setPpInputs(next)
     if (!val) return
+    const carries = question.partialProducts[ppIdx].carries
+    const shift = question.bDigits.length - 1 - ppIdx
+    const trailingCol = question.answerDigits.length - 1 - shift
     for (let j = colIdx - 1; j >= 0; j--) {
-      if (question.partialProducts[ppIdx].digits[j] !== null && ppRefs.current[ppIdx]?.[j]) {
-        ppRefs.current[ppIdx][j].focus()
+      if (carries[j] !== null && j !== trailingCol && ppCarryRefs.current[ppIdx]?.[j]) {
+        ppCarryRefs.current[ppIdx][j].focus()
         return
       }
     }
@@ -43789,19 +43792,17 @@ function ColumnMultiplicationApp({ onBack, initialDifficulty, initialNumQuestion
     next[ppIdx][colIdx] = val
     setPpCarryInputs(next)
     if (!val) return
+    const digits = question.partialProducts[ppIdx].digits
+    if (digits[colIdx] !== null && ppRefs.current[ppIdx]?.[colIdx]) {
+      ppRefs.current[ppIdx][colIdx].focus()
+      return
+    }
     const carries = question.partialProducts[ppIdx].carries
     const shift = question.bDigits.length - 1 - ppIdx
     const trailingCol = question.answerDigits.length - 1 - shift
     for (let j = colIdx - 1; j >= 0; j--) {
       if (carries[j] !== null && j !== trailingCol && ppCarryRefs.current[ppIdx]?.[j]) {
         ppCarryRefs.current[ppIdx][j].focus()
-        return
-      }
-    }
-    const digits = question.partialProducts[ppIdx].digits
-    for (let j = digits.length - 1; j >= 0; j--) {
-      if (digits[j] !== null && ppRefs.current[ppIdx]?.[j]) {
-        ppRefs.current[ppIdx][j].focus()
         return
       }
     }
