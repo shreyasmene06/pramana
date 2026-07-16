@@ -43533,11 +43533,6 @@ function ColumnAdditionApp({ onBack, initialDifficulty, initialNumQuestions, ini
   )
 }
 
-/**
- * ColumnMultiplicationApp Component
- * Vertical column multiplication: single-digit multiplier × N-digit multiplicand.
- * User fills carry boxes above each step + the product digits below (mirrors ColumnAdditionApp).
- */
 function ColumnMultiplicationApp({ onBack, initialDifficulty, initialNumQuestions, initialStarted, isGoalMode = false }) {
   const [difficulty, setDifficulty] = useState(initialDifficulty || 'easy')
   const [numQuestions, setNumQuestions] = useState(initialNumQuestions || String(DEFAULT_TOTAL))
@@ -43563,6 +43558,19 @@ function ColumnMultiplicationApp({ onBack, initialDifficulty, initialNumQuestion
   const carryRefs = useRef([])
   const advanceTimerRef = useRef(null)
 
+  const [isMulti, setIsMulti] = useState(false)
+  const [currentPP, setCurrentPP] = useState(0)
+  const [ppInputs, setPpInputs] = useState([])
+  const [ppCarryInputs, setPpCarryInputs] = useState([])
+  const ppRefs = useRef([])
+  const ppCarryRefs = useRef([])
+  const [correctPPDigits, setCorrectPPDigits] = useState(null)
+  const [correctPPCarries, setCorrectPPCarries] = useState(null)
+
+  const COL = 36
+  const GAP = 3
+  const LEFT_MARGIN = 40
+
   useEffect(() => { if (!isGoalMode) setSessionGoal('standard') }, [isGoalMode])
 
   const startQuiz = async () => {
@@ -43570,6 +43578,8 @@ function ColumnMultiplicationApp({ onBack, initialDifficulty, initialNumQuestion
     setTotalQ(q); setScore(0); setQuestionNumber(1); setResults([])
     setFinished(false); setStarted(true); setFeedback(''); setIsCorrect(null); setRevealed(false)
     setCorrectAnswerDigits(null); setCorrectCarryDigits(null)
+    setCorrectPPDigits(null); setCorrectPPCarries(null)
+    setIsMulti(false); setCurrentPP(0); setPpInputs([]); setPpCarryInputs([])
     timer.reset(); timer.start()
     await fetchQuestion()
   }
@@ -43580,24 +43590,41 @@ function ColumnMultiplicationApp({ onBack, initialDifficulty, initialNumQuestion
       const r = await fetch(`${API}/column-multiplication-api/question?difficulty=${diff || difficulty}`)
       const data = await r.json()
       setQuestion(data)
+      const multi = !!data.multiDigitMultiplier
+      setIsMulti(multi)
+
       setAnswerInputs(new Array(data.answerDigits.length).fill(''))
-      setCarryInputs(new Array(data.carries.length).fill(''))
       setCorrectAnswerDigits(null); setCorrectCarryDigits(null)
-      setTimeout(() => {
-        const lastIdx = data.answerDigits.length - 1
-        if (answerRefs.current[lastIdx]) answerRefs.current[lastIdx].focus()
-      }, 100)
+      setCorrectPPDigits(null); setCorrectPPCarries(null)
+
+      if (multi) {
+        setCarryInputs([])
+        setCurrentPP(0)
+        setPpInputs(data.partialProducts.map(pp => pp.digits.map(d => d === null ? null : '')))
+        setPpCarryInputs(data.partialProducts.map(pp => pp.carries.map(c => c === null ? null : '')))
+        setTimeout(() => {
+          for (let j = data.answerDigits.length - 1; j >= 0; j--) {
+            if (ppCarryRefs.current[0]?.[j]) { ppCarryRefs.current[0][j].focus(); return }
+          }
+        }, 100)
+      } else {
+        setCarryInputs(new Array(data.carries.length).fill(''))
+        setPpInputs([]); setPpCarryInputs([])
+        setTimeout(() => {
+          const lastIdx = data.answerDigits.length - 1
+          if (answerRefs.current[lastIdx]) answerRefs.current[lastIdx].focus()
+        }, 100)
+      }
     } catch (e) { console.error('Fetch column multiplication question failed:', e) }
     setLoading(false)
   }
 
-  const handleInput = (idx, val, isCarry) => {
+  const handleSingleInput = (idx, val, isCarry) => {
     if (revealed) return
     if (val !== '' && !/^\d{1,2}$/.test(val)) return
     const setter = isCarry ? setCarryInputs : setAnswerInputs
     const arr = isCarry ? carryInputs : answerInputs
     const next = [...arr]; next[idx] = val; setter(next)
-
     if (!val) return
     if (!isCarry && idx > 0 && carryRefs.current[idx - 1]) {
       carryRefs.current[idx - 1].focus()
@@ -43606,11 +43633,81 @@ function ColumnMultiplicationApp({ onBack, initialDifficulty, initialNumQuestion
     }
   }
 
+  const handleMultiPpInput = (ppIdx, colIdx, val) => {
+    if (revealed || ppIdx !== currentPP) return
+    if (val !== '' && !/^\d{1,2}$/.test(val)) return
+    const next = ppInputs.map(row => [...row])
+    if (next[ppIdx][colIdx] === null) return
+    next[ppIdx][colIdx] = val
+    setPpInputs(next)
+    if (!val) return
+    for (let j = colIdx - 1; j >= 0; j--) {
+      if (question.partialProducts[ppIdx].digits[j] !== null && ppRefs.current[ppIdx]?.[j]) {
+        ppRefs.current[ppIdx][j].focus()
+        return
+      }
+    }
+    checkAndAdvancePP(next)
+  }
+
+  const checkAndAdvancePP = (updatedPPInputs) => {
+    const pp = question.partialProducts
+    const idx = currentPP
+    const digits = pp[idx].digits
+    const allFilled = digits.every((d, j) => d === null || (updatedPPInputs[idx][j] !== '' && updatedPPInputs[idx][j] !== null && updatedPPInputs[idx][j] !== undefined))
+    if (!allFilled) return
+    if (idx < pp.length - 1) {
+      setTimeout(() => {
+        setCurrentPP(idx + 1)
+        setTimeout(() => {
+          const nextPP = pp[idx + 1]
+          const ansLen = question.answerDigits.length
+          const nextShift = question.bDigits.length - 1 - (idx + 1)
+          for (let j = ansLen - 1; j >= 0; j--) {
+            if (ppCarryRefs.current[idx + 1]?.[j]) { ppCarryRefs.current[idx + 1][j].focus(); return }
+          }
+        }, 50)
+      }, 400)
+    } else {
+      setTimeout(() => {
+        const lastIdx = question.answerDigits.length - 1
+        if (answerRefs.current[lastIdx]) answerRefs.current[lastIdx].focus()
+      }, 400)
+    }
+  }
+
+  const handleMultiPpCarryInput = (ppIdx, colIdx, val) => {
+    if (revealed) return
+    if (val !== '' && !/^\d{1,2}$/.test(val)) return
+    const next = ppCarryInputs.map(row => [...row])
+    if (next[ppIdx][colIdx] === null) return
+    next[ppIdx][colIdx] = val
+    setPpCarryInputs(next)
+    if (!val) return
+    const carries = question.partialProducts[ppIdx].carries
+    const shift = question.bDigits.length - 1 - ppIdx
+    const trailingCol = question.answerDigits.length - 1 - shift
+    for (let j = colIdx - 1; j >= 0; j--) {
+      if (carries[j] !== null && j !== trailingCol && ppCarryRefs.current[ppIdx]?.[j]) {
+        ppCarryRefs.current[ppIdx][j].focus()
+        return
+      }
+    }
+    const digits = question.partialProducts[ppIdx].digits
+    for (let j = digits.length - 1; j >= 0; j--) {
+      if (digits[j] !== null && ppRefs.current[ppIdx]?.[j]) {
+        ppRefs.current[ppIdx][j].focus()
+        return
+      }
+    }
+  }
+
   const focusAnswer = (i) => { if (answerRefs.current[i]) answerRefs.current[i].focus() }
   const focusCarry = (i) => { if (carryRefs.current[i]) carryRefs.current[i].focus() }
+  const focusPp = (ppIdx, colIdx) => { if (ppRefs.current[ppIdx] && ppRefs.current[ppIdx][colIdx]) ppRefs.current[ppIdx][colIdx].focus() }
+  const focusPpCarry = (ppIdx, colIdx) => { if (ppCarryRefs.current[ppIdx] && ppCarryRefs.current[ppIdx][colIdx]) ppCarryRefs.current[ppIdx][colIdx].focus() }
 
-  const handleKeyDown = (idx, e, isCarry) => {
-
+  const handleSingleKeyDown = (idx, e, isCarry) => {
     if (e.key === 'Backspace') {
       if (e.currentTarget.value) return
       e.preventDefault()
@@ -43621,7 +43718,6 @@ function ColumnMultiplicationApp({ onBack, initialDifficulty, initialNumQuestion
       }
       return
     }
-
     if (e.key === 'ArrowUp') {
       e.preventDefault()
       if (!isCarry && idx < carryInputs.length - 1 && carryRefs.current[idx]) focusCarry(idx)
@@ -43648,34 +43744,175 @@ function ColumnMultiplicationApp({ onBack, initialDifficulty, initialNumQuestion
     }
   }
 
+  const handleMultiKeyDown = (e, { isCarry, isAnswer, isPp, ppIdx, colIdx }) => {
+    if (revealed) return
+
+    if (e.key === 'Backspace') {
+      if (e.currentTarget.value) return
+      e.preventDefault()
+      if (isCarry) {
+        for (let j = colIdx - 1; j >= 0; j--) {
+          if (ppCarryRefs.current[ppIdx]?.[j]) { ppCarryRefs.current[ppIdx][j].focus(); return }
+        }
+      } else if (isPp) {
+        for (let j = colIdx - 1; j >= 0; j--) {
+          if (ppRefs.current[ppIdx]?.[j]) { ppRefs.current[ppIdx][j].focus(); return }
+        }
+        for (let j = question.answerDigits.length - 1; j >= 0; j--) {
+          if (ppCarryRefs.current[ppIdx]?.[j]) { ppCarryRefs.current[ppIdx][j].focus(); return }
+        }
+      }
+      return
+    }
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault()
+      if (isCarry) {
+        for (let j = colIdx - 1; j >= 0; j--) { if (ppCarryRefs.current[ppIdx]?.[j]) { ppCarryRefs.current[ppIdx][j].focus(); return } }
+      } else if (isPp) {
+        for (let j = colIdx - 1; j >= 0; j--) { if (ppRefs.current[ppIdx]?.[j]) { ppRefs.current[ppIdx][j].focus(); return } }
+      }
+      return
+    }
+    if (e.key === 'ArrowRight') {
+      e.preventDefault()
+      const max = question.answerDigits.length
+      if (isCarry) {
+        for (let j = colIdx + 1; j < max; j++) { if (ppCarryRefs.current[ppIdx]?.[j]) { ppCarryRefs.current[ppIdx][j].focus(); return } }
+      } else if (isPp) {
+        for (let j = colIdx + 1; j < max; j++) { if (ppRefs.current[ppIdx]?.[j]) { ppRefs.current[ppIdx][j].focus(); return } }
+      }
+      return
+    }
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      if (isCarry) {
+        if (ppRefs.current[ppIdx]?.[colIdx]) { ppRefs.current[ppIdx][colIdx].focus(); return }
+      } else if (isPp) {
+        if (currentPP >= question.partialProducts.length) {
+          const lastIdx = question.answerDigits.length - 1
+          if (answerRefs.current[lastIdx]) answerRefs.current[lastIdx].focus()
+        }
+      }
+      return
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      if (isPp) {
+        if (ppCarryRefs.current[ppIdx]?.[colIdx]) { ppCarryRefs.current[ppIdx][colIdx].focus(); return }
+      }
+      return
+    }
+    if (e.key === 'Tab') {
+      e.preventDefault()
+      if (currentPP < question.partialProducts.length - 1) {
+        const nextPP = currentPP + 1
+        for (let j = question.answerDigits.length - 1; j >= 0; j--) {
+          if (ppCarryRefs.current[nextPP]?.[j]) { ppCarryRefs.current[nextPP][j].focus(); return }
+        }
+      } else {
+        const lastIdx = question.answerDigits.length - 1
+        if (answerRefs.current[lastIdx]) answerRefs.current[lastIdx].focus()
+      }
+    }
+  }
+
+  const handleAnswerKeyDown = (idx, e) => {
+    const ansLen = question.answerDigits.length
+    if (e.key === 'Backspace') {
+      if (e.currentTarget.value) return
+      e.preventDefault()
+      if (idx > 0) { focusAnswer(idx - 1); return }
+      if (isMulti && question.partialProducts.length > 0) {
+        const lastPp = question.partialProducts.length - 1
+        for (let j = question.partialProducts[lastPp].digits.length - 1; j >= 0; j--) {
+          if (ppRefs.current[lastPp] && ppRefs.current[lastPp][j]) { ppRefs.current[lastPp][j].focus(); return }
+        }
+      }
+      return
+    }
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault()
+      if (idx > 0) focusAnswer(idx - 1)
+      return
+    }
+    if (e.key === 'ArrowRight') {
+      e.preventDefault()
+      if (idx < ansLen - 1) focusAnswer(idx + 1)
+      return
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      if (isMulti && question.partialProducts.length > 0) {
+        const lastPp = question.partialProducts.length - 1
+        for (let j = question.partialProducts[lastPp].digits.length - 1; j >= 0; j--) {
+          if (ppRefs.current[lastPp] && ppRefs.current[lastPp][j]) { ppRefs.current[lastPp][j].focus(); return }
+        }
+      }
+      return
+    }
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      return
+    }
+  }
+
+  const handleAnswerInput = (idx, val) => {
+    if (revealed) return
+    if (val !== '' && !/^\d{1,2}$/.test(val)) return
+    const next = [...answerInputs]; next[idx] = val; setAnswerInputs(next)
+    if (!val) return
+    if (idx > 0) focusAnswer(idx - 1)
+  }
+
   const handleSubmit = async () => {
     if (revealed || loading || !question) return
+    if (isMulti && currentPP < (question.partialProducts?.length || 0)) {
+      setFeedback('Complete all partial products before submitting.')
+      return
+    }
     timer.stop()
-    const userAnswer = answerInputs.map(v => v === '' ? null : Number(v))
-    const userCarries = carryInputs.map(v => v === '' ? '' : v)
     try {
+      let body
+      if (isMulti) {
+        const userAnswer = answerInputs.map(v => v === '' ? null : Number(v))
+        const userPartialProducts = ppInputs.map(row => row.map(v => v === '' || v === null ? null : Number(v)))
+        const userCarries = ppCarryInputs.map(row => row.map(v => v === '' || v === null ? null : Number(v)))
+        body = JSON.stringify({ a: question.a, b: question.b, userAnswer, userPartialProducts, userCarries, sessionGoal })
+      } else {
+        const userAnswer = answerInputs.map(v => v === '' ? null : Number(v))
+        const userCarries = carryInputs.map(v => v === '' ? '' : v)
+        body = JSON.stringify({ a: question.a, b: question.b, userAnswer, userCarries, sessionGoal })
+      }
       const r = await fetch(`${API}/column-multiplication-api/check`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': authGetToken() ? `Bearer ${authGetToken()}` : '' },
-        body: JSON.stringify({ a: question.a, b: question.b, userAnswer, userCarries, sessionGoal })
+        body
       })
       const data = await r.json()
       setCorrectAnswerDigits(data.answerDigits)
-      setCorrectCarryDigits(data.correctCarries)
+      if (isMulti) {
+        setCorrectCarryDigits(null)
+        setCorrectPPDigits(data.partialProducts ? data.partialProducts.map(pp => pp.digits) : null)
+        setCorrectPPCarries(data.partialProducts ? data.partialProducts.map(pp => pp.carries) : null)
+      } else {
+        setCorrectCarryDigits(data.correctCarries)
+        setCorrectPPDigits(null); setCorrectPPCarries(null)
+      }
       setIsCorrect(data.correct); setRevealed(true)
       let explanation = ''
       try {
         const sr = await fetch(`${API}/column-multiplication-api/check`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': authGetToken() ? `Bearer ${authGetToken()}` : '' },
-          body: JSON.stringify({ a: question.a, b: question.b, userAnswer: [], userCarries: [], solve: true })
+          body: JSON.stringify({ a: question.a, b: question.b, userAnswer: [], userCarries: [], userPartialProducts: [], solve: true })
         })
         const sd = await sr.json()
         explanation = sd.explanation || ''
       } catch (_) {}
       const resultLine = data.correct ? '✓ Correct!' : `✗ ${data.message || 'Incorrect'}`
       setFeedback(explanation ? `${resultLine}\n\n— Step-by-step solution —\n${explanation}` : resultLine)
-      setResults(prev => [...prev, { question: `${question.a} × ${question.b}`, userAnswer: Number(userAnswer.filter(v => v !== null).join('')) || '', correct: data.correct, correctAnswer: data.correctAnswer, time: timer.elapsed }])
+      const ansVal = isMulti ? Number(answerInputs.filter(v => v !== '' && v !== null).join('') || '') : Number(answerInputs.filter(v => v !== null).join('')) || ''
+      setResults(prev => [...prev, { question: `${question.a} × ${question.b}`, userAnswer: ansVal, correct: data.correct, correctAnswer: data.correctAnswer, time: timer.elapsed }])
       if (data.correct) setScore(s => s + 1)
     } catch (e) { console.error('Check failed:', e); setFeedback('Error checking answer') }
   }
@@ -43687,24 +43924,46 @@ function ColumnMultiplicationApp({ onBack, initialDifficulty, initialNumQuestion
       const r = await fetch(`${API}/column-multiplication-api/check`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': authGetToken() ? `Bearer ${authGetToken()}` : '' },
-        body: JSON.stringify({ a: question.a, b: question.b, userAnswer: [], userCarries: [], solve: true })
+        body: JSON.stringify({ a: question.a, b: question.b, userAnswer: [], userCarries: [], userPartialProducts: [], solve: true })
       })
       const data = await r.json()
       setCorrectAnswerDigits(data.answerDigits)
-      setCorrectCarryDigits(data.correctCarries)
       setIsCorrect(false); setRevealed(true)
       setAnswerInputs(data.answerDigits ? data.answerDigits.map(String) : question.answerDigits.map(String))
-      setCarryInputs(data.correctCarries ? data.correctCarries.map(String) : question.carries.map(String))
-      setFeedback(data.explanation || 'Solved — study the carries above each column.')
+      if (isMulti) {
+        setCorrectCarryDigits(null)
+        const correctPP = data.partialProducts ? data.partialProducts.map(pp => pp.digits) : (question.partialProducts || []).map(pp => pp.digits)
+        const correctPC = data.partialProducts ? data.partialProducts.map(pp => pp.carries) : (question.partialProducts || []).map(pp => pp.carries)
+        setCorrectPPDigits(correctPP)
+        setCorrectPPCarries(correctPC)
+        const filledPP = correctPP.map(row => row.map(d => d === null ? null : String(d)))
+        const filledPC = correctPC.map(row => row.map(c => c === null ? null : String(c)))
+        setPpInputs(filledPP)
+        setPpCarryInputs(filledPC)
+        setCarryInputs([])
+      } else {
+        setCorrectCarryDigits(data.correctCarries || question.carries)
+        setCorrectPPDigits(null); setCorrectPPCarries(null)
+        setCarryInputs((data.correctCarries || question.carries).map(String))
+        setPpInputs([]); setPpCarryInputs([])
+      }
+      setFeedback(data.explanation || (isMulti ? 'Solved — study the partial products and carries.' : 'Solved — study the carries above each column.'))
       setResults(prev => [...prev, { question: `${question.a} × ${question.b}`, userAnswer: data.correctAnswer, correct: false, correctAnswer: data.correctAnswer, time: timer.elapsed }])
     } catch (e) {
       console.error('Solve failed:', e)
       setCorrectAnswerDigits(question.answerDigits)
-      setCorrectCarryDigits(question.carries)
-      setRevealed(true); setIsCorrect(false)
+      setIsCorrect(false); setRevealed(true)
       setAnswerInputs(question.answerDigits.map(String))
-      setCarryInputs(question.carries.map(String))
-      setFeedback('Solved — study the carries above each column.')
+      if (isMulti && question.partialProducts) {
+        setCorrectPPDigits(question.partialProducts.map(pp => pp.digits))
+        setCorrectPPCarries(question.partialProducts.map(pp => pp.carries))
+        setPpInputs(question.partialProducts.map(pp => pp.digits.map(d => d === null ? null : String(d))))
+        setPpCarryInputs(question.partialProducts.map(pp => pp.carries.map(c => c === null ? null : String(c))))
+      } else {
+        setCorrectCarryDigits(question.carries)
+        setCarryInputs(question.carries.map(String))
+      }
+      setFeedback(isMulti ? 'Solved — study the partial products and carries.' : 'Solved — study the carries above each column.')
       setResults(prev => [...prev, { question: `${question.a} × ${question.b}`, userAnswer: question.answer, correct: false, correctAnswer: question.answer, time: timer.elapsed }])
     }
   }
@@ -43713,11 +43972,26 @@ function ColumnMultiplicationApp({ onBack, initialDifficulty, initialNumQuestion
     if (advanceTimerRef.current) { clearTimeout(advanceTimerRef.current); advanceTimerRef.current = null }
     setRevealed(false); setIsCorrect(null); setFeedback(''); setAnswerInputs([]); setCarryInputs([])
     setCorrectAnswerDigits(null); setCorrectCarryDigits(null)
+    setCorrectPPDigits(null); setCorrectPPCarries(null)
+    setIsMulti(false); setCurrentPP(0); setPpInputs([]); setPpCarryInputs([])
     if (questionNumber >= totalQ) { setFinished(true); timer.stop() }
     else { setQuestionNumber(qn => qn + 1); timer.reset(); timer.start(); fetchQuestion() }
   }
 
-  const diffLabels = { easy: 'Easy — 1 digit × 1', medium: 'Medium — 1 digit × 2', hard: 'Hard — 1 digit × 3', extrahard: 'Extra Hard — 1 digit × 4' }
+  const diffLabels = {
+    easy: 'Easy — 1 × 1 digit',
+    medium: 'Medium — 1 × 2 digits',
+    hard: 'Hard — 2 × 2 digits',
+    extrahard: 'Extra Hard — 3×3 / 4×3 digits'
+  }
+
+  const inputStyle = (isRight, isWrong) => ({
+    width: `${COL}px`, height: '38px', textAlign: 'center', fontSize: '1rem', fontWeight: 700,
+    background: isRight ? 'var(--clr-correct-bg)' : isWrong ? 'var(--clr-wrong-bg)' : 'var(--clr-input)',
+    border: `2px solid ${isRight ? 'var(--clr-correct)' : isWrong ? 'var(--clr-wrong)' : 'var(--clr-border)'}`,
+    borderRadius: '8px', color: isRight ? 'var(--clr-correct)' : isWrong ? 'var(--clr-wrong)' : 'var(--clr-text)',
+    fontFamily: '"Courier New", monospace', outline: 'none'
+  })
 
   if (!started && !finished) {
     return (
@@ -43746,6 +44020,233 @@ function ColumnMultiplicationApp({ onBack, initialDifficulty, initialNumQuestion
 
   const ansLen = question ? question.answerDigits.length : 1
 
+  const renderSingleDigit = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '16px 0', fontFamily: '"Courier New", monospace', fontSize: '1.8rem', fontWeight: 700 }}>
+      <div style={{ display: 'flex', gap: `${GAP}px`, marginBottom: '4px' }}>
+        <span style={{ width: `${LEFT_MARGIN}px` }} />
+        {question.carries.map((c, i) => {
+          if (i === question.carries.length - 1) return <span key={i} style={{ width: `${COL}px` }} />
+          const correct = revealed && correctCarryDigits ? String(correctCarryDigits[i]) : ''
+          const isRight = revealed && correct !== '' && String(carryInputs[i] || '') === correct
+          const isWrong = revealed && correct !== '' && !isRight
+          const shown = revealed ? correct : carryInputs[i] || ''
+          return (
+            <input key={i} ref={el => carryRefs.current[i] = el} type="text" maxLength={1}
+              value={shown}
+              onChange={e => handleSingleInput(i, e.target.value, true)}
+              onKeyDown={e => handleSingleKeyDown(i, e, true)}
+              disabled={revealed}
+              style={inputStyle(isRight, isWrong)}
+            />
+          )
+        })}
+      </div>
+      <div style={{ display: 'flex', gap: `${GAP}px`, marginBottom: '2px' }}>
+        <span style={{ width: `${LEFT_MARGIN}px` }} />
+        {question.aDigits.map((d, i) => (
+          <span key={i} style={{ width: `${COL}px`, height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--clr-text)', fontSize: '1.4rem' }}>{d !== null ? d : ''}</span>
+        ))}
+      </div>
+      <div style={{ display: 'flex', gap: `${GAP}px`, marginBottom: '4px' }}>
+        <span style={{ width: `${LEFT_MARGIN}px`, textAlign: 'center', color: 'var(--clr-text-soft)', fontSize: '1.4rem' }}>×</span>
+        {question.aDigits.map((_, i) => (
+          <span key={i} style={{ width: `${COL}px`, height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: i === question.aDigits.length - 1 ? 'var(--clr-text)' : 'transparent', fontSize: '1.4rem' }}>{i === question.aDigits.length - 1 ? question.b : ''}</span>
+        ))}
+      </div>
+      <div style={{ display: 'flex', gap: `${GAP}px` }}>
+        <span style={{ width: `${LEFT_MARGIN}px` }} />
+        <div style={{ width: `${ansLen * (COL + GAP) - GAP}px`, height: '3px', background: 'var(--clr-border)', borderRadius: '2px' }} />
+      </div>
+      <div style={{ display: 'flex', gap: `${GAP}px`, marginTop: '8px' }}>
+        <span style={{ width: `${LEFT_MARGIN}px` }} />
+        {question.answerDigits.map((d, i) => {
+          const correctDigit = revealed && correctAnswerDigits ? String(correctAnswerDigits[i]) : ''
+          const isRight = revealed && correctDigit !== '' && String(answerInputs[i] || '') === correctDigit
+          const isWrong = revealed && correctDigit !== '' && !isRight
+          const shown = revealed ? correctDigit : answerInputs[i] || ''
+          return (
+            <input key={i} ref={el => answerRefs.current[i] = el} type="text" maxLength={1}
+              value={shown}
+              onChange={e => handleAnswerInput(i, e.target.value)}
+              onKeyDown={e => handleAnswerKeyDown(i, e)}
+              disabled={revealed}
+              style={{ ...inputStyle(isRight, isWrong), width: `${COL}px`, height: '42px', fontSize: '1.4rem' }}
+            />
+          )
+        })}
+      </div>
+    </div>
+  )
+
+  const renderMultiDigit = () => {
+    const pp = question.partialProducts
+    const allDone = currentPP >= pp.length
+    const ansLen = question.answerDigits.length
+    const padCount = ansLen - question.aDigits.length
+    const paddedADigits = [...Array(padCount).fill(null), ...question.aDigits]
+    const bPadCount = ansLen - (question.bDigits ? question.bDigits.length : 0)
+    const paddedBDigits = [...Array(Math.max(0, bPadCount)).fill(null), ...(question.bDigits || [])]
+    const shift = allDone ? 0 : currentPP
+    const trailingCol = allDone ? -1 : ansLen - 1 - shift
+
+    const isPpRight = (ppIdx, j) => {
+      if (!revealed || !correctPPDigits) return false
+      const correct = correctPPDigits[ppIdx][j]
+      if (correct === null || correct === undefined) return false
+      const user = ppInputs[ppIdx] && ppInputs[ppIdx][j]
+      return user !== null && user !== undefined && String(user) === String(correct)
+    }
+    const isPpWrong = (ppIdx, j) => {
+      if (!revealed || !correctPPDigits) return false
+      const correct = correctPPDigits[ppIdx][j]
+      if (correct === null || correct === undefined) return false
+      const user = ppInputs[ppIdx] && ppInputs[ppIdx][j]
+      return (user !== null && user !== undefined && user !== '' && String(user) !== String(correct))
+    }
+    const ppCorrectVal = (ppIdx, j) => {
+      if (!revealed || !correctPPDigits) return ''
+      const v = correctPPDigits[ppIdx][j]
+      return v !== null && v !== undefined ? String(v) : ''
+    }
+
+    const emptyCell = (key) => <div key={key} style={{ width: `${COL}px` }} />
+    const rowGap = { display: 'flex', gap: `${GAP}px` }
+    const labelSpan = <span style={{ width: `${LEFT_MARGIN}px` }} />
+    const labelX = <span style={{ width: `${LEFT_MARGIN}px`, textAlign: 'center', color: 'var(--clr-text-soft)', fontSize: '1.4rem' }}>×</span>
+    const digitDisplay = (d, i, extra) => (
+      <div key={i} style={{ width: `${COL}px`, height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--clr-text)', fontSize: '1.4rem', ...extra }}>
+        {d !== null ? d : ''}
+      </div>
+    )
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '12px 0', fontFamily: '"Courier New", monospace', fontWeight: 700 }}>
+
+        {/* Carry row above multiplicand (currentPP only) */}
+        {!allDone && (
+          <div style={{ ...rowGap, marginBottom: '2px' }}>
+            {labelSpan}
+            {paddedADigits.map((_, m) => {
+              const carryCol = m - shift
+              const carries = pp[currentPP].carries
+              if (carryCol < 0 || carryCol >= carries.length || carries[carryCol] === null || carryCol === trailingCol) {
+                return emptyCell(m)
+              }
+              const val = revealed
+                ? (correctPPCarries && correctPPCarries[currentPP] && correctPPCarries[currentPP][carryCol] != null ? String(correctPPCarries[currentPP][carryCol]) : '')
+                : (ppCarryInputs[currentPP] && ppCarryInputs[currentPP][carryCol]) || ''
+              return (
+                <div key={m} style={{ width: `${COL}px` }}>
+                  <input
+                    ref={el => { if (!ppCarryRefs.current[currentPP]) ppCarryRefs.current[currentPP] = []; ppCarryRefs.current[currentPP][carryCol] = el }}
+                    type="text" inputMode="numeric" maxLength={2}
+                    value={val}
+                    onChange={e => handleMultiPpCarryInput(currentPP, carryCol, e.target.value)}
+                    onKeyDown={e => handleMultiKeyDown(e, { isCarry: true, ppIdx: currentPP, colIdx: carryCol })}
+                    disabled={revealed}
+                    style={{ width: `${COL}px`, height: '38px', textAlign: 'center', fontSize: '1rem', fontWeight: 700,
+                      background: 'var(--clr-input)', border: '2px solid var(--clr-border)', borderRadius: '8px',
+                      color: 'var(--clr-text)', fontFamily: '"Courier New", monospace', outline: 'none' }}
+                  />
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Multiplicand row */}
+        <div style={{ ...rowGap, marginBottom: '2px' }}>
+          {labelSpan}
+          {paddedADigits.map((d, i) => digitDisplay(d, i))}
+        </div>
+
+        {/* Multiplier row */}
+        <div style={{ ...rowGap, marginBottom: '4px' }}>
+          {labelX}
+          {paddedBDigits.map((d, i) => digitDisplay(d, i))}
+        </div>
+
+        {/* Separator line */}
+        <div style={rowGap}>
+          {labelSpan}
+          <div style={{ width: `${ansLen * (COL + GAP) - GAP}px`, height: '3px', background: 'var(--clr-border)', borderRadius: '2px' }} />
+        </div>
+
+        {/* Partial products */}
+        {pp.map((ppRow, idx) => {
+          if (idx > currentPP && !allDone) return null
+          const isActive = idx === currentPP && !allDone
+          const isDone = idx < currentPP
+
+          return (
+            <div key={idx} style={{ ...rowGap, marginTop: '6px' }}>
+              <span style={{ width: `${LEFT_MARGIN}px`, textAlign: 'center', color: 'var(--clr-text-soft)', fontSize: '1.4rem' }}>+</span>
+              {ppRow.digits.map((d, j) => {
+                if (d === null) return emptyCell(j)
+                if (isDone) {
+                  const val = ppInputs[idx]?.[j] ?? ''
+                  return <div key={j} style={{ width: `${COL}px`, height: '38px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 700, color: 'var(--clr-text)', opacity: 0.3 }}>{val}</div>
+                }
+                const isRight = isPpRight(idx, j)
+                const isWrong = isPpWrong(idx, j)
+                const shown = revealed ? ppCorrectVal(idx, j) : (ppInputs[idx] && ppInputs[idx][j]) || ''
+                return (
+                  <div key={j} style={{ width: `${COL}px` }}>
+                    <input
+                      ref={el => { if (!ppRefs.current[idx]) ppRefs.current[idx] = []; ppRefs.current[idx][j] = el }}
+                      type="text" inputMode="numeric" maxLength={1}
+                      value={shown}
+                      onChange={e => handleMultiPpInput(idx, j, e.target.value)}
+                      onKeyDown={e => handleMultiKeyDown(e, { isPp: true, ppIdx: idx, colIdx: j })}
+                      disabled={revealed}
+                      style={{ width: `${COL}px`, height: '38px', textAlign: 'center', fontSize: '1rem', fontWeight: 700,
+                        background: isRight ? 'var(--clr-correct-bg)' : isWrong ? 'var(--clr-wrong-bg)' : 'var(--clr-input)',
+                        border: `2px solid ${isRight ? 'var(--clr-correct)' : isWrong ? 'var(--clr-wrong)' : 'var(--clr-border)'}`,
+                        borderRadius: '8px', color: isRight ? 'var(--clr-correct)' : isWrong ? 'var(--clr-wrong)' : 'var(--clr-text)',
+                        fontFamily: '"Courier New", monospace', outline: 'none' }}
+                    />
+                  </div>
+                )
+              })}
+            </div>
+          )
+        })}
+
+        {/* Answer row (only after all PPs completed) */}
+        {allDone && (
+          <>
+            <div style={{ ...rowGap, marginTop: '6px' }}>
+              {labelSpan}
+              <div style={{ width: `${ansLen * (COL + GAP) - GAP}px`, height: '3px', background: 'var(--clr-border)', borderRadius: '2px' }} />
+            </div>
+            <div style={{ ...rowGap, marginTop: '8px' }}>
+              {labelSpan}
+              {question.answerDigits.map((d, i) => {
+                const correctDigit = revealed && correctAnswerDigits ? String(correctAnswerDigits[i]) : ''
+                const isRight = revealed && correctDigit !== '' && String(answerInputs[i] || '') === correctDigit
+                const isWrong = revealed && correctDigit !== '' && !isRight
+                const shown = revealed ? correctDigit : answerInputs[i] || ''
+                return (
+                  <input key={i} ref={el => answerRefs.current[i] = el} type="text" maxLength={1}
+                    value={shown}
+                    onChange={e => handleAnswerInput(i, e.target.value)}
+                    onKeyDown={e => handleAnswerKeyDown(i, e)}
+                    disabled={revealed}
+                    style={{ width: `${COL}px`, height: '42px', textAlign: 'center', fontSize: '1.4rem', fontWeight: 700,
+                      background: isRight ? 'var(--clr-correct-bg)' : isWrong ? 'var(--clr-wrong-bg)' : 'var(--clr-input)',
+                      border: `2px solid ${isRight ? 'var(--clr-correct)' : isWrong ? 'var(--clr-wrong)' : 'var(--clr-border)'}`,
+                      borderRadius: '8px', color: isRight ? 'var(--clr-correct)' : isWrong ? 'var(--clr-wrong)' : 'var(--clr-text)',
+                      fontFamily: '"Courier New", monospace', outline: 'none' }}
+                  />
+                )
+              })}
+            </div>
+          </>
+        )}
+      </div>
+    )
+  }
+
   return (
     <QuizLayout title="Column Multiplication" onBack={onBack} timer={timer}>
       {started && !finished && <>
@@ -43754,66 +44255,7 @@ function ColumnMultiplicationApp({ onBack, initialDifficulty, initialNumQuestion
         </div>
         {loading || !question ? <div className="question-box">Loading question…</div> : (
           <>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '16px 0', fontFamily: '"Courier New", monospace', fontSize: '1.8rem', fontWeight: 700 }}>
-              {/* Carry row */}
-              <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
-                <span style={{ width: '44px' }} />
-                {question.carries.map((c, i) => {
-                  if (i === question.carries.length - 1) return <span key={i} style={{ width: '40px' }} />
-                  const correct = revealed && correctCarryDigits ? String(correctCarryDigits[i]) : '';
-                  const isRight = revealed && correct !== '' && String(carryInputs[i] || '') === correct;
-                  const isWrong = revealed && correct !== '' && !isRight;
-                  const shown = revealed ? correct : carryInputs[i] || '';
-                  return (
-                    <input key={i} ref={el => carryRefs.current[i] = el} type="text" maxLength={1}
-                      value={shown}
-                      onChange={e => handleInput(i, e.target.value, true)}
-                      onKeyDown={e => handleKeyDown(i, e, true)}
-                      disabled={revealed}
-                      style={{ width: '40px', height: '36px', textAlign: 'center', fontSize: '1rem', fontWeight: 700, background: isRight ? 'var(--clr-correct-bg)' : isWrong ? 'var(--clr-wrong-bg)' : 'var(--clr-input)', border: `2px solid ${isRight ? 'var(--clr-correct)' : isWrong ? 'var(--clr-wrong)' : 'var(--clr-border)'}`, borderRadius: '8px', color: isRight ? 'var(--clr-correct)' : isWrong ? 'var(--clr-wrong)' : 'var(--clr-text)', fontFamily: '"Courier New", monospace', outline: 'none' }}
-                    />
-                  )
-                })}
-              </div>
-              {/* Multiplicand: top number */}
-              <div style={{ display: 'flex', gap: '4px', marginBottom: '2px' }}>
-                <span style={{ width: '44px' }} />
-                {question.aDigits.map((d, i) => (
-                  <span key={i} style={{ width: '40px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--clr-text)' }}>{d !== null ? d : ''}</span>
-                ))}
-              </div>
-              {/* Multiplier: single digit below */}
-              <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
-                <span style={{ width: '44px', textAlign: 'center', color: 'var(--clr-text-soft)', fontSize: '1.4rem' }}>×</span>
-                {question.aDigits.map((_, i) => (
-                  <span key={i} style={{ width: '40px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: i === question.aDigits.length - 1 ? 'var(--clr-text)' : 'transparent' }}>{i === question.aDigits.length - 1 ? question.b : ''}</span>
-                ))}
-              </div>
-              {/* Line */}
-              <div style={{ display: 'flex', gap: '4px' }}>
-                <span style={{ width: '44px' }} />
-                <div style={{ width: `${ansLen * 44}px`, height: '3px', background: 'var(--clr-border)', borderRadius: '2px' }} />
-              </div>
-              {/* Product row */}
-              <div style={{ display: 'flex', gap: '4px', marginTop: '8px' }}>
-                <span style={{ width: '44px' }} />
-                {question.answerDigits.map((d, i) => {
-                  const correctDigit = revealed && correctAnswerDigits ? String(correctAnswerDigits[i]) : '';
-                  const isRight = revealed && correctDigit !== '' && String(answerInputs[i] || '') === correctDigit;
-                  const isWrong = revealed && correctDigit !== '' && !isRight;
-                  const shown = revealed ? correctDigit : answerInputs[i] || '';
-                  return (
-                    <input key={i} ref={el => answerRefs.current[i] = el} type="text" maxLength={1}
-                      value={shown}
-                      onChange={e => handleInput(i, e.target.value, false)}
-                      onKeyDown={e => handleKeyDown(i, e, false)}
-                      disabled={revealed}
-                      style={{ width: '40px', height: '48px', textAlign: 'center', fontSize: '1.4rem', fontWeight: 700, background: isRight ? 'var(--clr-correct-bg)' : isWrong ? 'var(--clr-wrong-bg)' : 'var(--clr-input)', border: `2px solid ${isRight ? 'var(--clr-correct)' : isWrong ? 'var(--clr-wrong)' : 'var(--clr-border)'}`, borderRadius: '8px', color: isRight ? 'var(--clr-correct)' : isWrong ? 'var(--clr-wrong)' : 'var(--clr-text)', fontFamily: '"Courier New", monospace', outline: 'none' }}
-                    />
-                  )
-                })}
-              </div>
-            </div>
+            {isMulti ? renderMultiDigit() : renderSingleDigit()}
             {feedback && (
               <div style={{
                 textAlign: 'left', padding: '12px 16px', borderRadius: '8px', margin: '8px 0',

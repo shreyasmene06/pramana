@@ -623,40 +623,101 @@ app.post('/column-addition-api/check', (req, res) => {
  */
 
 function computeMulData(multiplicand, multiplier) {
-  const product = multiplicand * multiplier;
   const aStr = String(multiplicand);
+  const bStr = String(multiplier);
+  const aLen = aStr.length;
+  const bLen = bStr.length;
+  const product = multiplicand * multiplier;
   const pStr = String(product);
-  const opLen = aStr.length;
   const ansLen = pStr.length;
-  const aPad = aStr.padStart(ansLen, ' ');
-  // carries[i] = carry INTO position i of the product (from right multiplication step)
-  // carries[0] is always 0 (rightmost multiplication has no carry in)
-  const carries = new Array(ansLen).fill(0);
-  let carry = 0;
-  for (let i = ansLen - 1; i >= 0; i--) {
-    const da = parseInt(aPad[i]) || 0;
-    const colProd = da * multiplier + carry;
-    carry = Math.floor(colProd / 10);
-    if (i > 0) carries[i - 1] = carry;
+  const aDigits = aStr.split('').map(Number);
+  const bDigits = bStr.split('').map(Number);
+
+  if (bLen === 1) {
+    const m = bDigits[0];
+    const aPad = aStr.padStart(ansLen, ' ');
+    const carries = new Array(ansLen).fill(0);
+    let carry = 0;
+    for (let i = ansLen - 1; i >= 0; i--) {
+      const da = parseInt(aPad[i]) || 0;
+      const colProd = da * m + carry;
+      carry = Math.floor(colProd / 10);
+      if (i > 0) carries[i - 1] = carry;
+    }
+    const answerDigits = pStr.split('').map(Number);
+    const aDigitsPadded = aPad.split('').map(d => d === ' ' ? null : Number(d));
+    return { answerDigits, aDigits: aDigitsPadded, carries, digits: aLen, multiDigitMultiplier: false };
   }
-  const answerDigits = pStr.split('').map(Number);
-  const aDigits = aPad.split('').map(d => d === ' ' ? null : Number(d));
-  return { answerDigits, aDigits, carries, digits: opLen };
+
+  const partialProducts = [];
+  for (let bi = bLen - 1; bi >= 0; bi--) {
+    const bDigit = bDigits[bi];
+    const shift = bLen - 1 - bi;
+    const pp = multiplicand * bDigit;
+    const ppStr = String(pp);
+    const ppLen = ppStr.length;
+    const carries = new Array(ppLen).fill(0);
+    let carry = 0;
+    for (let i = ppLen - 1; i >= 0; i--) {
+      const ai = aLen - 1 - (ppLen - 1 - i);
+      const da = ai >= 0 ? aDigits[ai] : 0;
+      const total = da * bDigit + carry;
+      carry = Math.floor(total / 10);
+      if (i > 0) carries[i - 1] = carry;
+    }
+    const paddedDigits = new Array(ansLen).fill(null);
+    const paddedCarries = new Array(ansLen).fill(null);
+    const startCol = ansLen - ppLen - shift;
+    for (let j = 0; j < ppLen; j++) {
+      const col = startCol + j;
+      if (col >= 0 && col < ansLen) {
+        paddedDigits[col] = Number(ppStr[j]);
+        paddedCarries[col] = carries[j];
+      }
+    }
+    partialProducts.push({ multiplierDigit: bDigit, digits: paddedDigits, carries: paddedCarries });
+  }
+
+  return {
+    answerDigits: pStr.split('').map(Number),
+    aDigits, bDigits, digits: aLen,
+    multiDigitMultiplier: true, partialProducts, ansLen
+  };
 }
 
 app.get('/column-multiplication-api/question', (req, res) => {
   const difficulty = req.query.difficulty || 'easy';
-  const digitMap = { easy: 1, medium: 2, hard: 3, extrahard: 4 };
-  const numDigits = digitMap[difficulty] || 1;
-  const range = digitRange(numDigits);
   let a, m, data;
   let attempts = 0;
-  do {
-    a = randomInt(Math.max(range.min, 1), range.max);
-    m = randomInt(2, 9); // multiplier single digit, avoid 0 and 1 for meaningful carries
-    data = computeMulData(a, m);
-    attempts++;
-  } while (data.carries.slice(1).every(c => c === 0) && attempts < 20);
+  if (difficulty === 'hard') {
+    const aRange = digitRange(2), bRange = digitRange(2);
+    do {
+      a = randomInt(Math.max(aRange.min, 10), aRange.max);
+      m = randomInt(Math.max(bRange.min, 10), bRange.max);
+      data = computeMulData(a, m);
+      attempts++;
+    } while (attempts < 30 && data.partialProducts.every(pp => pp.carries.every(c => c === null || c === 0)));
+  } else if (difficulty === 'extrahard') {
+    const coin = Math.random() < 0.5;
+    const aDig = coin ? 3 : 4, bDig = 3;
+    const aRange = digitRange(aDig), bRange = digitRange(bDig);
+    do {
+      a = randomInt(Math.max(aRange.min, Math.pow(10, aDig - 1)), aRange.max);
+      m = randomInt(Math.max(bRange.min, Math.pow(10, bDig - 1)), bRange.max);
+      data = computeMulData(a, m);
+      attempts++;
+    } while (attempts < 30 && data.partialProducts.every(pp => pp.carries.every(c => c === null || c === 0)));
+  } else {
+    const digitMap = { easy: 1, medium: 2 };
+    const numDigits = digitMap[difficulty] || 1;
+    const range = digitRange(numDigits);
+    do {
+      a = randomInt(Math.max(range.min, 1), range.max);
+      m = randomInt(2, 9);
+      data = computeMulData(a, m);
+      attempts++;
+    } while (data.carries.slice(1).every(c => c === 0) && attempts < 20);
+  }
   res.json({
     id: `cm-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
     a, b: m,
@@ -667,10 +728,42 @@ app.get('/column-multiplication-api/question', (req, res) => {
 });
 
 app.post('/column-multiplication-api/check', (req, res) => {
-  const { a, b, userAnswer, userCarries } = req.body || {};
+  const { a, b, userAnswer, userCarries, userPartialProducts } = req.body || {};
   const numA = Number(a), numB = Number(b);
   const correctAnswer = numA * numB;
   const data = computeMulData(numA, numB);
+
+  if (data.multiDigitMultiplier && Array.isArray(userPartialProducts)) {
+    let answerCorrect = Array.isArray(userAnswer) &&
+      userAnswer.map(Number).join('') === data.answerDigits.join('');
+    let ppCorrect = true;
+    let carriesCorrect = true;
+    for (let pi = 0; pi < data.partialProducts.length; pi++) {
+      const up = Array.isArray(userPartialProducts[pi]) ? userPartialProducts[pi] : [];
+      const uc = Array.isArray(userCarries) && Array.isArray(userCarries[pi]) ? userCarries[pi] : [];
+      const cp = data.partialProducts[pi].digits;
+      const cc = data.partialProducts[pi].carries;
+      const userPpJoined = up.map(v => v === null || v === undefined || v === '' ? '_' : v).join('');
+      const correctPpJoined = cp.map(v => v === null ? '_' : v).join('');
+      const userCarrJoined = uc.map(v => v === null || v === undefined || v === '' ? '_' : v).join('');
+      const correctCarrJoined = cc.map(v => v === null ? '_' : v).join('');
+      if (userPpJoined !== correctPpJoined) ppCorrect = false;
+      if (userCarrJoined !== correctCarrJoined) carriesCorrect = false;
+    }
+    const correct = answerCorrect && ppCorrect && carriesCorrect;
+    return res.json({
+      correct,
+      correctAnswer,
+      answerDigits: data.answerDigits,
+      partialProducts: data.partialProducts,
+      multiDigitMultiplier: true,
+      message: correct ? 'Correct!'
+        : !ppCorrect ? 'Partial product digits wrong'
+        : !carriesCorrect ? 'Carries wrong'
+        : 'Answer wrong',
+    });
+  }
+
   const answerCorrect = Array.isArray(userAnswer) &&
     userAnswer.map(Number).join('') === data.answerDigits.join('');
   const carriesCorrect = Array.isArray(userCarries) &&

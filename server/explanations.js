@@ -92,18 +92,46 @@ function generateExplanation(req, data) {
     const { a, b: num2 } = b;
     const product = (d.correctAnswer != null) ? d.correctAnswer : a * num2;
     const aStr = String(a);
+    const bStr = String(num2);
+    const bLen = bStr.length;
     let s = `Problem: Column multiplication of ${a} × ${num2}\n\n`;
-    s += `Multiply each digit of ${a} by ${num2}, right to left, carrying as needed:\n`;
-    let carry = 0;
-    for (let i = aStr.length - 1; i >= 0; i--) {
-      const da = parseInt(aStr[i]) || 0;
-      const total = da * num2 + carry;
-      const outDigit = total % 10;
-      const newCarry = Math.floor(total / 10);
-      s += `  ${da} × ${num2}${carry ? ' + carry ' + carry : ''} = ${total} → write ${outDigit}${newCarry ? ', carry ' + newCarry : ''}\n`;
-      carry = newCarry;
+
+    if (bLen > 1) {
+      s += `Multiplier ${num2} has ${bLen} digits. We compute one partial product per multiplier digit (right to left), then add them:\n\n`;
+      let partials = [];
+      let pow = 1;
+      for (let bi = bStr.length - 1; bi >= 0; bi--) {
+        const bd = parseInt(bStr[bi]);
+        const partial = a * bd;
+        partials.push(partial);
+        s += `Partial product ${partials.length} (${a} × ${bd}):\n`;
+        let carry = 0;
+        for (let i = aStr.length - 1; i >= 0; i--) {
+          const da = parseInt(aStr[i]) || 0;
+          const total = da * bd + carry;
+          const outDigit = total % 10;
+          const newCarry = Math.floor(total / 10);
+          s += `  ${da} × ${bd}${carry ? ' + carry ' + carry : ''} = ${total} → write ${outDigit}${newCarry ? ', carry ' + newCarry : ''}\n`;
+          carry = newCarry;
+        }
+        if (pow > 1) s += `  (shift left ${Math.log10(pow)} place${Math.log10(pow) > 1 ? 's' : ''})\n`;
+        s += `  = ${partial}${pow > 1 ? ' × ' + pow : ''}\n\n`;
+        pow *= 10;
+      }
+      s += `Add all partial products: ${partials.map((p, i) => p * Math.pow(10, bLen - 1 - i)).join(' + ')} = ${product}`;
+    } else {
+      s += `Multiply each digit of ${a} by ${num2}, right to left, carrying as needed:\n`;
+      let carry = 0;
+      for (let i = aStr.length - 1; i >= 0; i--) {
+        const da = parseInt(aStr[i]) || 0;
+        const total = da * num2 + carry;
+        const outDigit = total % 10;
+        const newCarry = Math.floor(total / 10);
+        s += `  ${da} × ${num2}${carry ? ' + carry ' + carry : ''} = ${total} → write ${outDigit}${newCarry ? ', carry ' + newCarry : ''}\n`;
+        carry = newCarry;
+      }
+      s += `\nAnswer: ${a} × ${num2} = ${product}`;
     }
-    s += `\nAnswer: ${a} × ${num2} = ${product}`;
     return s;
   }
 
