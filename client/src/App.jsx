@@ -43766,19 +43766,18 @@ function ColumnMultiplicationApp({ onBack, initialDifficulty, initialNumQuestion
       setTimeout(() => {
         setCurrentPP(idx + 1)
         setTimeout(() => {
-          const nextPP = pp[idx + 1]
           const ansLen = question.answerDigits.length
-          const nextShift = question.bDigits.length - 1 - (idx + 1)
           for (let j = ansLen - 1; j >= 0; j--) {
             if (ppCarryRefs.current[idx + 1]?.[j]) { ppCarryRefs.current[idx + 1][j].focus(); return }
           }
         }, 50)
       }, 400)
     } else {
+      setCurrentPP(pp.length)
       setTimeout(() => {
         const lastIdx = question.answerDigits.length - 1
         if (answerRefs.current[lastIdx]) answerRefs.current[lastIdx].focus()
-      }, 400)
+      }, 100)
     }
   }
 
