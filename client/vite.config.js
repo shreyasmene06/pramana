@@ -209,6 +209,7 @@ export default defineConfig({
       '/darts-api': { target: 'http://127.0.0.1:4000', changeOrigin: true },
       '/graph': { target: 'http://127.0.0.1:4000', changeOrigin: true },
       '/path':  { target: 'http://127.0.0.1:4000', changeOrigin: true },
+      '/graph-data.json': { target: 'http://127.0.0.1:4000', changeOrigin: true },
       // Sudoku quiz API
       '/sudoku-api': { target: 'http://127.0.0.1:4000', changeOrigin: true },
       // Math Riddles API
