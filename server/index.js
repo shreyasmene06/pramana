@@ -1130,7 +1130,7 @@ app.get('/enhanced', (_req, res) => {
 });
 
 // serves the shared node/edge data used by PathMap
-app.get('/graph-data.json', (_req, res) => {
+app.get(['/graph-data.json', '/graph/graph-data.json'], (_req, res) => {
   res.sendFile(path.join(__dirname, '..', 'graph', 'graph-data.json'));
 });
 

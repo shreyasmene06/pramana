@@ -260,6 +260,62 @@ function pmEmptyModuleStat() {
 const pmTrackListeners = new Set()
 function pmTrackNotify() { pmTrackListeners.forEach((fn) => { try { fn() } catch { } }) }
 
+// Global fetch interceptor to track answers across all quiz apps without touching 30+ quiz files
+let _pmInterceptorInstalled = false;
+function installPmAnswerInterceptor() {
+  if (_pmInterceptorInstalled) return;
+  if (typeof window === 'undefined' || typeof window.fetch !== 'function') return;
+
+  const originalFetch = window.fetch;
+  window.fetch = async function pmInterceptedFetch(input, init) {
+    const response = await originalFetch.apply(this, arguments);
+    try {
+      const url = typeof input === 'string' ? input : (input && input.url) || '';
+      const isCheck = /\/([a-z0-9_-]+)-api\/check/i.test(url) || /\/api\/([a-z0-9_-]+)\/check/i.test(url) || /\/api\/check/i.test(url);
+      if (isCheck) {
+        response.clone().json().then((data) => {
+          if (data && typeof data.correct === 'boolean') {
+            let topic = null;
+            const match = url.match(/\/([a-z0-9_-]+)-api\/check/i);
+            if (match && match[1]) {
+              topic = match[1];
+            }
+            const currentMode = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('mode') : null;
+            if ((!topic || !pmNodeById[topic]) && currentMode && pmNodeById[currentMode]) {
+              topic = currentMode;
+            } else if (!topic && currentMode) {
+              topic = currentMode;
+            }
+
+            let diff = 'medium';
+            if (init && typeof init.body === 'string') {
+              try {
+                const b = JSON.parse(init.body);
+                if (b.difficulty && ['easy', 'medium', 'hard'].includes(b.difficulty)) {
+                  diff = b.difficulty;
+                }
+              } catch {}
+            }
+
+            if (topic) {
+              pmTrackAnswer(topic, diff, data.correct);
+            }
+          }
+        }).catch(() => {});
+      }
+    } catch (_e) {
+      // safe fallback
+    }
+    return response;
+  };
+  _pmInterceptorInstalled = true;
+}
+
+// Auto-install on module load in browser
+if (typeof window !== 'undefined') {
+  try { installPmAnswerInterceptor(); } catch {}
+}
+
 function pmTrackAnswer(moduleId, difficulty, isCorrect) {
   if (!moduleId) return
   const diff = ['easy', 'medium', 'hard'].includes(difficulty) ? difficulty : 'medium'
@@ -375,6 +431,107 @@ function pmGetCurrentSuggestedModule() {
   return null
 }
 
+const QUEST_BANNER_STYLES = `
+.quest-banner-row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+  padding: 0 16px;
+}
+.quest-banner-btn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 568px;
+  background: linear-gradient(135deg, rgba(254, 180, 123, 0.08) 0%, rgba(255, 126, 95, 0.08) 100%);
+  border: 1.5px solid var(--clr-accent, #feb47b);
+  border-radius: 12px;
+  padding: 16px 20px;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+  font-family: var(--font-body, system-ui, sans-serif);
+}
+.quest-banner-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(254, 180, 123, 0.18);
+  background: linear-gradient(135deg, rgba(254, 180, 123, 0.15) 0%, rgba(255, 126, 95, 0.15) 100%);
+}
+.quest-banner-content {
+  flex: 1;
+}
+.quest-banner-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.quest-banner-tag {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--clr-accent, #feb47b);
+  font-family: var(--font-body, system-ui, sans-serif);
+}
+.quest-banner-title {
+  margin: 0;
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: var(--clr-text, #fff);
+  font-family: var(--font-body, system-ui, sans-serif);
+}
+.quest-banner-subtitle {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--clr-text-soft, #a89e94);
+  line-height: 1.4;
+  font-family: var(--font-body, system-ui, sans-serif);
+}
+.quest-banner-arrow {
+  font-size: 1.3rem;
+  color: var(--clr-accent, #feb47b);
+  margin-left: 12px;
+  font-weight: bold;
+  transition: transform 0.2s;
+}
+.quest-banner-btn:hover .quest-banner-arrow {
+  transform: translateX(2px);
+}
+`
+
+function PmQuestBanner({ onSelect }) {
+  const graphStatus = usePmGraphData()
+  const [suggested, setSuggested] = useState(null)
+
+  useEffect(() => {
+    if (graphStatus === 'ready') {
+      setSuggested(pmGetCurrentSuggestedModule())
+    }
+  }, [graphStatus])
+
+  if (!suggested) return null
+
+  return (
+    <div className="quest-banner-row">
+      <style>{QUEST_BANNER_STYLES}</style>
+      <button className="quest-banner-btn" onClick={() => onSelect(suggested.id)}>
+        <div className="quest-banner-content">
+          <div className="quest-banner-header">
+            <span>🚀</span>
+            <span className="quest-banner-tag">Today's Quest</span>
+          </div>
+          <h3 className="quest-banner-title">{suggested.label}</h3>
+          <p className="quest-banner-subtitle">{suggested.sub || 'Embark on your next learning step!'}</p>
+        </div>
+        <div className="quest-banner-arrow">➔</div>
+      </button>
+    </div>
+  )
+}
+
 // Picks the next module to suggest: first successor (per graph-data.json edges)
 // that hasn't been started yet, falling back to the first successor overall.
 // AFTER
@@ -421,11 +578,29 @@ function usePmModuleTracking(moduleId) {
 // Grayed out / inert until the threshold is reached for the current module,
 // then lights up and, on click, navigates straight to the suggested module.
 
-function PmSuggestIcon({ moduleId }) {
+function PmSuggestIcon({ moduleId, onNavigate }) {
+  const graphStatus = usePmGraphData()
   const { thresholdMet, nextModules } = usePmModuleTracking(moduleId)
+
+  useEffect(() => {
+    installPmAnswerInterceptor()
+  }, [])
+
   if (!moduleId) return null
+  if (graphStatus === 'loading') return null
+  if (graphStatus === 'ready' && !pmNodeById[moduleId]) return null
 
   const active = thresholdMet && nextModules.length > 0
+  const doNav = (modId) => {
+    if (modId === 'dashboard') {
+      if (onNavigate) onNavigate(null)
+      else if (pmNavigateFn) pmNavigateFn(null)
+    } else {
+      if (onNavigate) onNavigate(modId)
+      else if (pmNavigateFn) pmNavigateFn(modId)
+    }
+  }
+
   return (
     <div style={{
       position: 'fixed', right: 20, bottom: 80, zIndex: 9999,
@@ -434,7 +609,7 @@ function PmSuggestIcon({ moduleId }) {
       {active ? nextModules.map((mod) => (
         <button
           key={mod.id}
-          onClick={() => pmNavigateFn && pmNavigateFn(mod.id)}
+          onClick={() => doNav(mod.id)}
           title={`Next up: ${mod.label}`}
           style={{
             display: 'flex', alignItems: 'center', gap: 5,
@@ -522,29 +697,85 @@ function pmStarPoints(cx, cy, r) {
   return points.join(' ')
 }
 
-// ─── PathMap hooks ────────────────────────────────────────────
+// ─── PathMap hooks & state synchronization ─────────────────────
+let _pmGoalIds = (() => {
+  try {
+    const r = localStorage.getItem('tenali_pathmap_goal')
+    return r ? JSON.parse(r) : []
+  } catch {
+    return []
+  }
+})()
+
+let _pmKnown = (() => {
+  try {
+    const r = localStorage.getItem('tenali_pathmap_known')
+    return new Set(r ? JSON.parse(r) : [])
+  } catch {
+    return new Set()
+  }
+})()
+
+const pmStateListeners = new Set()
+function notifyPmStateChange() {
+  pmStateListeners.forEach((fn) => fn())
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'tenali_pathmap_goal') {
+      try { _pmGoalIds = e.newValue ? JSON.parse(e.newValue) : [] } catch { _pmGoalIds = [] }
+      notifyPmStateChange()
+    } else if (e.key === 'tenali_pathmap_known') {
+      try { _pmKnown = new Set(e.newValue ? JSON.parse(e.newValue) : []) } catch { _pmKnown = new Set() }
+      notifyPmStateChange()
+    }
+  })
+}
+
 function usePathmapState() {
   const pmStatus = usePmGraphData()
-  const [goalIds, setGoalIds] = useState(() => {
-    try { const r = localStorage.getItem('tenali_pathmap_goal'); return r ? JSON.parse(r) : [] }
-    catch { return [] }
-  })
-  const [known, setKnown] = useState(() => {
-    try { const r = localStorage.getItem('tenali_pathmap_known'); return new Set(r ? JSON.parse(r) : []) }
-    catch { return new Set() }
-  })
+  const [, bump] = useState(0)
 
-  useEffect(() => { localStorage.setItem('tenali_pathmap_goal', JSON.stringify(goalIds)) }, [goalIds])
-  useEffect(() => { localStorage.setItem('tenali_pathmap_known', JSON.stringify([...known])) }, [known])
-
-  const path = useMemo(() => (pmStatus === 'ready' ? pmComputePath(goalIds) : []), [goalIds, pmStatus])
-  const setGoal    = useCallback((ids) => setGoalIds(ids), [])
-  const clearGoal  = useCallback(() => setGoalIds([]), [])
-  const toggleKnown = useCallback((id) => {
-    setKnown((prev) => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next })
+  useEffect(() => {
+    const fn = () => bump((n) => n + 1)
+    pmStateListeners.add(fn)
+    return () => pmStateListeners.delete(fn)
   }, [])
 
-  return { goalIds, known, path, setGoal, clearGoal, toggleKnown, pmStatus }
+  const goalIds = _pmGoalIds
+  const known = _pmKnown
+
+  const setGoal = useCallback((ids) => {
+    _pmGoalIds = ids
+    try { localStorage.setItem('tenali_pathmap_goal', JSON.stringify(ids)) } catch {}
+    notifyPmStateChange()
+  }, [])
+
+  const clearGoal = useCallback(() => {
+    _pmGoalIds = []
+    try { localStorage.setItem('tenali_pathmap_goal', JSON.stringify([])) } catch {}
+    notifyPmStateChange()
+  }, [])
+
+  const toggleKnown = useCallback((id) => {
+    const next = new Set(_pmKnown)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    _pmKnown = next
+    try { localStorage.setItem('tenali_pathmap_known', JSON.stringify([...next])) } catch {}
+    notifyPmStateChange()
+  }, [])
+
+  const resetKnown = useCallback(() => {
+    _pmKnown = new Set()
+    try { localStorage.setItem('tenali_pathmap_known', JSON.stringify([])) } catch {}
+    notifyPmStateChange()
+  }, [])
+
+  const path = useMemo(() => (pmStatus === 'ready' ? pmComputePath(goalIds) : []), [goalIds, pmStatus])
+
+  return { goalIds, known, path, setGoal, clearGoal, toggleKnown, resetKnown, pmStatus }
 }
 
 // ─── PathMap StatsBar ─────────────────────────────────────────
@@ -553,18 +784,41 @@ function PmStatsBar({ path, known }) {
   const doneCount = path.filter((id) => known.has(id)).length
   const remaining = path.length - doneCount
   return (
-    <div className="pm-stats-bar">
-      <div className="pm-stat">
-        <div className="pm-stat-num">{path.length}</div>
-        <div className="pm-stat-label">Total steps</div>
+    <div className="pm-stats-bar" style={{
+      display: 'grid',
+      gridTemplateColumns: 'repeat(3, 1fr)',
+      gap: 12,
+      margin: '16px 0',
+    }}>
+      <div className="pm-stat" style={{
+        background: 'var(--clr-card, rgba(255, 255, 255, 0.05))',
+        border: '1px solid var(--clr-border, rgba(255, 255, 255, 0.1))',
+        borderRadius: 10,
+        padding: 12,
+        textAlign: 'center',
+      }}>
+        <div className="pm-stat-num" style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--clr-text, #fff)' }}>{path.length}</div>
+        <div className="pm-stat-label" style={{ fontSize: '0.75rem', color: 'var(--clr-text-soft, #a89e94)', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: 4 }}>Total steps</div>
       </div>
-      <div className="pm-stat">
-        <div className="pm-stat-num" style={{ color: 'var(--clr-correct, #5cb87a)' }}>{doneCount}</div>
-        <div className="pm-stat-label">Already known</div>
+      <div className="pm-stat" style={{
+        background: 'var(--clr-card, rgba(255, 255, 255, 0.05))',
+        border: '1px solid var(--clr-border, rgba(255, 255, 255, 0.1))',
+        borderRadius: 10,
+        padding: 12,
+        textAlign: 'center',
+      }}>
+        <div className="pm-stat-num" style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--clr-correct, #5cb87a)' }}>{doneCount}</div>
+        <div className="pm-stat-label" style={{ fontSize: '0.75rem', color: 'var(--clr-text-soft, #a89e94)', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: 4 }}>Already known</div>
       </div>
-      <div className="pm-stat">
-        <div className="pm-stat-num" style={{ color: 'var(--clr-accent, #e8864a)' }}>{remaining}</div>
-        <div className="pm-stat-label">Steps to go</div>
+      <div className="pm-stat" style={{
+        background: 'var(--clr-card, rgba(255, 255, 255, 0.05))',
+        border: '1px solid var(--clr-border, rgba(255, 255, 255, 0.1))',
+        borderRadius: 10,
+        padding: 12,
+        textAlign: 'center',
+      }}>
+        <div className="pm-stat-num" style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--clr-accent, #e8864a)' }}>{remaining}</div>
+        <div className="pm-stat-label" style={{ fontSize: '0.75rem', color: 'var(--clr-text-soft, #a89e94)', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: 4 }}>Steps to go</div>
       </div>
     </div>
   )
@@ -590,8 +844,19 @@ function PmGoalPicker({ goalIds, onSetGoal, onClear }) {
   const currentGoal = goalIds.length > 0 ? pmNodes.find(n => n.id === goalIds[0]) : null
 
   return (
-    <div className="pm-goal-card">
-      <div className="pm-goal-label">What do you want to learn?</div>
+    <div className="pm-goal-card" style={{
+      background: 'var(--clr-card, rgba(255, 255, 255, 0.05))',
+      border: '1.5px solid var(--clr-border, rgba(255, 255, 255, 0.12))',
+      borderRadius: 12,
+      padding: '18px 20px',
+      marginBottom: 24,
+    }}>
+      <div className="pm-goal-label" style={{
+        fontSize: '0.95rem',
+        fontWeight: 700,
+        marginBottom: 12,
+        color: 'var(--clr-text, #fff)',
+      }}>What do you want to learn?</div>
       <div className="pm-goal-search-wrap" ref={wrapRef}>
         <div style={{ position: 'relative' }}>
           <input
@@ -600,6 +865,13 @@ function PmGoalPicker({ goalIds, onSetGoal, onClear }) {
             autoComplete="off"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && matches.length > 0) {
+                e.preventDefault()
+                onSetGoal([matches[0].id])
+                setQuery('')
+              }
+            }}
             style={{
               width: '100%',
               boxSizing: 'border-box',
@@ -615,10 +887,19 @@ function PmGoalPicker({ goalIds, onSetGoal, onClear }) {
           />
         </div>
         {matches.length > 0 && (
-          <div style={{ borderRadius: 'var(--radius-sm)', overflow: 'hidden' }}>
+          <div style={{
+            borderRadius: 'var(--radius-sm)',
+            overflow: 'hidden',
+            marginTop: 4,
+            border: '1px solid var(--clr-border)',
+            background: 'var(--clr-card)',
+          }}>
             {matches.map((n, i) => (
               <div
                 key={n.id}
+                className="pm-goal-match-item"
+                data-node-id={n.id}
+                onMouseDown={() => { onSetGoal([n.id]); setQuery('') }}
                 onClick={() => { onSetGoal([n.id]); setQuery('') }}
                 style={{
                   display: 'flex',
@@ -824,6 +1105,7 @@ function PathMap({ onBack }) {
 
   return (
     <div className="pm-shell">
+      <style>{PM_STYLES}</style>
       <div className="pm-topbar">
         <div className="pm-brand">
           {onBack && (
@@ -1214,8 +1496,319 @@ function PmHomePath({ path, known, goalIds, onToggleKnown, onSelect }) {
   )
 }
 
+// ═══════════════════════════════════════════════════════════════
+// PmHamburgerItem — Level Map / Path entry inside hamburger menu
+// ═══════════════════════════════════════════════════════════════
+function PmHamburgerItem({ onOpen }) {
+  const { goalIds, known, path, pmStatus } = usePathmapState()
+  const stepsLeft = path.filter((id) => !known.has(id)).length
+
+  return (
+    <button
+      onClick={onOpen}
+      disabled={pmStatus !== 'ready'}
+      style={{
+        display: 'block', width: '100%', textAlign: 'left', padding: '10px 16px',
+        background: 'none', border: 'none', cursor: pmStatus === 'ready' ? 'pointer' : 'not-allowed',
+        opacity: pmStatus === 'ready' ? 1 : 0.6,
+        color: 'var(--clr-text)', fontFamily: 'var(--font-body)', fontSize: '0.95rem',
+        transition: 'background var(--transition)', borderBottom: '1px solid var(--clr-border)',
+      }}
+      onMouseEnter={e => e.currentTarget.style.background = 'var(--clr-hover-strong)'}
+      onMouseLeave={e => e.currentTarget.style.background = 'none'}
+    >
+      <strong style={{ color: 'var(--clr-accent)' }}>
+        {pmStatus !== 'ready' ? '📍 Loading…' : goalIds.length > 0 ? `📍 Path (${stepsLeft} left)` : '📍 Level Map'}
+      </strong>
+      <span style={{ display: 'block', fontSize: '0.78rem', color: 'var(--clr-text-soft)', marginTop: '2px' }}>
+        Learn by prerequisite path
+      </span>
+    </button>
+  )
+}
+
+function PmHeaderPill(props) {
+  return <PmHamburgerItem {...props} />
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PmGoalModal — "🗺 Learn by Path" popup modal
+// ═══════════════════════════════════════════════════════════════
+function PmGoalModal({ open, onClose, onSelect }) {
+  const { goalIds, known, path, setGoal, clearGoal, toggleKnown, resetKnown, pmStatus } = usePathmapState()
+
+  if (!open) return null
+
+  return (
+    <div
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 200,
+        background: 'rgba(0,0,0,0.75)',
+        display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+        padding: '24px 16px', overflowY: 'auto',
+      }}
+    >
+      <div style={{
+        background: 'var(--clr-bg)', borderRadius: 16, width: '100%', maxWidth: 660,
+        padding: '28px 24px', position: 'relative', boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
+      }}>
+        <style>{PM_STYLES}</style>
+        <button
+          onClick={onClose}
+          style={{
+            position: 'absolute', top: 14, right: 16, background: 'none', border: 'none',
+            fontSize: '1.4rem', cursor: 'pointer', color: 'var(--clr-text-soft)', lineHeight: 1,
+          }}
+        >
+          ✕
+        </button>
+
+        <h2 style={{ margin: '0 0 4px', fontSize: '1.2rem' }}>
+          🗺 Learn by Path
+        </h2>
+        <p style={{ margin: '0 0 20px', fontSize: '0.83rem', color: 'var(--clr-text-soft)' }}>
+          Pick a goal topic — we'll build your path below the search bar on the home screen.
+        </p>
+
+        {pmStatus !== 'ready' ? (
+          <div style={{ padding: '20px 0', color: 'var(--clr-text-soft)', fontFamily: 'var(--font-body)', fontSize: '0.9rem' }}>
+            {pmStatus === 'error' ? "Couldn't load topic data. Please refresh and try again." : 'Loading topics…'}
+          </div>
+        ) : (
+          <PmGoalPicker
+            goalIds={goalIds}
+            onSetGoal={ids => setGoal(ids)}
+            onClear={() => clearGoal()}
+          />
+        )}
+
+        {pmStatus === 'ready' && path.length > 0 && (
+          <>
+            <PmStatsBar path={path} known={known} />
+
+            <p style={{ fontSize: '0.78rem', color: 'var(--clr-text-soft)', margin: '16px 0 10px' }}>
+              Click a chip to mark it as already known — it'll skip ahead on your path.
+            </p>
+            <PmSnakePath path={path} known={known} goalIds={goalIds} onToggleNode={toggleKnown} />
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+              {path.map((id, i) => {
+                const node = pmNodeById[id]
+                const isDone = known.has(id)
+                const isGoal = goalIds.includes(id)
+                return (
+                  <button
+                    key={id}
+                    onClick={() => toggleKnown(id)}
+                    title={isDone ? 'Click to unmark' : 'Click to mark as already known'}
+                    style={{
+                      background: isDone ? '#5cb87a' : isGoal ? 'var(--clr-accent, #e8864a)' : 'var(--clr-card)',
+                      border: '1.5px solid var(--clr-border)',
+                      borderRadius: 20,
+                      color: isDone || isGoal ? '#fff' : 'var(--clr-text)',
+                      cursor: 'pointer',
+                      fontSize: '0.78rem',
+                      fontFamily: 'var(--font-body)',
+                      fontWeight: 600,
+                      padding: '4px 12px',
+                      display: 'flex', alignItems: 'center', gap: 5,
+                      transition: 'background 0.15s',
+                    }}
+                  >
+                    <span style={{ opacity: 0.6, fontSize: '0.7rem' }}>{i + 1}.</span>
+                    {isDone ? '✓ ' : ''}{node?.label || id}
+                    {isGoal ? ' ★' : ''}
+                  </button>
+                )
+              })}
+            </div>
+
+            <button
+              onClick={() => {
+                onClose()
+                setTimeout(() => {
+                  const el = document.querySelector('.pmh-panel')
+                  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }, 50)
+              }}
+              style={{
+                width: '100%', padding: '11px',
+                background: 'var(--clr-accent, #e8864a)', border: 'none', borderRadius: 10,
+                color: '#fff', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer',
+                fontFamily: 'var(--font-body)',
+              }}
+            >
+              Show my path →
+            </button>
+            {known.size > 0 && (
+              <button
+                onClick={() => {
+                  if (window.confirm('Reset all progress? This will clear all nodes you marked as known.')) {
+                    resetKnown()
+                  }
+                }}
+                style={{
+                  width: '100%', marginTop: 8, padding: '8px',
+                  background: 'none',
+                  border: '1px solid var(--clr-border)',
+                  borderRadius: 10,
+                  color: 'var(--clr-text-soft)',
+                  fontSize: '0.78rem', cursor: 'pointer',
+                  fontFamily: 'var(--font-body)',
+                }}
+              >
+                Reset progress ({known.size} known)
+              </button>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PmHomeSection — winding snake path panel on the home dashboard
+// ═══════════════════════════════════════════════════════════════
+function PmHomeSection({ onSelect, onOpenGoalPicker }) {
+  const { goalIds, known, path, clearGoal, toggleKnown, setGoal, pmStatus } = usePathmapState()
+  const [showCongrats, setShowCongrats] = useState(false)
+
+  if (pmStatus !== 'ready' || path.length === 0) return null
+
+  const stepsLeft = path.filter((id) => !known.has(id)).length
+  const goalNode = goalIds.length > 0 ? pmNodeById[goalIds[0]] : null
+  const allDone = path.length > 0 && path.every((id) => known.has(id))
+
+  return (
+    <>
+      <style>{PM_STYLES}</style>
+      <div
+        className="pmh-panel"
+        style={{
+          margin: '22px 0 30px',
+          padding: '20px 18px 10px',
+          background: 'var(--clr-card)',
+          border: '1.5px solid var(--clr-border)',
+          borderRadius: 18,
+        }}
+      >
+        <div
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            flexWrap: 'wrap', gap: 12, marginBottom: 6, paddingBottom: 14,
+            borderBottom: '1px solid var(--clr-border)',
+          }}
+        >
+          <div>
+            <div style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.6px', color: 'var(--clr-text-soft)', textTransform: 'uppercase' }}>
+              Your path to
+            </div>
+            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--clr-accent, #e8864a)' }}>
+              {goalNode?.label}
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '1.15rem', fontWeight: 800 }}>{path.length}</div>
+              <div style={{ fontSize: '0.65rem', color: 'var(--clr-text-soft)' }}>steps</div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#5cb87a' }}>{path.length - stepsLeft}</div>
+              <div style={{ fontSize: '0.65rem', color: 'var(--clr-text-soft)' }}>done</div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--clr-accent, #e8864a)' }}>{stepsLeft}</div>
+              <div style={{ fontSize: '0.65rem', color: 'var(--clr-text-soft)' }}>to go</div>
+            </div>
+            <button
+              onClick={() => clearGoal()}
+              title="Clear current goal (known nodes kept)"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--clr-text-soft)', fontSize: '0.78rem' }}
+            >
+              ✕ Clear
+            </button>
+          </div>
+        </div>
+
+        {allDone ? (
+          <div
+            style={{
+              margin: '14px 0 8px',
+              padding: '14px 16px',
+              background: 'rgba(92, 184, 122, 0.12)',
+              border: '1.5px solid rgba(92, 184, 122, 0.35)',
+              borderRadius: 12,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 12,
+              flexWrap: 'wrap',
+            }}
+          >
+            <div>
+              <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#5cb87a', fontFamily: 'var(--font-body)' }}>
+                🎉 All done — path complete!
+              </div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--clr-text-soft)', marginTop: 3, fontFamily: 'var(--font-body)' }}>
+                Every step mastered. Tap below to see what's next.
+              </div>
+            </div>
+            <button
+              onClick={() => setShowCongrats(true)}
+              style={{
+                background: 'var(--clr-accent, #e8864a)',
+                border: 'none',
+                borderRadius: 20,
+                color: '#fff',
+                fontFamily: 'var(--font-body)',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                padding: '6px 14px',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              What's next? →
+            </button>
+          </div>
+        ) : (
+          <p style={{ fontSize: '0.78rem', color: 'var(--clr-text-soft)', margin: '10px 0 4px' }}>
+            Tap a stop to practice it. Tap the small check to mark it as already known.
+          </p>
+        )}
+
+        <PmHomePath
+          path={path}
+          known={known}
+          goalIds={goalIds}
+          onToggleKnown={toggleKnown}
+          onSelect={onSelect}
+        />
+      </div>
+
+      {showCongrats && (
+        <PmCongratsModal
+          goalIds={goalIds}
+          path={path}
+          onClose={() => setShowCongrats(false)}
+          onNewGoal={() => {
+            setShowCongrats(false)
+            if (onOpenGoalPicker) onOpenGoalPicker()
+          }}
+          onSetGoal={(ids) => {
+            setGoal(ids)
+            setShowCongrats(false)
+          }}
+        />
+      )}
+    </>
+  )
+}
+
 export default PathMap;
 export {
+  installPmAnswerInterceptor,
   pmTrackAnswer,
   PmSuggestIcon,
   usePmGraphData,
@@ -1230,5 +1823,10 @@ export {
   PmStatsBar,
   PmSnakePath,
   usePathmapState,
-  pmGetCurrentSuggestedModule
+  pmGetCurrentSuggestedModule,
+  PmQuestBanner,
+  PmGoalModal,
+  PmHomeSection,
+  PmHamburgerItem,
+  PmHeaderPill,
 };
