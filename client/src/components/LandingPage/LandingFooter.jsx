@@ -16,7 +16,7 @@ export default function LandingFooter({
           <div className="footer-brand-col">
             <div className="footer-brand-header">
               <img
-                src="/tenali.png"
+                src="/logo.png"
                 alt="Pramana Logo"
                 className="footer-brand-logo"
                 onError={(e) => {
@@ -41,36 +41,36 @@ export default function LandingFooter({
             <ul className="footer-links-list">
               <li>
                 <button type="button" className="footer-link-btn" onClick={scrollToTop}>
-                  🏠 Overview
+                  Overview
                 </button>
               </li>
               <li>
                 <button type="button" className="footer-link-btn" onClick={onExplorePuzzles}>
-                  🧩 Browse All 90+ Puzzles
+                  Browse All 90+ Puzzles
                 </button>
               </li>
               <li>
                 <button type="button" className="footer-link-btn" onClick={() => onSelectTopic('learning_journey')}>
-                  ⭐ Guided Learning Journey
+                  Guided Learning Journey
                 </button>
               </li>
               <li>
                 <button type="button" className="footer-link-btn" onClick={() => onSelectTopic('battle')}>
-                  ⚔️ Live Battle Arena
+                  Live Battle Arena
                 </button>
               </li>
               <li>
                 <button type="button" className="footer-link-btn" onClick={() => onSelectTopic('detective')}>
-                  🔍 Math Detective Agency
+                  Math Detective Agency
                 </button>
               </li>
               <li>
                 <button
                   type="button"
                   className="footer-link-btn"
-                  onClick={() => window.dispatchEvent(new CustomEvent('tenali:openHall'))}
+                  onClick={() => window.dispatchEvent(new CustomEvent('pramana:openHall'))}
                 >
-                  👾 Hall of Silly Mistakes
+                  Hall of Silly Mistakes
                 </button>
               </li>
             </ul>
@@ -82,32 +82,32 @@ export default function LandingFooter({
             <ul className="footer-links-list">
               <li>
                 <button type="button" className="footer-link-btn" onClick={() => onSelectTopic('addition')}>
-                  🔢 Number Foundations
+                  Number Foundations
                 </button>
               </li>
               <li>
                 <button type="button" className="footer-link-btn" onClick={() => onSelectTopic('angles')}>
-                  📐 Shape & Space (Geometry)
+                  Shape & Space (Geometry)
                 </button>
               </li>
               <li>
                 <button type="button" className="footer-link-btn" onClick={() => onSelectTopic('lineareq')}>
-                  🔣 Algebra & Functions
+                  Algebra & Functions
                 </button>
               </li>
               <li>
                 <button type="button" className="footer-link-btn" onClick={() => onSelectTopic('percent')}>
-                  🛒 Everyday Maths & Finance
+                  Everyday Maths & Finance
                 </button>
               </li>
               <li>
                 <button type="button" className="footer-link-btn" onClick={() => onSelectTopic('diff')}>
-                  📈 Calculus & Advanced
+                  Calculus & Advanced
                 </button>
               </li>
               <li>
                 <button type="button" className="footer-link-btn" onClick={() => onSelectTopic('sudoku')}>
-                  🎲 Logic Puzzles & Games
+                  Logic Puzzles & Games
                 </button>
               </li>
             </ul>
@@ -123,7 +123,7 @@ export default function LandingFooter({
                   className="footer-link-btn"
                   onClick={scrollToTop}
                 >
-                  ⭐ Open Source Core
+                  Open Source Core
                 </a>
               </li>
               <li>
@@ -131,7 +131,7 @@ export default function LandingFooter({
                   href="#contributors"
                   className="footer-link-btn"
                 >
-                  👥 Contributors
+                  Contributors
                 </a>
               </li>
               <li>
@@ -139,7 +139,7 @@ export default function LandingFooter({
                   href="#license"
                   className="footer-link-btn"
                 >
-                  📜 MIT Open Source License
+                  MIT Open Source License
                 </a>
               </li>
               <li>
@@ -151,7 +151,7 @@ export default function LandingFooter({
                     if (el) el.scrollIntoView({ behavior: 'smooth' });
                   }}
                 >
-                  ▶️ Interactive Application Demo
+                  Interactive Application Demo
                 </button>
               </li>
             </ul>

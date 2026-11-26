@@ -1,5 +1,5 @@
 /**
- * TENALI - Educational Quiz Platform Server
+ * PRAMANA - Educational Quiz Platform Server
  *
  * A comprehensive Node.js/Express server that powers an educational quiz and math problem-solving platform.
  *
@@ -57,7 +57,7 @@ const { generateExplanation } = require('./explanations');
 
 // Catch what would otherwise be a silent crash (or, for unhandled promise
 // rejections on Node 15+, a crash with no application-level record of why).
-// Log first, then exit so the process manager (systemd's tenali.service)
+// Log first, then exit so the process manager (systemd's pramana.service)
 // restarts a clean process rather than continuing in a possibly-corrupt state.
 process.on('uncaughtException', (err) => {
   logger.error('process', 'uncaughtException:', err);
@@ -83,7 +83,7 @@ app.set('trust proxy', 1);
 // CORS: allow only trusted frontend origins (the app is same-origin; extra
 // origins configurable via CORS_ORIGINS, comma-separated).
 const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS ||
-  'https://tenali.fun,http://localhost:5173,http://127.0.0.1:5173')
+  'http://localhost:5173,http://127.0.0.1:5173')
   .split(',').map(o => o.trim()).filter(Boolean);
 app.use(cors({
   origin(origin, cb) {
@@ -1567,7 +1567,7 @@ const ictHeaders = (_req, res, next) => {
 };
 app.use('/summership/ict', ictHeaders, ictStatic);
 app.use('/ict', ictHeaders, ictStatic);
-// An ICT path that matches no file is a plain 404, not the Tenali app.
+// An ICT path that matches no file is a plain 404, not the Pramana app.
 app.use(['/summership/ict', '/ict'], (_req, res) => res.status(404).send('Not found'));
 
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
@@ -1818,7 +1818,7 @@ function ensureUserMilestones(user) {
     user.milestones = [];
   }
   
-  const hasJoined = user.milestones.some(m => m.event === 'Joined Pramana' || m.event === 'Joined Tenali');
+  const hasJoined = user.milestones.some(m => m.event === 'Joined Pramana' || m.event === 'Joined Pramana');
   if (!hasJoined) {
     user.milestones.push({
       event: 'Joined Pramana',
@@ -2203,8 +2203,8 @@ app.use('/api', labRoutes);
  * not shadow /<type>-api routes.
  *
  * Sub-path deployments (VITE_BASE_PATH=/matrixmystics) get redirected from the
- * domain root to the sub-path so a user landing on https://tenali.fun/
- * ends up on the live, current build at https://tenali.fun/matrixmystics/
+ * domain root to the sub-path so a user landing on https://pramana.fun/
+ * ends up on the live, current build at https://pramana.fun/matrixmystics/
  * instead of being served a stale SPA shell that can't reach the API.
  */
 if (SUBPATH_REDIRECT && SUBPATH_REDIRECT !== '/') {
@@ -3188,7 +3188,7 @@ if (require.main === module) {
   initData()
     .then(() => {
       httpServer.listen(PORT, '0.0.0.0', () => {
-        console.log(`Tenali app running on http://0.0.0.0:${PORT}`);
+        console.log(`Pramana app running on http://0.0.0.0:${PORT}`);
       });
     })
     .catch((err) => {

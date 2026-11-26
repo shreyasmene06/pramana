@@ -386,7 +386,7 @@ const colorHex = COLORS[colorIndex]
 
 Save user-created intervals to localStorage:
 ```javascript
-// Key: 'tenali_intervalscheduling_userIntervals'
+// Key: 'pramana_intervalscheduling_userIntervals'
 // Value: JSON stringified intervals array
 ```
 

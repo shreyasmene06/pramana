@@ -111,8 +111,8 @@ check('App.jsx has monsterLog state hydrated from storage',
 check('App.jsx listens to storage events for sync',
   /addEventListener\('storage'/.test(appSrc));
 
-check('App.jsx listens to tenali:monsterLogChanged for same-tab sync',
-  /addEventListener\('tenali:monsterLogChanged'/.test(appSrc));
+check('App.jsx listens to pramana:monsterLogChanged for same-tab sync',
+  /addEventListener\('pramana:monsterLogChanged'/.test(appSrc));
 
 check('App.jsx mounts <HallPanel>',
   /<HallPanel\s/.test(appSrc));

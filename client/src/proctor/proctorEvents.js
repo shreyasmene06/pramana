@@ -8,12 +8,12 @@
  */
 
 const API = import.meta.env?.VITE_API_BASE_URL || '';
-const STORAGE_KEY = 'tenali_proctor_pending_events'
+const STORAGE_KEY = 'pramana_proctor_pending_events'
 const RETRY_DELAY_MS = 2000
 const REQUEST_TIMEOUT_MS = 5000
 
 function getToken() {
-  try { return localStorage.getItem('tenali-auth-token') || null } catch { return null }
+  try { return localStorage.getItem('pramana-auth-token') || null } catch { return null }
 }
 
 function getPendingEvents() {

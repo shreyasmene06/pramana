@@ -1,7 +1,7 @@
 /**
  * @fileoverview Vachana Mathematical Literacy Lab — Main Orchestrator
  *
- * This module is the entry point for the Vachana section of Tenali.
+ * This module is the entry point for the Vachana section of Pramana.
  * It:
  *   - Reads window.location.pathname to pre-select a tab on load
  *   - Uses history.pushState to update the URL when a tab is selected

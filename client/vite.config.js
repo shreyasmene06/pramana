@@ -1,10 +1,10 @@
 /**
  * VITE BUILD CONFIGURATION - MAIN CLIENT
  *
- * Configuration file for Vite (build tool and development server) for the main Tenali client.
+ * Configuration file for Vite (build tool and development server) for the main Pramana client.
  * Defines how React components are built and how the development server proxies API requests.
  *
- * This is the unified entry point for the Tenali platform that aggregates multiple quiz modules.
+ * This is the unified entry point for the Pramana platform that aggregates multiple quiz modules.
  *
  * Build Configuration:
  * - React plugin: Enables JSX/React syntax support

@@ -1,3 +1,3 @@
 # ICT
 
-Material for the ICT course students on contributing to Tenali.
+Material for the ICT course students on contributing to Pramana.

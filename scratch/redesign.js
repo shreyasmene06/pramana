@@ -46,7 +46,7 @@ const oldUnlock = `      if (data.guest) {
       } else if (data.balance !== undefined) {
         setLocalXp(data.balance);
         try {
-          window.dispatchEvent(new CustomEvent('tenali-xp-float', { detail: { diff: -actualCost } }));
+          window.dispatchEvent(new CustomEvent('pramana-xp-float', { detail: { diff: -actualCost } }));
         } catch {}
       }
 
@@ -58,7 +58,7 @@ const newUnlock = `      if (data.guest) {
       } else if (data.balance !== undefined) {
         setLocalXp(data.balance);
         try {
-          window.dispatchEvent(new CustomEvent('tenali-xp-float', { detail: { diff: -actualCost } }));
+          window.dispatchEvent(new CustomEvent('pramana-xp-float', { detail: { diff: -actualCost } }));
         } catch {}
       }
 

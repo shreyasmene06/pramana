@@ -6,7 +6,7 @@
 # floor test in server/__tests__/runtimeVersion.test.js fails if they drift.
 services:
   - type: web
-    name: tenali
+    name: pramana
     env: node
     envVars:
       - key: NODE_VERSION

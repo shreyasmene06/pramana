@@ -29,7 +29,7 @@ const CONTRAST_PAIRS = [
 
 export function getUsernameNamespace() {
   try {
-    const authUserStr = localStorage.getItem('tenali-auth-user');
+    const authUserStr = localStorage.getItem('pramana-auth-user');
     if (authUserStr) {
       const authUser = JSON.parse(authUserStr);
       if (authUser && authUser.username) {
@@ -45,9 +45,9 @@ export function getUsernameNamespace() {
 export function getStorageKeys() {
   const ns = getUsernameNamespace();
   return {
-    seen: `tenali-contrast-seen-${ns}`,
-    unlocked: `tenali-contrast-unlocked-${ns}`,
-    completedModules: `tenali-completed-modules-${ns}`
+    seen: `pramana-contrast-seen-${ns}`,
+    unlocked: `pramana-contrast-unlocked-${ns}`,
+    completedModules: `pramana-completed-modules-${ns}`
   };
 }
 
@@ -79,7 +79,7 @@ export async function syncContrastProgress(token) {
     const API = import.meta.env.VITE_API_BASE_URL || '';
 
     // Get current logged in username to identify user switches
-    const authUserStr = localStorage.getItem('tenali-auth-user');
+    const authUserStr = localStorage.getItem('pramana-auth-user');
     let currentUsername = null;
     if (authUserStr) {
       try {
@@ -92,9 +92,9 @@ export async function syncContrastProgress(token) {
     if (!currentUsername) return;
 
     const userKeys = {
-      completedModules: `tenali-completed-modules-${currentUsername}`,
-      unlocked: `tenali-contrast-unlocked-${currentUsername}`,
-      seen: `tenali-contrast-seen-${currentUsername}`
+      completedModules: `pramana-completed-modules-${currentUsername}`,
+      unlocked: `pramana-contrast-unlocked-${currentUsername}`,
+      seen: `pramana-contrast-seen-${currentUsername}`
     };
 
     // 1. Get current namespaced localStorage values
@@ -249,7 +249,7 @@ export default function ContrastChallengeApp({ onBack }) {
 
   // On mount, sync progress with server if authenticated
   useEffect(() => {
-    const token = localStorage.getItem('tenali-auth-token');
+    const token = localStorage.getItem('pramana-auth-token');
     if (token) {
       syncContrastProgress(token).then(() => {
         setProgress(loadProgress());
@@ -267,7 +267,7 @@ export default function ContrastChallengeApp({ onBack }) {
   // Listen for login/logout changes to clean up or reset progress local state
   useEffect(() => {
     const handleAuthChange = () => {
-      const token = localStorage.getItem('tenali-auth-token');
+      const token = localStorage.getItem('pramana-auth-token');
       // Reload states from localStorage immediately for the new namespace (guest or logged-in user)
       setProgress(loadProgress());
       try {
@@ -292,8 +292,8 @@ export default function ContrastChallengeApp({ onBack }) {
         });
       }
     };
-    window.addEventListener('tenali-auth-change', handleAuthChange);
-    return () => window.removeEventListener('tenali-auth-change', handleAuthChange);
+    window.addEventListener('pramana-auth-change', handleAuthChange);
+    return () => window.removeEventListener('pramana-auth-change', handleAuthChange);
   }, []);
 
   // All pairs are hardcoded — no API needed
@@ -323,9 +323,9 @@ export default function ContrastChallengeApp({ onBack }) {
 
   // Deep-link: start a specific pair if stored in localStorage
   useEffect(() => {
-    const startId = localStorage.getItem('tenali-start-contrast-id');
+    const startId = localStorage.getItem('pramana-start-contrast-id');
     if (startId) {
-      localStorage.removeItem('tenali-start-contrast-id');
+      localStorage.removeItem('pramana-start-contrast-id');
       fetchPairById(startId);
     }
   }, [fetchPairById]);
@@ -344,7 +344,7 @@ export default function ContrastChallengeApp({ onBack }) {
     saveProgress(newProgress);
 
     // Sync to server if authenticated
-    const token = localStorage.getItem('tenali-auth-token');
+    const token = localStorage.getItem('pramana-auth-token');
     if (token) {
       syncContrastProgress(token);
     }
@@ -366,7 +366,7 @@ export default function ContrastChallengeApp({ onBack }) {
     saveProgress(newProgress);
 
     // Sync to server if authenticated
-    const token = localStorage.getItem('tenali-auth-token');
+    const token = localStorage.getItem('pramana-auth-token');
     if (token) {
       syncContrastProgress(token);
     }
@@ -631,7 +631,7 @@ export function QuizLayoutExtension({ children }) {
   const [completedPairsList, setCompletedPairsList] = useState([]);
 
   useEffect(() => {
-    setCurrentMode(window.currentTenaliMode);
+    setCurrentMode(window.currentPramanaMode);
   }, []);
 
   const isFinished = hasFinishedBox(children);
@@ -738,8 +738,8 @@ export function QuizLayoutExtension({ children }) {
                 e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
               }}
               onClick={() => {
-                localStorage.setItem('tenali-start-contrast-id', id);
-                window.dispatchEvent(new CustomEvent('tenali-change-mode', { detail: 'contrastlist' }));
+                localStorage.setItem('pramana-start-contrast-id', id);
+                window.dispatchEvent(new CustomEvent('pramana-change-mode', { detail: 'contrastlist' }));
               }}
             >
               {isCompleted && (
@@ -882,7 +882,7 @@ export function unlockContrastChallengeForMode(mode) {
     }
 
     // Sync to server if authenticated
-    const token = localStorage.getItem('tenali-auth-token');
+    const token = localStorage.getItem('pramana-auth-token');
     if (token) {
       syncContrastProgress(token);
     }
@@ -1733,7 +1733,7 @@ function AreaPerimeterChallenge({ onBack, onComplete, onMarkComplete }) {
                 <button
                   key={mKey}
                   onClick={() => {
-                    window.dispatchEvent(new CustomEvent('tenali-change-mode', { detail: mKey }));
+                    window.dispatchEvent(new CustomEvent('pramana-change-mode', { detail: mKey }));
                   }}
                   className="secondary"
                   style={{
@@ -2454,7 +2454,7 @@ function RadiusDiameterChallenge({ onBack, onComplete, onMarkComplete }) {
                 <button
                   key={mKey}
                   onClick={() => {
-                    window.dispatchEvent(new CustomEvent('tenali-change-mode', { detail: mKey }));
+                    window.dispatchEvent(new CustomEvent('pramana-change-mode', { detail: mKey }));
                   }}
                   className="secondary"
                   style={{
@@ -3428,7 +3428,7 @@ function HcfLcmChallenge({ onBack, onComplete, onMarkComplete }) {
                 <button
                   key={mKey}
                   onClick={() => {
-                    window.dispatchEvent(new CustomEvent('tenali-change-mode', { detail: mKey }));
+                    window.dispatchEvent(new CustomEvent('pramana-change-mode', { detail: mKey }));
                   }}
                   className="secondary"
                   style={{
@@ -4471,7 +4471,7 @@ function FactorsMultiplesChallenge({ onBack, onComplete, onMarkComplete }) {
                 <button
                   key={mKey}
                   onClick={() => {
-                    window.dispatchEvent(new CustomEvent('tenali-change-mode', { detail: mKey }));
+                    window.dispatchEvent(new CustomEvent('pramana-change-mode', { detail: mKey }));
                   }}
                   className="secondary"
                   style={{
@@ -5431,7 +5431,7 @@ function CongruenceSimilarityChallenge({ onBack, onComplete, onMarkComplete }) {
                 <button
                   key={mKey}
                   onClick={() => {
-                    window.dispatchEvent(new CustomEvent('tenali-change-mode', { detail: mKey }));
+                    window.dispatchEvent(new CustomEvent('pramana-change-mode', { detail: mKey }));
                   }}
                   className="secondary"
                   style={{
@@ -6329,7 +6329,7 @@ function MatricesDeterminantsChallenge({ onBack, onComplete, onMarkComplete }) {
                 <button
                   key={mKey}
                   onClick={() => {
-                    window.dispatchEvent(new CustomEvent('tenali-change-mode', { detail: mKey }));
+                    window.dispatchEvent(new CustomEvent('pramana-change-mode', { detail: mKey }));
                   }}
                   className="secondary"
                   style={{
@@ -7357,7 +7357,7 @@ function MeanMedianModeChallenge({ onBack, onComplete, onMarkComplete }) {
                 <button
                   key={mKey}
                   onClick={() => {
-                    window.dispatchEvent(new CustomEvent('tenali-change-mode', { detail: mKey }));
+                    window.dispatchEvent(new CustomEvent('pramana-change-mode', { detail: mKey }));
                   }}
                   className="secondary"
                   style={{
@@ -8314,7 +8314,7 @@ function LimitsDifferentiationChallenge({ onBack, onComplete, onMarkComplete }) 
                 <button
                   key={mKey}
                   onClick={() => {
-                    window.dispatchEvent(new CustomEvent('tenali-change-mode', { detail: mKey }));
+                    window.dispatchEvent(new CustomEvent('pramana-change-mode', { detail: mKey }));
                   }}
                   className="secondary"
                   style={{
@@ -9202,7 +9202,7 @@ function DifferentiationIntegrationChallenge({ onBack, onComplete, onMarkComplet
                 <button
                   key={mKey}
                   onClick={() => {
-                    window.dispatchEvent(new CustomEvent('tenali-change-mode', { detail: mKey }));
+                    window.dispatchEvent(new CustomEvent('pramana-change-mode', { detail: mKey }));
                   }}
                   className="secondary"
                   style={{
@@ -10112,7 +10112,7 @@ function DecimalsFractionsChallenge({ onBack, onComplete, onMarkComplete }) {
                 <button
                   key={mKey}
                   onClick={() => {
-                    window.dispatchEvent(new CustomEvent('tenali-change-mode', { detail: mKey }));
+                    window.dispatchEvent(new CustomEvent('pramana-change-mode', { detail: mKey }));
                   }}
                   className="secondary"
                   style={{
@@ -10664,7 +10664,7 @@ function PermutationCombinationChallenge({ onBack, onComplete, onMarkComplete })
             </strong>
             <p style={{ margin: 0, fontSize: '0.98rem', lineHeight: '1.5' }}>
               Tap runners <strong>A</strong>, <strong>B</strong>, and <strong>C</strong> in sequence to place them onto the podium (1st, 2nd, 3rd).
-              Then watch Tenali swap them.
+              Then watch Pramana swap them.
             </p>
           </div>
 
@@ -10745,7 +10745,7 @@ function PermutationCombinationChallenge({ onBack, onComplete, onMarkComplete })
             {/* Swapped Text Indicator */}
             {podiumSwapped && (
               <div style={{ color: 'var(--clr-accent)', fontWeight: '500', fontSize: '1rem', marginTop: '10px' }}>
-                🔄 Tenali swapped first and second place winners!
+                🔄 Pramana swapped first and second place winners!
               </div>
             )}
           </div>
@@ -10865,7 +10865,7 @@ function PermutationCombinationChallenge({ onBack, onComplete, onMarkComplete })
             {/* Swapped order indicator */}
             {toppingsSwapped && (
               <div style={{ color: 'var(--clr-correct)', fontWeight: '500', fontSize: '1rem', marginTop: '10px' }}>
-                🔄 Tenali swaps the choice order: {selectedToppings[1]?.toUpperCase()} first, then {selectedToppings[0]?.toUpperCase()}.
+                🔄 Pramana swaps the choice order: {selectedToppings[1]?.toUpperCase()} first, then {selectedToppings[0]?.toUpperCase()}.
               </div>
             )}
           </div>
@@ -11029,7 +11029,7 @@ function PermutationCombinationChallenge({ onBack, onComplete, onMarkComplete })
                 <button
                   key={mKey}
                   onClick={() => {
-                    window.dispatchEvent(new CustomEvent('tenali-change-mode', { detail: mKey }));
+                    window.dispatchEvent(new CustomEvent('pramana-change-mode', { detail: mKey }));
                   }}
                   className="secondary"
                   style={{
@@ -12008,7 +12008,7 @@ function PrimeCompositeChallenge({ onBack, onComplete, onMarkComplete }) {
                 <button
                   key={mKey}
                   onClick={() => {
-                    window.dispatchEvent(new CustomEvent('tenali-change-mode', { detail: mKey }));
+                    window.dispatchEvent(new CustomEvent('pramana-change-mode', { detail: mKey }));
                   }}
                   className="secondary"
                   style={{
@@ -13419,7 +13419,7 @@ function LinearSimultaneousChallenge({ onBack, onComplete, onMarkComplete }) {
                 <button
                   key={mKey}
                   onClick={() => {
-                    window.dispatchEvent(new CustomEvent('tenali-change-mode', { detail: mKey }));
+                    window.dispatchEvent(new CustomEvent('pramana-change-mode', { detail: mKey }));
                   }}
                   className="secondary"
                   style={{
@@ -14178,7 +14178,7 @@ function InteriorExteriorChallenge({ onBack, onComplete, onMarkComplete }) {
                 <button
                   key={mKey}
                   onClick={() => {
-                    window.dispatchEvent(new CustomEvent('tenali-change-mode', { detail: mKey }));
+                    window.dispatchEvent(new CustomEvent('pramana-change-mode', { detail: mKey }));
                   }}
                   className="secondary"
                   style={{

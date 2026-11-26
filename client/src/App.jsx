@@ -1,7 +1,7 @@
 /**
- * @fileoverview Tenali - Educational Quiz Platform (React Frontend)
+ * @fileoverview Pramana - Educational Quiz Platform (React Frontend)
  *
- * This monolithic React application serves as the main frontend for Tenali, an adaptive
+ * This monolithic React application serves as the main frontend for Pramana, an adaptive
  * learning system with multiple quiz types. It includes:
  *
  * - Shared utility hooks: useTimer (elapsed time tracking), useAutoAdvance (auto-progression)
@@ -17,7 +17,7 @@
  * The app uses a state-machine pattern: most quiz apps cycle through setup → playing → finished phases.
  * Each quiz component manages its own state and communicates with backend APIs.
  *
- * Theme persistence: Dark/light mode preference stored in localStorage[tenali-theme]
+ * Theme persistence: Dark/light mode preference stored in localStorage[pramana-theme]
  * Progress persistence: Adaptive tables app saves current table progress in localStorage
  */
 
@@ -62,7 +62,7 @@ export function useProgressSubmit(revealed, isCorrect, topic, questionId) {
   useEffect(() => {
     if (!revealed) return;
     try { pmTrackAnswer(topic, 'medium', isCorrect); } catch {}
-    const token = localStorage.getItem('tenali-auth-token');
+    const token = localStorage.getItem('pramana-auth-token');
     if (!token || !topic) return;
 
     const API = import.meta.env.VITE_API_BASE_URL || '';
@@ -217,7 +217,7 @@ function PageNotFound({ pathname }) {
 const originalFetch = window.fetch;
 window.fetch = function (url, options) {
   try {
-    const token = localStorage.getItem('tenali-auth-token');
+    const token = localStorage.getItem('pramana-auth-token');
     const urlStr = typeof url === 'string' ? url : (url && url.url ? url.url : '');
     if (token && urlStr && (urlStr.includes('/api/') || urlStr.includes('-api/') || urlStr.includes('/gk-api/'))) {
       options = options || {};
@@ -241,13 +241,13 @@ window.fetch = function (url, options) {
 };
 
 // App version — increment with each commit
-const TENALI_VERSION = '1.0.87'
-const TENALI_BUILD_DATE = '2026-07-08 12:52 IST'
+const PRAMANA_VERSION = '1.0.87'
+const PRAMANA_BUILD_DATE = '2026-07-08 12:52 IST'
 // ─── Auth helpers ───────────────────────────────────────────────────────────
 // Tiny pub/sub on top of localStorage so AuthMenu and AuthGate stay in sync.
-const AUTH_TOKEN_KEY = 'tenali-auth-token'
-const AUTH_USER_KEY = 'tenali-auth-user'
-const AUTH_EVENT = 'tenali-auth-change'
+const AUTH_TOKEN_KEY = 'pramana-auth-token'
+const AUTH_USER_KEY = 'pramana-auth-user'
+const AUTH_EVENT = 'pramana-auth-change'
 function authGetToken() { try { return localStorage.getItem(AUTH_TOKEN_KEY) || null } catch { return null } }
 function authGetUser() { try { return JSON.parse(localStorage.getItem(AUTH_USER_KEY) || 'null') } catch { return null } }
 function authSet(token, user) {
@@ -324,18 +324,18 @@ function AuthMenu({ t = (s) => s }) {
     const onKey = e => { if (e.key === 'Escape') { setOpen(false); setShowLogin(false); setError('') } }
     window.addEventListener('keydown', onKey)
     const onNav = e => { setOpen(false) }
-    window.addEventListener('tenali-navigate', onNav)
+    window.addEventListener('pramana-navigate', onNav)
     const onOpenAuth = () => setOpen(prev => !prev)
-    window.addEventListener('tenali:openAuth', onOpenAuth)
+    window.addEventListener('pramana:openAuth', onOpenAuth)
     return () => {
       window.removeEventListener('keydown', onKey)
-      window.removeEventListener('tenali-navigate', onNav)
-      window.removeEventListener('tenali:openAuth', onOpenAuth)
+      window.removeEventListener('pramana-navigate', onNav)
+      window.removeEventListener('pramana:openAuth', onOpenAuth)
     }
   }, [])
 
   const navigateTo = (mode) => {
-    window.dispatchEvent(new CustomEvent('tenali-navigate', { detail: { mode } }))
+    window.dispatchEvent(new CustomEvent('pramana-navigate', { detail: { mode } }))
     setOpen(false)
   }
 
@@ -725,8 +725,8 @@ function ResultsTable({ results }) {
     if (results && results.length > 0) {
       processedRef.current = true;
       const correctCount = results.filter(r => r.correct).length;
-      if (correctCount > 0 && typeof window.tenaliIncrementSolved === 'function') {
-        window.tenaliIncrementSolved(correctCount);
+      if (correctCount > 0 && typeof window.pramanaIncrementSolved === 'function') {
+        window.pramanaIncrementSolved(correctCount);
       }
     }
   }, [results]);
@@ -1329,7 +1329,7 @@ function NumPad({ value, onChange, onSubmit, disabled, showDecimal, showSlash, s
  *     - Purpose: Student has internalized the pattern
  *
  * === PERSISTENCE ===
- * Current table progress saved to localStorage[tenali-tables-{studentName}]
+ * Current table progress saved to localStorage[pramana-tables-{studentName}]
  * Allows student to resume from last table on page reload
  *
  * @param {Object} props
@@ -1346,8 +1346,8 @@ const MEDIUM_THRESH = 6000         // "Comfortable" speed threshold (ms)
 const ADVANCE_COUNT = 5            // How many consecutive "mastered without table" answers → advance to next table
 
 function AdaptiveTablesApp({ studentName }) {
-  // localStorage key for this student's progress: "tenali-tables-{studentName}"
-  const storageKey = `tenali-tables-${studentName}`
+  // localStorage key for this student's progress: "pramana-tables-{studentName}"
+  const storageKey = `pramana-tables-${studentName}`
 
   // === QUIZ FLOW STATE ===
   // Phases: 'setup' (choose starting table) → 'playing' (answering questions) → 'finished' (mastered all)
@@ -1802,7 +1802,7 @@ function AdaptiveTablesApp({ studentName }) {
  * @param {string} props.studentName - Student's display name
  */
 function ScaffoldedTablesApp({ studentName, defaultTable = 2 }) {
-  const storageKey = `tenali-scaffold-${studentName}`
+  const storageKey = `pramana-scaffold-${studentName}`
 
   // ── Constants ────────────────────────────────────────────────────────
   const FAST_MS = 5000                 // "Fast" answer threshold (ms)
@@ -4517,7 +4517,7 @@ function LakshyaTablesApp({ studentName }) {
  */
 function AdaptiveMixedApp({ studentName }) {
   // localStorage key for persisting adaptive state
-  const storageKey = `tenali-mixed-${studentName}`
+  const storageKey = `pramana-mixed-${studentName}`
 
   // ── Constants ────────────────────────────────────────────────────────
   const TOTAL_QUESTIONS = 100
@@ -5121,7 +5121,7 @@ function SuperTables1App() {
     return true
   }
 
-  // ── Styles (using Tenali CSS vars) ──
+  // ── Styles (using Pramana CSS vars) ──
   const S = {
     page: { minHeight: '100vh', padding: '24px', fontFamily: 'var(--font-body, system-ui)', color: 'var(--clr-text)', background: 'var(--clr-bg)' },
     title: { fontSize: '2.5rem', fontWeight: 900, marginBottom: 8, fontFamily: 'var(--font-display)', color: 'var(--clr-text)' },
@@ -5560,7 +5560,7 @@ function SuperTablesApp() {
     return w.sort((a, b) => b.sc - a.sc).map(x => x.m)
   }
 
-  // ── styles using Tenali CSS variables ─────────────────
+  // ── styles using Pramana CSS variables ─────────────────
   const S = {
     page: { minHeight: '100vh', padding: '24px', fontFamily: 'var(--font-body, system-ui)', color: 'var(--clr-text)', background: 'var(--clr-bg)' },
     center: { textAlign: 'center' },
@@ -6142,7 +6142,7 @@ function SuperTablesApp() {
  * - Mode-based routing for different quiz types (home menu → quiz app)
  *
  * Theme system:
- *   - Loads from localStorage[tenali-theme] or defaults to 'dark'
+ *   - Loads from localStorage[pramana-theme] or defaults to 'dark'
  *   - Sets data-theme attribute on document.documentElement (CSS uses this)
  *   - Persists changes immediately to localStorage
  *
@@ -7006,7 +7006,7 @@ const CH5_LESSONS = [
   },
 ]
 
-const CH5_PROGRESS_KEY = 'tenali-chapter5-progress'
+const CH5_PROGRESS_KEY = 'pramana-chapter5-progress'
 function ch5_loadProgress() {
   try { return JSON.parse(localStorage.getItem(CH5_PROGRESS_KEY) || '{}') || {} } catch { return {} }
 }
@@ -7101,7 +7101,7 @@ const CH5_AUTO_ADVANCE_MS = 5000
  *  Lesson 3:  L2 → B6(Multiply) → B7(MixedConvert) → B8(MixedMultiply) → L3
  * ===================================================================== */
 
-const BRIDGE_PROGRESS_KEY = 'tenali-bridge-progress-v1'
+const BRIDGE_PROGRESS_KEY = 'pramana-bridge-progress-v1'
 const BRIDGE_QUESTIONS_PER_SESSION = 8
 const BRIDGE_PASS_RATIO = 0.75
 const BRIDGE_AUTO_ADVANCE_MS = CH5_AUTO_ADVANCE_MS
@@ -7508,7 +7508,7 @@ function generateBridge8Question() {
 // Helper: read whether a Chapter 5 lesson has been completed.
 function ch5LessonDone(lessonId) {
   try {
-    const raw = localStorage.getItem('tenali-chapter5-progress')
+    const raw = localStorage.getItem('pramana-chapter5-progress')
     const p = raw ? JSON.parse(raw) : {}
     return !!(p && p[lessonId] && p[lessonId].completed)
   } catch (_e) { return false }
@@ -9998,7 +9998,7 @@ function Chapter5App({ onBack }) {
  *  Mounted at /chapter6. Same UX as Chapter5App: ordered chain of lessons,
  *  every one unlocked from the start, slider to jump questions, MCQ with
  *  1-9 keys + fill-in fallbacks, 5s auto-advance, completed lessons go
- *  green. See Tenali/skills/igcse-chapter/SKILL.md for the full pattern.
+ *  green. See Pramana/skills/igcse-chapter/SKILL.md for the full pattern.
  * ===================================================================== */
 
 const CH6_OPTION_LABEL = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
@@ -10515,7 +10515,7 @@ const CH6_LESSONS = [
   },
 ]
 
-const CH6_PROGRESS_KEY = 'tenali-chapter6-progress'
+const CH6_PROGRESS_KEY = 'pramana-chapter6-progress'
 function ch6_loadProgress() { try { return JSON.parse(localStorage.getItem(CH6_PROGRESS_KEY) || '{}') || {} } catch { return {} } }
 function ch6_saveProgress(p) { try { localStorage.setItem(CH6_PROGRESS_KEY, JSON.stringify(p)) } catch { } }
 
@@ -11030,7 +11030,7 @@ function Chapter6App({ onBack }) {
  *  chain of lessons, every one unlocked from the start, slider to jump
  *  questions, MCQ with 1-9 keys + fill-in fallbacks, 5s auto-advance,
  *  completed lessons go green, wrong answers re-queued after a gap.
- *  See Tenali/skills/igcse-chapter/SKILL.md for the full pattern.
+ *  See Pramana/skills/igcse-chapter/SKILL.md for the full pattern.
  * ===================================================================== */
 
 const CH7_OPTION_LABEL = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
@@ -12186,7 +12186,7 @@ const CH7_LESSONS = [
   },
 ]
 
-const CH7_PROGRESS_KEY = 'tenali-chapter7-progress'
+const CH7_PROGRESS_KEY = 'pramana-chapter7-progress'
 function ch7_loadProgress() {
   try { return JSON.parse(localStorage.getItem(CH7_PROGRESS_KEY) || '{}') || {} } catch { return {} }
 }
@@ -12706,7 +12706,7 @@ function Chapter7App({ onBack }) {
  *  ordered chain of lessons, every one unlocked from the start, slider to
  *  jump questions, MCQ with 1-9 keys + fill-in fallbacks, 5s auto-advance,
  *  completed lessons go green, wrong answers re-queued after a gap.
- *  See Tenali/skills/igcse-chapter/SKILL.md for the full pattern.
+ *  See Pramana/skills/igcse-chapter/SKILL.md for the full pattern.
  * ===================================================================== */
 
 const CH8_OPTION_LABEL = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
@@ -13686,7 +13686,7 @@ const CH8_LESSONS = [
   },
 ]
 
-const CH8_PROGRESS_KEY = 'tenali-chapter8-progress'
+const CH8_PROGRESS_KEY = 'pramana-chapter8-progress'
 function ch8_loadProgress() {
   try { return JSON.parse(localStorage.getItem(CH8_PROGRESS_KEY) || '{}') || {} } catch { return {} }
 }
@@ -14206,7 +14206,7 @@ function Chapter8App({ onBack }) {
  *  chain of lessons, every one unlocked from the start, slider to jump
  *  questions, MCQ with 1-9 keys + fill-in fallbacks, 5s auto-advance,
  *  completed lessons go green (with readable text), wrong answers
- *  appended to END of playList. See Tenali/skills/igcse-chapter/SKILL.md
+ *  appended to END of playList. See Pramana/skills/igcse-chapter/SKILL.md
  *  for the full pattern.
  * ===================================================================== */
 
@@ -15376,7 +15376,7 @@ const CH9_LESSONS = [
   },
 ]
 
-const CH9_PROGRESS_KEY = 'tenali-chapter9-progress'
+const CH9_PROGRESS_KEY = 'pramana-chapter9-progress'
 function ch9_loadProgress() {
   try { return JSON.parse(localStorage.getItem(CH9_PROGRESS_KEY) || '{}') || {} } catch { return {} }
 }
@@ -15892,7 +15892,7 @@ function Chapter9App({ onBack }) {
  *  chain of lessons, every one unlocked from the start, slider to jump
  *  questions, MCQ with 1-9 keys + fill-in fallbacks, 5s auto-advance,
  *  completed lessons go green (with readable text), wrong answers
- *  appended to END of playList. See Tenali/skills/igcse-chapter/SKILL.md
+ *  appended to END of playList. See Pramana/skills/igcse-chapter/SKILL.md
  *  for the full pattern.
  * ===================================================================== */
 
@@ -17064,7 +17064,7 @@ const CH10_LESSONS = [
   },
 ]
 
-const CH10_PROGRESS_KEY = 'tenali-chapter10-progress'
+const CH10_PROGRESS_KEY = 'pramana-chapter10-progress'
 function ch10_loadProgress() {
   try { return JSON.parse(localStorage.getItem(CH10_PROGRESS_KEY) || '{}') || {} } catch { return {} }
 }
@@ -17580,7 +17580,7 @@ function Chapter10App({ onBack }) {
  *  chain of lessons, every one unlocked from the start, slider to jump
  *  questions, MCQ with 1-9 keys + fill-in fallbacks, 5s auto-advance,
  *  completed lessons go green (with readable text), wrong answers
- *  appended to END of playList. See Tenali/skills/igcse-chapter/SKILL.md
+ *  appended to END of playList. See Pramana/skills/igcse-chapter/SKILL.md
  *  for the full pattern.
  * ===================================================================== */
 
@@ -18611,7 +18611,7 @@ const CH11_LESSONS = [
   },
 ]
 
-const CH11_PROGRESS_KEY = 'tenali-chapter11-progress'
+const CH11_PROGRESS_KEY = 'pramana-chapter11-progress'
 function ch11_loadProgress() {
   try { return JSON.parse(localStorage.getItem(CH11_PROGRESS_KEY) || '{}') || {} } catch { return {} }
 }
@@ -19127,7 +19127,7 @@ function Chapter11App({ onBack }) {
  *  chain of lessons, every one unlocked from the start, slider to jump
  *  questions, MCQ with 1-9 keys + fill-in fallbacks, 5s auto-advance,
  *  completed lessons go green (with readable text), wrong answers
- *  appended to END of playList. See Tenali/skills/igcse-chapter/SKILL.md
+ *  appended to END of playList. See Pramana/skills/igcse-chapter/SKILL.md
  *  for the full pattern.
  * ===================================================================== */
 
@@ -20164,7 +20164,7 @@ const CH12_LESSONS = [
   },
 ]
 
-const CH12_PROGRESS_KEY = 'tenali-chapter12-progress'
+const CH12_PROGRESS_KEY = 'pramana-chapter12-progress'
 function ch12_loadProgress() {
   try { return JSON.parse(localStorage.getItem(CH12_PROGRESS_KEY) || '{}') || {} } catch { return {} }
 }
@@ -20680,7 +20680,7 @@ function Chapter12App({ onBack }) {
  *  chain of lessons, every one unlocked from the start, slider to jump
  *  questions, MCQ with 1-9 keys + fill-in fallbacks, 5s auto-advance,
  *  completed lessons go green (with readable text), wrong answers
- *  appended to END of playList. See Tenali/skills/igcse-chapter/SKILL.md
+ *  appended to END of playList. See Pramana/skills/igcse-chapter/SKILL.md
  *  for the full pattern.
  * ===================================================================== */
 
@@ -21552,7 +21552,7 @@ const CH13_LESSONS = [
   },
 ]
 
-const CH13_PROGRESS_KEY = 'tenali-chapter13-progress'
+const CH13_PROGRESS_KEY = 'pramana-chapter13-progress'
 function ch13_loadProgress() {
   try { return JSON.parse(localStorage.getItem(CH13_PROGRESS_KEY) || '{}') || {} } catch { return {} }
 }
@@ -22068,7 +22068,7 @@ function Chapter13App({ onBack }) {
  *  chain of lessons, every one unlocked from the start, slider to jump
  *  questions, MCQ with 1-9 keys + fill-in fallbacks, 5s auto-advance,
  *  completed lessons go green (with readable text), wrong answers
- *  appended to END of playList. See Tenali/skills/igcse-chapter/SKILL.md
+ *  appended to END of playList. See Pramana/skills/igcse-chapter/SKILL.md
  *  for the full pattern.
  * ===================================================================== */
 
@@ -23089,7 +23089,7 @@ const CH14_LESSONS = [
   },
 ]
 
-const CH14_PROGRESS_KEY = 'tenali-chapter14-progress'
+const CH14_PROGRESS_KEY = 'pramana-chapter14-progress'
 function ch14_loadProgress() {
   try { return JSON.parse(localStorage.getItem(CH14_PROGRESS_KEY) || '{}') || {} } catch { return {} }
 }
@@ -23605,7 +23605,7 @@ function Chapter14App({ onBack }) {
  *  chain of lessons, every one unlocked from the start, slider to jump
  *  questions, MCQ with 1-9 keys + fill-in fallbacks, 5s auto-advance,
  *  completed lessons go green (with readable text), wrong answers
- *  appended to END of playList. See Tenali/skills/igcse-chapter/SKILL.md
+ *  appended to END of playList. See Pramana/skills/igcse-chapter/SKILL.md
  *  for the full pattern.
  * ===================================================================== */
 
@@ -24757,7 +24757,7 @@ const CH15_LESSONS = [
   },
 ]
 
-const CH15_PROGRESS_KEY = 'tenali-chapter15-progress'
+const CH15_PROGRESS_KEY = 'pramana-chapter15-progress'
 function ch15_loadProgress() {
   try { return JSON.parse(localStorage.getItem(CH15_PROGRESS_KEY) || '{}') || {} } catch { return {} }
 }
@@ -25273,7 +25273,7 @@ function Chapter15App({ onBack }) {
  *  chain of lessons, every one unlocked from the start, slider to jump
  *  questions, MCQ with 1-9 keys + fill-in fallbacks, 5s auto-advance,
  *  completed lessons go green (with readable text), wrong answers
- *  appended to END of playList. See Tenali/skills/igcse-chapter/SKILL.md
+ *  appended to END of playList. See Pramana/skills/igcse-chapter/SKILL.md
  *  for the full pattern.
  * ===================================================================== */
 
@@ -25897,7 +25897,7 @@ const CH16_LESSONS = [
   },
 ]
 
-const CH16_PROGRESS_KEY = 'tenali-chapter16-progress'
+const CH16_PROGRESS_KEY = 'pramana-chapter16-progress'
 function ch16_loadProgress() {
   try { return JSON.parse(localStorage.getItem(CH16_PROGRESS_KEY) || '{}') || {} } catch { return {} }
 }
@@ -26413,7 +26413,7 @@ function Chapter16App({ onBack }) {
  *  chain of lessons, every one unlocked from the start, slider to jump
  *  questions, MCQ with 1-9 keys + fill-in fallbacks, 5s auto-advance,
  *  completed lessons go green (with readable text), wrong answers
- *  appended to END of playList. See Tenali/skills/igcse-chapter/SKILL.md
+ *  appended to END of playList. See Pramana/skills/igcse-chapter/SKILL.md
  *  for the full pattern.
  * ===================================================================== */
 
@@ -27290,7 +27290,7 @@ const CH17_LESSONS = [
   },
 ]
 
-const CH17_PROGRESS_KEY = 'tenali-chapter17-progress'
+const CH17_PROGRESS_KEY = 'pramana-chapter17-progress'
 function ch17_loadProgress() {
   try { return JSON.parse(localStorage.getItem(CH17_PROGRESS_KEY) || '{}') || {} } catch { return {} }
 }
@@ -27806,7 +27806,7 @@ function Chapter17App({ onBack }) {
  *  chain of lessons, every one unlocked from the start, slider to jump
  *  questions, MCQ with 1-9 keys + fill-in fallbacks, 5s auto-advance,
  *  completed lessons go green (with readable text), wrong answers
- *  appended to END of playList. See Tenali/skills/igcse-chapter/SKILL.md
+ *  appended to END of playList. See Pramana/skills/igcse-chapter/SKILL.md
  *  for the full pattern.
  * ===================================================================== */
 
@@ -28949,7 +28949,7 @@ const CH18_LESSONS = [
   },
 ]
 
-const CH18_PROGRESS_KEY = 'tenali-chapter18-progress'
+const CH18_PROGRESS_KEY = 'pramana-chapter18-progress'
 function ch18_loadProgress() {
   try { return JSON.parse(localStorage.getItem(CH18_PROGRESS_KEY) || '{}') || {} } catch { return {} }
 }
@@ -29465,7 +29465,7 @@ function Chapter18App({ onBack }) {
  *  chain of lessons, every one unlocked from the start, slider to jump
  *  questions, MCQ with 1-9 keys + fill-in fallbacks, 5s auto-advance,
  *  completed lessons go green (with readable text), wrong answers
- *  appended to END of playList. See Tenali/skills/igcse-chapter/SKILL.md
+ *  appended to END of playList. See Pramana/skills/igcse-chapter/SKILL.md
  *  for the full pattern.
  * ===================================================================== */
 
@@ -30346,7 +30346,7 @@ const CH19_LESSONS = [
   },
 ]
 
-const CH19_PROGRESS_KEY = 'tenali-chapter19-progress'
+const CH19_PROGRESS_KEY = 'pramana-chapter19-progress'
 function ch19_loadProgress() {
   try { return JSON.parse(localStorage.getItem(CH19_PROGRESS_KEY) || '{}') || {} } catch { return {} }
 }
@@ -30862,7 +30862,7 @@ function Chapter19App({ onBack }) {
  *  chain of lessons, every one unlocked from the start, slider to jump
  *  questions, MCQ with 1-9 keys + fill-in fallbacks, 5s auto-advance,
  *  completed lessons go green (with readable text), wrong answers
- *  appended to END of playList. See Tenali/skills/igcse-chapter/SKILL.md
+ *  appended to END of playList. See Pramana/skills/igcse-chapter/SKILL.md
  *  for the full pattern.
  * ===================================================================== */
 
@@ -31610,7 +31610,7 @@ const CH20_LESSONS = [
   },
 ]
 
-const CH20_PROGRESS_KEY = 'tenali-chapter20-progress'
+const CH20_PROGRESS_KEY = 'pramana-chapter20-progress'
 function ch20_loadProgress() {
   try { return JSON.parse(localStorage.getItem(CH20_PROGRESS_KEY) || '{}') || {} } catch { return {} }
 }
@@ -32126,7 +32126,7 @@ function Chapter20App({ onBack }) {
  *  chain of lessons, every one unlocked from the start, slider to jump
  *  questions, MCQ with 1-9 keys + fill-in fallbacks, 5s auto-advance,
  *  completed lessons go green (with readable text), wrong answers
- *  appended to END of playList. See Tenali/skills/igcse-chapter/SKILL.md
+ *  appended to END of playList. See Pramana/skills/igcse-chapter/SKILL.md
  *  for the full pattern.
  * ===================================================================== */
 
@@ -33137,7 +33137,7 @@ const CH21_LESSONS = [
   },
 ]
 
-const CH21_PROGRESS_KEY = 'tenali-chapter21-progress'
+const CH21_PROGRESS_KEY = 'pramana-chapter21-progress'
 function ch21_loadProgress() {
   try { return JSON.parse(localStorage.getItem(CH21_PROGRESS_KEY) || '{}') || {} } catch { return {} }
 }
@@ -33653,7 +33653,7 @@ function Chapter21App({ onBack }) {
  *  chain of lessons, every one unlocked from the start, slider to jump
  *  questions, MCQ with 1-9 keys + fill-in fallbacks, 5s auto-advance,
  *  completed lessons go green (with readable text), wrong answers
- *  appended to END of playList. See Tenali/skills/igcse-chapter/SKILL.md
+ *  appended to END of playList. See Pramana/skills/igcse-chapter/SKILL.md
  *  for the full pattern.
  *
  *  Sections covered: 22.1 Setting up equations to solve problems;
@@ -34495,7 +34495,7 @@ const CH22_LESSONS = [
   },
 ]
 
-const CH22_PROGRESS_KEY = 'tenali-chapter22-progress'
+const CH22_PROGRESS_KEY = 'pramana-chapter22-progress'
 function ch22_loadProgress() {
   try { return JSON.parse(localStorage.getItem(CH22_PROGRESS_KEY) || '{}') || {} } catch { return {} }
 }
@@ -35009,7 +35009,7 @@ function Chapter22App({ onBack }) {
  *  chain of lessons, every one unlocked from the start, slider to jump
  *  questions, MCQ with 1-9 keys + fill-in fallbacks, 5s auto-advance,
  *  completed lessons go green (with readable text), wrong answers
- *  appended to END of playList. See Tenali/skills/igcse-chapter/SKILL.md
+ *  appended to END of playList. See Pramana/skills/igcse-chapter/SKILL.md
  *  for the full pattern.
  *
  *  Sections covered: 23.1 simple plane transformations (reflection,
@@ -35934,7 +35934,7 @@ const CH23_LESSONS = [
   },
 ]
 
-const CH23_PROGRESS_KEY = 'tenali-chapter23-progress'
+const CH23_PROGRESS_KEY = 'pramana-chapter23-progress'
 function ch23_loadProgress() {
   try { return JSON.parse(localStorage.getItem(CH23_PROGRESS_KEY) || '{}') || {} } catch { return {} }
 }
@@ -36488,7 +36488,7 @@ function Chapter23App({ onBack }) {
  *  chain of lessons, every one unlocked from the start, slider to jump
  *  questions, MCQ with 1-9 keys + fill-in fallbacks, 5s auto-advance,
  *  completed lessons go green (with readable text), wrong answers
- *  appended to END of playList. See Tenali/skills/igcse-chapter/SKILL.md
+ *  appended to END of playList. See Pramana/skills/igcse-chapter/SKILL.md
  *  for the full pattern.
  *
  *  Sections covered: 24.1 sample spaces & tree diagrams; 24.2 calculating
@@ -37400,7 +37400,7 @@ const CH24_LESSONS = [
   },
 ]
 
-const CH24_PROGRESS_KEY = 'tenali-chapter24-progress'
+const CH24_PROGRESS_KEY = 'pramana-chapter24-progress'
 function ch24_loadProgress() {
   try { return JSON.parse(localStorage.getItem(CH24_PROGRESS_KEY) || '{}') || {} } catch { return {} }
 }
@@ -37921,7 +37921,7 @@ function Chapter24App({ onBack }) {
  *  lessons, every one unlocked from the start, slider to jump questions,
  *  MCQ with 1-9 keys + fill-in fallbacks, 5s auto-advance, completed
  *  lessons go green, wrong answers appended to END of playList.
- *  See Tenali/skills/igcse-chapter/SKILL.md for the full pattern.
+ *  See Pramana/skills/igcse-chapter/SKILL.md for the full pattern.
  *
  *  Number families (natural, integer, rational, irrational); multiples & factors; primes and prime factorisation; HCF & LCM; powers and roots; directed numbers; order of operations (BIDMAS); rounding to whole numbers / decimal places / significant figures; estimation. See uploads PDF p. 14-47 (book ch. 1).
  * ===================================================================== */
@@ -38260,7 +38260,7 @@ const CH1_LESSONS = [
   },
 ]
 
-const CH1_PROGRESS_KEY = 'tenali-chapter1-progress'
+const CH1_PROGRESS_KEY = 'pramana-chapter1-progress'
 function ch1_loadProgress() {
   try { return JSON.parse(localStorage.getItem(CH1_PROGRESS_KEY) || '{}') || {} } catch { return {} }
 }
@@ -38768,7 +38768,7 @@ function Chapter1App({ onBack }) {
  *  lessons, every one unlocked from the start, slider to jump questions,
  *  MCQ with 1-9 keys + fill-in fallbacks, 5s auto-advance, completed
  *  lessons go green, wrong answers appended to END of playList.
- *  See Tenali/skills/igcse-chapter/SKILL.md for the full pattern.
+ *  See Pramana/skills/igcse-chapter/SKILL.md for the full pattern.
  *
  *  Letters as numbers, substitution, simplifying expressions, multiplying terms, expanding brackets, index notation, laws of indices (multiplication, division, power-of-a-power, zero/negative indices). See uploads PDF p. 48-82 (book ch. 2).
  * ===================================================================== */
@@ -39081,7 +39081,7 @@ const CH2_LESSONS = [
   },
 ]
 
-const CH2_PROGRESS_KEY = 'tenali-chapter2-progress'
+const CH2_PROGRESS_KEY = 'pramana-chapter2-progress'
 function ch2_loadProgress() {
   try { return JSON.parse(localStorage.getItem(CH2_PROGRESS_KEY) || '{}') || {} } catch { return {} }
 }
@@ -39589,7 +39589,7 @@ function Chapter2App({ onBack }) {
  *  lessons, every one unlocked from the start, slider to jump questions,
  *  MCQ with 1-9 keys + fill-in fallbacks, 5s auto-advance, completed
  *  lessons go green, wrong answers appended to END of playList.
- *  See Tenali/skills/igcse-chapter/SKILL.md for the full pattern.
+ *  See Pramana/skills/igcse-chapter/SKILL.md for the full pattern.
  *
  *  Naming and measuring angles; angles on a line, around a point, vertically opposite; parallel lines and transversal angle pairs; triangles (types and angle sum); quadrilaterals; polygon interior/exterior angle sums; circle parts. See uploads PDF p. 83-116 (book ch. 3).
  * ===================================================================== */
@@ -39877,7 +39877,7 @@ const CH3_LESSONS = [
   },
 ]
 
-const CH3_PROGRESS_KEY = 'tenali-chapter3-progress'
+const CH3_PROGRESS_KEY = 'pramana-chapter3-progress'
 function ch3_loadProgress() {
   try { return JSON.parse(localStorage.getItem(CH3_PROGRESS_KEY) || '{}') || {} } catch { return {} }
 }
@@ -40385,7 +40385,7 @@ function Chapter3App({ onBack }) {
  *  lessons, every one unlocked from the start, slider to jump questions,
  *  MCQ with 1-9 keys + fill-in fallbacks, 5s auto-advance, completed
  *  lessons go green, wrong answers appended to END of playList.
- *  See Tenali/skills/igcse-chapter/SKILL.md for the full pattern.
+ *  See Pramana/skills/igcse-chapter/SKILL.md for the full pattern.
  *
  *  Types of data (categorical, discrete, continuous); collecting data with tally charts and frequency tables; bar charts; pictograms; pie charts; line graphs; stem-and-leaf diagrams; misleading graphs. See uploads PDF p. 117-154 (book ch. 4).
  * ===================================================================== */
@@ -40671,7 +40671,7 @@ const CH4_LESSONS = [
   },
 ]
 
-const CH4_PROGRESS_KEY = 'tenali-chapter4-progress'
+const CH4_PROGRESS_KEY = 'pramana-chapter4-progress'
 function ch4_loadProgress() {
   try { return JSON.parse(localStorage.getItem(CH4_PROGRESS_KEY) || '{}') || {} } catch { return {} }
 }
@@ -42246,7 +42246,7 @@ function App() {
     if (previousModeRef.current && !mode) {
       if (sessionMonstersRef.current.size > 0) {
         const monsterIds = Array.from(sessionMonstersRef.current)
-        window.dispatchEvent(new CustomEvent('tenali:sessionSummary', {
+        window.dispatchEvent(new CustomEvent('pramana:sessionSummary', {
           detail: { monsterIds }
         }))
       }
@@ -42277,8 +42277,8 @@ function App() {
         setActiveInterruption(null)
       }, 2500)
     }
-    window.addEventListener('tenali:wrongAnswer', handle)
-    return () => window.removeEventListener('tenali:wrongAnswer', handle)
+    window.addEventListener('pramana:wrongAnswer', handle)
+    return () => window.removeEventListener('pramana:wrongAnswer', handle)
   }, [])
 
   // Keep monsterLog in sync with localStorage. The fetchInterceptor's
@@ -42288,7 +42288,7 @@ function App() {
   // a window event.
   useEffect(() => {
     function onStorage(e) {
-      if (e && e.key === 'tenali.monsterLog.v1') {
+      if (e && e.key === 'pramana.monsterLog.v1') {
         try { setMonsterLog(loadMonsterLog()) } catch { }
       }
     }
@@ -42299,12 +42299,12 @@ function App() {
       setHallOpen(true)
     }
     window.addEventListener('storage', onStorage)
-    window.addEventListener('tenali:monsterLogChanged', onMonsterLogChanged)
-    window.addEventListener('tenali:openHall', onOpenHall)
+    window.addEventListener('pramana:monsterLogChanged', onMonsterLogChanged)
+    window.addEventListener('pramana:openHall', onOpenHall)
     return () => {
       window.removeEventListener('storage', onStorage)
-      window.removeEventListener('tenali:monsterLogChanged', onMonsterLogChanged)
-      window.removeEventListener('tenali:openHall', onOpenHall)
+      window.removeEventListener('pramana:monsterLogChanged', onMonsterLogChanged)
+      window.removeEventListener('pramana:openHall', onOpenHall)
     }
   }, [])
 
@@ -42360,19 +42360,19 @@ function App() {
 
   const { user } = useAuth()
   const [completedTopics, setCompletedTopics] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('tenali-completed-topics') || '[]') } catch { return [] }
+    try { return JSON.parse(localStorage.getItem('pramana-completed-topics') || '[]') } catch { return [] }
   })
   const [goldMastery, setGoldMastery] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('tenali-gold-mastery') || '[]') } catch { return [] }
+    try { return JSON.parse(localStorage.getItem('pramana-gold-mastery') || '[]') } catch { return [] }
   })
   const [coins, setCoins] = useState(() => {
-    try { return parseInt(localStorage.getItem('tenali-coins') || '0', 10) } catch { return 0 }
+    try { return parseInt(localStorage.getItem('pramana-coins') || '0', 10) } catch { return 0 }
   })
   const [totalSolved, setTotalSolved] = useState(() => {
-    try { return parseInt(localStorage.getItem('tenali-total-solved') || '0', 10) } catch { return 0 }
+    try { return parseInt(localStorage.getItem('pramana-total-solved') || '0', 10) } catch { return 0 }
   })
   const [streak, setStreak] = useState(() => {
-    try { return parseInt(localStorage.getItem('tenali-streak') || '0', 10) } catch { return 0 }
+    try { return parseInt(localStorage.getItem('pramana-streak') || '0', 10) } catch { return 0 }
   })
   const [celebrationQueue, setCelebrationQueue] = useState([])
   const [transferTopic, setTransferTopic] = useState(null)
@@ -42400,12 +42400,12 @@ function App() {
   const [journeyContext, setJourneyContext] = useState(null)
   const [activeTopicId, setActiveTopicId] = useState('arithmetic_basics')
   const [progressData, setProgressData] = useState(null)
-  const [showTour, setShowTour] = useState(() => localStorage.getItem('tenali_tour_seen') !== 'true')
+  const [showTour, setShowTour] = useState(() => localStorage.getItem('pramana_tour_seen') !== 'true')
 
   // Sync progress with backend on mount & whenever user changes
   useEffect(() => {
     const fetchProgress = async () => {
-      const token = localStorage.getItem('tenali-auth-token')
+      const token = localStorage.getItem('pramana-auth-token')
       if (!token) return
       try {
         const r = await fetch(`${API}/api/progress`, {
@@ -42419,11 +42419,11 @@ function App() {
             setCoins(data.coins || 0)
             setTotalSolved(data.totalSolved || 0)
             setStreak(data.streak || 0)
-            localStorage.setItem('tenali-completed-topics', JSON.stringify(data.completedTopics || []))
-            localStorage.setItem('tenali-gold-mastery', JSON.stringify(data.goldMastery || []))
-            localStorage.setItem('tenali-coins', String(data.coins || 0))
-            localStorage.setItem('tenali-total-solved', String(data.totalSolved || 0))
-            localStorage.setItem('tenali-streak', String(data.streak || 0))
+            localStorage.setItem('pramana-completed-topics', JSON.stringify(data.completedTopics || []))
+            localStorage.setItem('pramana-gold-mastery', JSON.stringify(data.goldMastery || []))
+            localStorage.setItem('pramana-coins', String(data.coins || 0))
+            localStorage.setItem('pramana-total-solved', String(data.totalSolved || 0))
+            localStorage.setItem('pramana-streak', String(data.streak || 0))
 
             if (data.newlyCompleted && data.newlyCompleted.length > 0) {
               const serverEnqueues = [];
@@ -42462,8 +42462,8 @@ function App() {
     fetchProgress()
 
     const handleAuthChange = () => fetchProgress()
-    window.addEventListener('tenali-auth-change', handleAuthChange)
-    return () => window.removeEventListener('tenali-auth-change', handleAuthChange)
+    window.addEventListener('pramana-auth-change', handleAuthChange)
+    return () => window.removeEventListener('pramana-auth-change', handleAuthChange)
   }, [user])
 
   // Upstream journey progress sync
@@ -42471,7 +42471,7 @@ function App() {
     const fetchJourneyProgress = async () => {
       const API = import.meta.env.VITE_API_BASE_URL || '';
       try {
-        const token = localStorage.getItem('tenali-auth-token');
+        const token = localStorage.getItem('pramana-auth-token');
         if (token) {
           const res = await fetch(`${API}/api/progress`, {
             headers: { 'Authorization': `Bearer ${token}` }
@@ -42488,15 +42488,15 @@ function App() {
 
   const syncProgressToServer = (newCompleted, newGold, newCoins, newSolved, newStreak) => {
     let localCompleted = [];
-    try { localCompleted = JSON.parse(localStorage.getItem('tenali-completed-topics') || '[]') } catch { }
+    try { localCompleted = JSON.parse(localStorage.getItem('pramana-completed-topics') || '[]') } catch { }
     let localGold = [];
-    try { localGold = JSON.parse(localStorage.getItem('tenali-gold-mastery') || '[]') } catch { }
+    try { localGold = JSON.parse(localStorage.getItem('pramana-gold-mastery') || '[]') } catch { }
     let localCoins = 0;
-    try { localCoins = parseInt(localStorage.getItem('tenali-coins') || '0', 10) } catch { }
+    try { localCoins = parseInt(localStorage.getItem('pramana-coins') || '0', 10) } catch { }
     let localSolved = 0;
-    try { localSolved = parseInt(localStorage.getItem('tenali-total-solved') || '0', 10) } catch { }
+    try { localSolved = parseInt(localStorage.getItem('pramana-total-solved') || '0', 10) } catch { }
     let localStreak = 0;
-    try { localStreak = parseInt(localStorage.getItem('tenali-streak') || '0', 10) } catch { }
+    try { localStreak = parseInt(localStorage.getItem('pramana-streak') || '0', 10) } catch { }
 
     const finalCompleted = newCompleted || localCompleted;
     const finalGold = newGold || localGold;
@@ -42589,7 +42589,7 @@ function App() {
 
     if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
     syncTimeoutRef.current = setTimeout(async () => {
-      const token = localStorage.getItem('tenali-auth-token');
+      const token = localStorage.getItem('pramana-auth-token');
       if (!token) return;
       try {
         const response = await fetch(`${API}/api/progress`, {
@@ -42611,11 +42611,11 @@ function App() {
           // Update coins/streak if the server returned updated values
           if (data.coins !== undefined) {
             setCoins(data.coins);
-            localStorage.setItem('tenali-coins', String(data.coins));
+            localStorage.setItem('pramana-coins', String(data.coins));
           }
           if (data.streak !== undefined) {
             setStreak(data.streak);
-            localStorage.setItem('tenali-streak', String(data.streak));
+            localStorage.setItem('pramana-streak', String(data.streak));
           }
           if (data.newlyCompleted && data.newlyCompleted.length > 0) {
             const serverEnqueues = [];
@@ -42678,10 +42678,10 @@ function App() {
   };
 
   useEffect(() => {
-    window.tenaliIncrementSolved = (amount) => {
+    window.pramanaIncrementSolved = (amount) => {
       setTotalSolved(prev => {
         const next = prev + amount;
-        localStorage.setItem('tenali-total-solved', String(next));
+        localStorage.setItem('pramana-total-solved', String(next));
 
         let nextCompleted = completedTopics;
         if (amount > 0 && mode && mode !== 'gk' && mode !== 'vocab' && mode !== 'randommix' && mode !== 'custom' && mode !== 'gym') {
@@ -42697,14 +42697,14 @@ function App() {
       });
     };
     return () => {
-      delete window.tenaliIncrementSolved;
+      delete window.pramanaIncrementSolved;
     };
   }, [completedTopics, goldMastery, coins, totalSolved, mode]);
 
 
   // Sync current mode to window global for QuizLayoutExtension
   useEffect(() => {
-    window.currentTenaliMode = mode;
+    window.currentPramanaMode = mode;
   }, [mode])
 
   // Custom event listener to change modes
@@ -42714,21 +42714,21 @@ function App() {
         setMode(e.detail);
       }
     };
-    window.addEventListener('tenali-change-mode', handleModeChange);
-    return () => window.removeEventListener('tenali-change-mode', handleModeChange);
+    window.addEventListener('pramana-change-mode', handleModeChange);
+    return () => window.removeEventListener('pramana-change-mode', handleModeChange);
   }, []);
 
   // Listen for navigation events from AuthMenu
   useEffect(() => {
     const onNav = (e) => { setMode(e.detail.mode) }
-    window.addEventListener('tenali-navigate', onNav)
-    return () => window.removeEventListener('tenali-navigate', onNav)
+    window.addEventListener('pramana-navigate', onNav)
+    return () => window.removeEventListener('pramana-navigate', onNav)
   }, [])
 
   // Current theme: 'dark' or 'light'
   // Initialized from localStorage with fallback to 'dark'
   const [theme, setTheme] = useState(() => {
-    try { return localStorage.getItem('tenali-theme') || 'dark' } catch { return 'dark' }
+    try { return localStorage.getItem('pramana-theme') || 'dark' } catch { return 'dark' }
   })
 
   // Sync theme to DOM and localStorage whenever it changes
@@ -42736,7 +42736,7 @@ function App() {
     // Apply theme to document (CSS selectors use [data-theme="dark"] or [data-theme="light"])
     document.documentElement.setAttribute('data-theme', theme)
     // Persist to localStorage for future sessions
-    try { localStorage.setItem('tenali-theme', theme) } catch { }
+    try { localStorage.setItem('pramana-theme', theme) } catch { }
   }, [theme])
 
   /**
@@ -45253,7 +45253,7 @@ function App() {
 
   // ========== ROUTING: PRETTY MODE URLS (#246) ==========
   // Every page path returned near the top of App, so a path still unmatched
-  // here is either a mode (/trig opens Trigonometry) or not a Tenali page at
+  // here is either a mode (/trig opens Trigonometry) or not a Pramana page at
   // all. Links that already carry ?mode= or ?view= keep their existing
   // behaviour. This sits after the last hook in App, so it never changes how
   // many hooks a render calls.
@@ -45375,7 +45375,7 @@ function App() {
           />
         </div>
       )}
-      {mode === null && showTour && <OnboardingTour onFinish={() => { localStorage.setItem('tenali_tour_seen', 'true'); setShowTour(false) }} mode={mode} />}
+      {mode === null && showTour && <OnboardingTour onFinish={() => { localStorage.setItem('pramana_tour_seen', 'true'); setShowTour(false) }} mode={mode} />}
       {mode === null && (
         <button className="guide-toggle" onClick={() => setShowTour(true)} title="Take a Tour">
           🧭 Guide
@@ -45584,7 +45584,7 @@ function Home({ onSelect, onBackToLanding, completedTopics = [], goldMastery = [
           </button>
         )}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginBottom: '4px', paddingTop: (isGoalSelection || onBackToLanding) ? '44px' : '0' }}>
-          <img src="/tenali.png" alt="Pramana Logo" style={{ width: '80px', height: 'auto', flexShrink: 0 }} />
+          <img src="/logo.png" alt="Pramana Logo" style={{ width: '80px', height: 'auto', flexShrink: 0 }} />
           <div>
             <h1 style={{ margin: 0 }}>{isGoalSelection ? 'Goal Practice' : 'Pramana Puzzles & Games'}</h1>
             <p className="subtitle" style={{ margin: 0 }}>
@@ -45615,7 +45615,7 @@ function Home({ onSelect, onBackToLanding, completedTopics = [], goldMastery = [
               borderBottom: '1px solid var(--clr-border)'
             }} onMouseEnter={e => e.target.style.background = 'var(--clr-hover-strong)'}
               onMouseLeave={e => e.target.style.background = 'none'}>
-              <strong style={{ color: 'var(--clr-accent)' }}>ℹ️ About Tenali</strong>
+              <strong style={{ color: 'var(--clr-accent)' }}>ℹ️ About Pramana</strong>
             </button>
             <PmHamburgerItem onOpen={() => { setMenuOpen(false); setPmOpen(true); }} />
             {/* Visual Learning Universe & GeoCraft pinned at top of hamburger menu */}
@@ -45705,7 +45705,7 @@ function Home({ onSelect, onBackToLanding, completedTopics = [], goldMastery = [
               <span style={{ display: 'block', fontSize: '0.78rem', color: 'var(--clr-text-soft)', marginTop: '2px' }}>Fill in the blanks to create new words</span>
             </button>
 
-            <button onClick={() => { setMenuOpen(false); window.dispatchEvent(new CustomEvent('tenali:openHall')) }} style={{
+            <button onClick={() => { setMenuOpen(false); window.dispatchEvent(new CustomEvent('pramana:openHall')) }} style={{
               display: 'block', width: '100%', textAlign: 'left', padding: '10px 16px',
               background: 'none', border: 'none', cursor: 'pointer', color: 'var(--clr-text)',
               fontFamily: 'var(--font-body)', fontSize: '0.95rem', transition: 'background var(--transition)'
@@ -45722,9 +45722,9 @@ function Home({ onSelect, onBackToLanding, completedTopics = [], goldMastery = [
         <>
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 99999 }} onClick={() => setShowAbout(false)} />
           <div className="card" style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 100000, width: '90%', maxWidth: '400px', padding: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.8)' }}>
-            <h2 style={{ color: 'var(--clr-accent)', marginTop: 0 }}>About Tenali</h2>
+            <h2 style={{ color: 'var(--clr-accent)', marginTop: 0 }}>About Pramana</h2>
             <p style={{ lineHeight: 1.6 }}>
-              Tenali is an advanced, adaptive learning platform featuring interactive puzzles in Mathematics, Logic, and General Knowledge.
+              Pramana is an advanced, adaptive learning platform featuring interactive puzzles in Mathematics, Logic, and General Knowledge.
             </p>
             <p style={{ lineHeight: 1.6 }}>
               Your progress is saved dynamically, allowing the platform to automatically adjust the difficulty of every question to match your skill level!
@@ -45892,7 +45892,7 @@ function AchievementCollections({ completedTopics = [], onSelectTopic }) {
   const [loading, setLoading] = useState(true)
 
   const fetchCollections = async () => {
-    const token = localStorage.getItem('tenali-auth-token')
+    const token = localStorage.getItem('pramana-auth-token')
     if (!token) return
     try {
       const r = await fetch(`${API}/api/collections/progress`, {
@@ -46139,7 +46139,7 @@ function ProfileShowcase({ completedTopics = [], onSelectTopic }) {
   }, [dropdownOpen])
 
   const fetchProfileAndBadges = async () => {
-    const token = localStorage.getItem('tenali-auth-token')
+    const token = localStorage.getItem('pramana-auth-token')
     if (!token) return
     try {
       // 1. Fetch Profile Info
@@ -47869,7 +47869,7 @@ function GKApp({ onBack, markTopicCompleted, isGoalMode = false }) {
   // All result objects from this session
   const [results, setResults] = useState([])
   // Persist seen GK question IDs in localStorage to avoid repeats across sessions
-  const GK_SEEN_KEY = 'tenali_gk_seen'
+  const GK_SEEN_KEY = 'pramana_gk_seen'
   const loadGKSeen = () => { try { return JSON.parse(localStorage.getItem(GK_SEEN_KEY) || '[]') } catch { return [] } }
   const saveGKSeen = (ids) => { try { localStorage.setItem(GK_SEEN_KEY, JSON.stringify(ids)) } catch { } }
   const [seenIds, setSeenIds] = useState(loadGKSeen)
@@ -52837,7 +52837,7 @@ const MULT_EXTENSION_STEP = 5         // questions added per extension round
 const MULT_EXTENSION_MAX = 20         // total extra questions allowed across all extensions
 const MULT_FAST_AVG_SECONDS = 4       // avg time per question must be under this to extend
 const MULT_LEVEL3_TIMEOUT_SECONDS = 5 // per-question timeout in rapid fire (Module 36 spec)
-const MULT_STATS_KEY = 'tenali-mult-stats-v1'
+const MULT_STATS_KEY = 'pramana-mult-stats-v1'
 
 /** Load persisted multiplication stats; returns a safe default on first run. */
 function loadMultStats() {
@@ -54098,7 +54098,7 @@ function VocabApp({ onBack, isGoalMode = false }) {
   // Array of {question, userAnswer, correctAnswer, correct, time} result objects
   const [results, setResults] = useState([])
   // Persist seen Vocab question IDs in localStorage to avoid repeats across sessions
-  const VOCAB_SEEN_KEY = 'tenali_vocab_seen'
+  const VOCAB_SEEN_KEY = 'pramana_vocab_seen'
   const loadVocabSeen = () => { try { return JSON.parse(localStorage.getItem(VOCAB_SEEN_KEY) || '[]') } catch { return [] } }
   const saveVocabSeen = (ids) => { try { localStorage.setItem(VOCAB_SEEN_KEY, JSON.stringify(ids)) } catch { } }
   const [seenIds, setSeenIds] = useState(loadVocabSeen)
@@ -54936,7 +54936,7 @@ function TransferChallengeApp({ topicKey, onBack, completedTopics, goldMastery, 
     setLoading(true)
     try {
       const headers = {}
-      const token = localStorage.getItem('tenali-auth-token')
+      const token = localStorage.getItem('pramana-auth-token')
       if (token) {
         headers['Authorization'] = `Bearer ${token}`
       }
@@ -54995,7 +54995,7 @@ function TransferChallengeApp({ topicKey, onBack, completedTopics, goldMastery, 
 
     try {
       const headers = { 'Content-Type': 'application/json' }
-      const token = localStorage.getItem('tenali-auth-token')
+      const token = localStorage.getItem('pramana-auth-token')
       if (token) {
         headers['Authorization'] = `Bearer ${token}`
       }
@@ -56572,7 +56572,7 @@ const GYM_PUZZLE_TYPES = [
   { key: 'polygym', name: 'Polynomials', api: 'polygym-api' },
 ]
 
-const GYM_STATS_KEY = 'tenali-gym-stats-v1'
+const GYM_STATS_KEY = 'pramana-gym-stats-v1'
 // Average time threshold (seconds) above which we start penalising mastery
 // for being slow.
 const GYM_FAST_AVG_S = 6
@@ -66311,14 +66311,14 @@ function IntervalSchedulingApp() {
   const [sorted, setSorted] = useState([])
   // Theme preference: 'dark' or 'light'
   const [theme, setTheme] = useState(() => {
-    try { return localStorage.getItem('tenali-theme') || 'dark' } catch { return 'dark' }
+    try { return localStorage.getItem('pramana-theme') || 'dark' } catch { return 'dark' }
   })
 
   // ─────── Theme Persistence ──────────────────────────────────
   // Sync theme to DOM and localStorage when changed
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
-    try { localStorage.setItem('tenali-theme', theme) } catch { }
+    try { localStorage.setItem('pramana-theme', theme) } catch { }
   }, [theme])
 
   // Toggle between dark and light mode
@@ -66754,14 +66754,14 @@ function ExtendedEuclidApp() {
   const [steps, setSteps] = useState(null)
   // Theme preference: 'dark' or 'light'
   const [theme, setTheme] = useState(() => {
-    try { return localStorage.getItem('tenali-theme') || 'dark' } catch { return 'dark' }
+    try { return localStorage.getItem('pramana-theme') || 'dark' } catch { return 'dark' }
   })
 
   // ─────── Theme Persistence ──────────────────────────────────
   // Sync theme to DOM and localStorage when changed
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
-    try { localStorage.setItem('tenali-theme', theme) } catch { }
+    try { localStorage.setItem('pramana-theme', theme) } catch { }
   }, [theme])
 
   // Toggle between dark and light mode
@@ -70960,15 +70960,15 @@ function MensurationLabApp({ onBack, initialDifficulty, initialNumQuestions, ini
 
 export function getLocalXp() {
   try {
-    const val = localStorage.getItem('tenali_xp');
+    const val = localStorage.getItem('pramana_xp');
     return val ? parseInt(val, 10) : 0;
   } catch { return 0; }
 }
 
 export function setLocalXp(val) {
-  try { localStorage.setItem('tenali_xp', val.toString()); } catch {}
+  try { localStorage.setItem('pramana_xp', val.toString()); } catch {}
   // dispatch event to sync UI if needed
-  window.dispatchEvent(new CustomEvent('tenali_xp_update', { detail: { xp: val } }));
+  window.dispatchEvent(new CustomEvent('pramana_xp_update', { detail: { xp: val } }));
 }
 
 export function changeXp(delta) {

@@ -117,7 +117,7 @@ Required in production:
 | `NODE_ENV` | — | Must be `production`. Triggers JWT fail-fast. |
 | `JWT_SECRET` | dev fallback | **Required.** Server refuses to start in production without it. |
 | `MONGO_URI` | `mongodb://127.0.0.1:27017/pramana` | If unreachable, auth falls back to in-memory. |
-| `TENALI_SEED_USERS` | empty | `user:pass[,user:pass:admin,…]`. One admin required for proctor dashboard. |
+| `PRAMANA_SEED_USERS` | empty | `user:pass[,user:pass:admin,…]`. One admin required for proctor dashboard. |
 | `JWT_TTL` | `14d` | Token lifetime. |
 | `CORS_ORIGINS` | `https://pramana.fun,…` | Comma-separated allowlist. |
 | `SUBPATH_REDIRECT` | `/summership` | Root → sub-path 302. Empty/`/` disables. |

@@ -3,7 +3,7 @@
 // Provides helper functions for the Prerequisite Diagnostic Test (Feature 3)
 // ═══════════════════════════════════════════════════════════════════════════
 
-// ─── NODE DATA — every puzzle topic in Tenali ────────────────────────────
+// ─── NODE DATA — every puzzle topic in Pramana ────────────────────────────
 const nodes = [
   // Arithmetic
   { id: 'basicarith',   label: 'Basic Arithmetic',   cat: 'arith' },

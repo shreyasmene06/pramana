@@ -1,5 +1,5 @@
 /**
- * Math helper utilities for Tenali quiz generation
+ * Math helper utilities for Pramana quiz generation
  */
 
 /**

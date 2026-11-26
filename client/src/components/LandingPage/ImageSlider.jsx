@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Sparkles, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const SLIDES = [
   {
@@ -145,7 +146,10 @@ export default function ImageSlider({ onSelectTopic = () => { } }) {
       aria-label="Platform Feature Showcase"
     >
       <div className="section-header-center">
-        <span className="section-tag">🚀 Platform Showcase</span>
+        <span className="section-tag">
+          <Sparkles size={14} style={{ marginRight: 6 }} />
+          Platform Showcase
+        </span>
         <h2 className="section-title">Engineered for Deep Mathematical Mastery</h2>
         <p className="section-subtitle">
           Explore the breakthrough features that make Pramana more than just another quiz app.
@@ -160,7 +164,7 @@ export default function ImageSlider({ onSelectTopic = () => { } }) {
           onClick={goToPrev}
           aria-label="Previous Slide"
         >
-          ‹
+          <ChevronLeft size={20} />
         </button>
 
         <div className="slider-container">
@@ -201,7 +205,7 @@ export default function ImageSlider({ onSelectTopic = () => { } }) {
                   onClick={() => onSelectTopic(currentSlide.modeKey)}
                 >
                   <span>{currentSlide.modeName}</span>
-                  <span aria-hidden="true">➔</span>
+                  <ArrowRight size={14} style={{ marginLeft: 6 }} />
                 </button>
               </div>
 
@@ -245,7 +249,7 @@ export default function ImageSlider({ onSelectTopic = () => { } }) {
           onClick={goToNext}
           aria-label="Next Slide"
         >
-          ›
+          <ChevronRight size={20} />
         </button>
       </div>
     </section>

@@ -36,7 +36,7 @@ describe('questions', () => {
   });
 
   test('puts a recorded mistake first', () => {
-    localStorage.setItem('tenali.monsterLog.v1', JSON.stringify({
+    localStorage.setItem('pramana.monsterLog.v1', JSON.stringify({
       version: 1,
       log: [{ monsterId: 'bracketeer', topic: 'algebra', question: 'Expand: 7(a + 1)', correctAnswer: '7a + 7', timestamp: 1 }],
     }));
@@ -67,9 +67,9 @@ describe('finishing a run', () => {
 
 describe('rendering and props', () => {
   test('rendering does not write to localStorage', () => {
-    expect(localStorage.getItem('tenali.monsterLog.v1')).toBeNull();
+    expect(localStorage.getItem('pramana.monsterLog.v1')).toBeNull();
     render(<CureFlow monsterId="bracketeer" topic="algebra" />);
-    expect(localStorage.getItem('tenali.monsterLog.v1')).toBeNull();
+    expect(localStorage.getItem('pramana.monsterLog.v1')).toBeNull();
   });
 
   test('a new monsterId swaps in that monster\'s questions', () => {

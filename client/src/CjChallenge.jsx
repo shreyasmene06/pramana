@@ -4,8 +4,8 @@
  * Two things live here, both shown after a stop's mastery check is passed:
  *
  * 1. CJ_HANDOFF + <CjLicense> — the "Road License": tells the student the exact
- *    Tenali difficulty they have EARNED on this stop's topic(s), with one tap to
- *    open the matching Tenali card. Levels are calibrated per stop (a stop's
+ *    Pramana difficulty they have EARNED on this stop's topic(s), with one tap to
+ *    open the matching Pramana card. Levels are calibrated per stop (a stop's
  *    band-3 mastery check sits at a specific tier of the host generator, minus
  *    any shapes the stop never taught) — that's why some stops earn Hard and
  *    others only Medium or Easy. The student always chooses; nothing is forced.
@@ -29,8 +29,8 @@ const czRand = (lo, hi, step = 1) => lo + step * Math.floor(Math.random() * ((hi
 const czPick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 /* ─────────────────────────────────────────────────────────────────────────────
- * 1. THE ROAD LICENSE — earned Tenali start level per stop
- * `mode` is the Tenali modeMap key (used for one-tap navigation).
+ * 1. THE ROAD LICENSE — earned Pramana start level per stop
+ * `mode` is the Pramana modeMap key (used for one-tap navigation).
  * ──────────────────────────────────────────────────────────────────────────── */
 const CJ_HANDOFF = {
   addition:    [{ mode: 'addition',    name: 'Addition',             level: '3-digit numbers', diff: 'hard' }],
@@ -438,7 +438,7 @@ const CJ_CHALLENGES = {
  * ──────────────────────────────────────────────────────────────────────────── */
 
 /** The Road License stamp — shown above the challenge set once a stop is passed.
- *  onGo(modeKey) navigates to the Tenali card (App passes setMode to CR). */
+ *  onGo(modeKey) navigates to the Pramana card (App passes setMode to CR). */
 export function CjLicense({ stopKey, onGo }) {
   const grants = CJ_HANDOFF[stopKey];
   if (!grants) return null;
@@ -448,7 +448,7 @@ export function CjLicense({ stopKey, onGo }) {
       {grants.map((g) => (
         <div key={g.mode} className="cj-license-row">
           <span className="cj-license-text">
-            {g.name} — you're cleared to start at <strong>{g.level}</strong> in Tenali
+            {g.name} — you're cleared to start at <strong>{g.level}</strong> in Pramana
           </span>
           {onGo && (
             <button

@@ -53,7 +53,7 @@ export default function GeometryApp({ onBack }) {
   const [currentActivityIndex, setCurrentActivityIndex] = useState(0)
   const [completedActivities, setCompletedActivities] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem('tenali-geometry-completed') || '[]')
+      return JSON.parse(localStorage.getItem('pramana-geometry-completed') || '[]')
     } catch {
       return []
     }
@@ -848,7 +848,7 @@ export default function GeometryApp({ onBack }) {
         const nextCompleted = [...completedActivities, actId]
         setCompletedActivities(nextCompleted)
         try {
-          localStorage.setItem('tenali-geometry-completed', JSON.stringify(nextCompleted))
+          localStorage.setItem('pramana-geometry-completed', JSON.stringify(nextCompleted))
         } catch { /* ignored */ }
       }
     }

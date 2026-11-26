@@ -1,19 +1,19 @@
 /**
- * Auth module — MongoDB-backed login for the Tenali site.
+ * Auth module — MongoDB-backed login for the Pramana site.
  *
  * Exposes:
  *   - connectMongo(uri):       Promise that resolves once Mongo is connected.
- *   - seedUsers():             Seeds users listed in TENALI_SEED_USERS if not present.
+ *   - seedUsers():             Seeds users listed in PRAMANA_SEED_USERS if not present.
  *   - router (Express Router): /api/auth/login  POST {username, password}
  *                              /api/auth/me     GET  (requires Bearer token)
  *   - requireAuth (middleware): blocks if no/invalid Bearer token.
  *
  * Configuration (env):
- *   MONGO_URI         default mongodb://127.0.0.1:27017/tenali
+ *   MONGO_URI         default mongodb://127.0.0.1:27017/pramana
  *   JWT_SECRET        REQUIRED in production (server refuses to start without it);
  *                     dev-only fallback is the public default, used with a warning
  *   JWT_TTL           default '14d'
- *   TENALI_SEED_USERS comma-separated "username:password[:role]" entries to seed
+ *   PRAMANA_SEED_USERS comma-separated "username:password[:role]" entries to seed
  *                     (no default). Use ":admin" on one entry for proctor access.
  */
 
@@ -24,7 +24,7 @@ const jwt = require('jsonwebtoken');
 const logger = require('./lib/logger');
 
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/pramana';
-const DEFAULT_DEV_SECRET = 'tenali-dev-secret-change-me';
+const DEFAULT_DEV_SECRET = 'pramana-dev-secret-change-me';
 const JWT_SECRET = process.env.JWT_SECRET || DEFAULT_DEV_SECRET;
 const JWT_TTL = process.env.JWT_TTL || '14d';
 
@@ -243,13 +243,13 @@ async function connectMongo(uri = MONGO_URI) {
   console.log(`[auth] Mongo connected: ${uri.replace(/\/\/.*@/, '//***@')}`);
 }
 
-// Seed users come from the TENALI_SEED_USERS env var as a comma-separated list of
+// Seed users come from the PRAMANA_SEED_USERS env var as a comma-separated list of
 // "username:password" or "username:password:role" entries (e.g.
 // "alice:pw1,admin:pw2:admin"), so NO credentials — including the admin account —
 // are committed to source. If unset, no users are seeded and existing DB users
 // still log in. The admin entry (role "admin") gates the proctor dashboard, so a
-// deploy that needs proctor access must include one in TENALI_SEED_USERS.
-const ENV_SEED_USERS = (process.env.SOOTRA_SEED_USERS || process.env.TENALI_SEED_USERS || '')
+// deploy that needs proctor access must include one in PRAMANA_SEED_USERS.
+const ENV_SEED_USERS = (process.env.SOOTRA_SEED_USERS || process.env.PRAMANA_SEED_USERS || '')
   .split(',')
   .map((s) => s.trim())
   .filter(Boolean)
@@ -268,9 +268,9 @@ const ENV_SEED_USERS = (process.env.SOOTRA_SEED_USERS || process.env.TENALI_SEED
 const SEED_USERS = [...ENV_SEED_USERS];
 
 if (ENV_SEED_USERS.length === 0) {
-  logger.warn(null, '[auth] No TENALI_SEED_USERS configured — relying only on existing DB users. No admin will be seeded.');
+  logger.warn(null, '[auth] No PRAMANA_SEED_USERS configured — relying only on existing DB users. No admin will be seeded.');
 } else if (!ENV_SEED_USERS.some((u) => u.role === 'admin')) {
-  logger.warn(null, '[auth] No admin entry in TENALI_SEED_USERS — proctor dashboard access will be unavailable until one is added (format "user:pass:admin").');
+  logger.warn(null, '[auth] No admin entry in PRAMANA_SEED_USERS — proctor dashboard access will be unavailable until one is added (format "user:pass:admin").');
 }
 
 // In-memory fallback used when MongoDB is unavailable.

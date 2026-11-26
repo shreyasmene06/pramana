@@ -1,12 +1,12 @@
-# Tenali — Comprehensive Master Specification
+# Pramana — Comprehensive Master Specification
 
-This document is the definitive specification for the Tenali educational platform. It contains every technical detail required to recreate the entire project from scratch, including technology stack, architecture, UI/UX design system, all API endpoints with exact parameters, algorithmic specifications for question generation, and deployment procedures.
+This document is the definitive specification for the Pramana educational platform. It contains every technical detail required to recreate the entire project from scratch, including technology stack, architecture, UI/UX design system, all API endpoints with exact parameters, algorithmic specifications for question generation, and deployment procedures.
 
 ---
 
 ## 1. Overview
 
-**Tenali** is a web-based educational learning platform featuring 56 interactive quiz and puzzle games covering mathematics (primary through secondary/GCSE level), geometry, language arts, and general knowledge, plus a Random Mix cross-topic quiz mode. The platform uses a "supermarket" metaphor: a home screen displays a grid of game cards that users click to enter individual learning experiences.
+**Pramana** is a web-based educational learning platform featuring 56 interactive quiz and puzzle games covering mathematics (primary through secondary/GCSE level), geometry, language arts, and general knowledge, plus a Random Mix cross-topic quiz mode. The platform uses a "supermarket" metaphor: a home screen displays a grid of game cards that users click to enter individual learning experiences.
 
 **Key characteristics:**
 - Real-time per-question timing and adaptive difficulty
@@ -47,7 +47,7 @@ This document is the definitive specification for the Tenali educational platfor
 ## 3. Project Structure (Exact Directory Tree)
 
 ```
-Tenali/
+Pramana/
 ├── client/
 │   ├── index.html                         # HTML shell with font links
 │   ├── vite.config.js                     # Vite config with API proxy
@@ -252,7 +252,7 @@ Applied when `[data-theme="light"]` on `<html>`:
 - Button styling: transparent background, 36×36px, center icon, cursor: pointer, hover opacity 0.7
 
 **Persistence:**
-- localStorage key: `tenali-theme`
+- localStorage key: `pramana-theme`
 - Default: `'dark'`
 - On component mount: `document.documentElement.setAttribute('data-theme', theme)`
 - On toggle: update localStorage and DOM attribute
@@ -291,7 +291,7 @@ return <Home />
 - **Main card**: max-width 900px, background var(--clr-card), border-radius var(--radius), shadow var(--shadow-card)
 - **Card padding**: 48px 40px on desktop; 32px 24px on mobile (<600px)
 - **Content order**:
-  1. Title ("Tenali")
+  1. Title ("Pramana")
   2. Subtitle ("Choose a learning game to begin")
   3. Search bar
   4. Grid of app cards
@@ -1088,7 +1088,7 @@ export default defineConfig({
 ```yaml
 services:
   - type: web
-    name: tenali
+    name: pramana
     env: node
     region: oregon
     plan: free
@@ -1175,18 +1175,18 @@ The frontend uses browser localStorage to persist user preferences:
 
 | Key | Type | Values | Default |
 |-----|------|--------|---------|
-| `tenali-theme` | string | "dark" \| "light" | "dark" |
-| `tenali-tables-{studentName}` | JSON | `{ currentTable: number }` | N/A |
+| `pramana-theme` | string | "dark" \| "light" | "dark" |
+| `pramana-tables-{studentName}` | JSON | `{ currentTable: number }` | N/A |
 
 **Example**:
 ```javascript
 // Theme persistence
-localStorage.setItem('tenali-theme', 'light')
-const theme = localStorage.getItem('tenali-theme') || 'dark'
+localStorage.setItem('pramana-theme', 'light')
+const theme = localStorage.getItem('pramana-theme') || 'dark'
 
 // Adaptive tables state (for student "Taittiriya")
-localStorage.setItem('tenali-tables-Taittiriya', JSON.stringify({ currentTable: 3 }))
-const state = JSON.parse(localStorage.getItem('tenali-tables-Taittiriya') || '{ "currentTable": 1 }')
+localStorage.setItem('pramana-tables-Taittiriya', JSON.stringify({ currentTable: 3 }))
+const state = JSON.parse(localStorage.getItem('pramana-tables-Taittiriya') || '{ "currentTable": 1 }')
 ```
 
 ---
@@ -1198,7 +1198,7 @@ const state = JSON.parse(localStorage.getItem('tenali-tables-Taittiriya') || '{ 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tenali</title>
+  <title>Pramana</title>
 
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -1327,7 +1327,7 @@ There are **7 registration points** for each new puzzle. Most puzzles use the `m
 
 ## 25. Verification Checklist
 
-When implementing Tenali from this specification:
+When implementing Pramana from this specification:
 
 - [ ] Dark theme (default) and light theme colors match exactly
 - [ ] Theme toggle button in fixed top-right position (16px from edge)
@@ -1350,4 +1350,4 @@ When implementing Tenali from this specification:
 
 ## End of Master Specification
 
-This document defines the complete technical blueprint for Tenali. Every component, API endpoint, color value, dimension, algorithm, and behavior is documented here. An implementation team with this document and the 36 individual puzzle SKILL.md files (each containing comprehensive formal specifications with algorithms, API formats, and registration points) should be able to recreate the entire platform from scratch.
+This document defines the complete technical blueprint for Pramana. Every component, API endpoint, color value, dimension, algorithm, and behavior is documented here. An implementation team with this document and the 36 individual puzzle SKILL.md files (each containing comprehensive formal specifications with algorithms, API formats, and registration points) should be able to recreate the entire platform from scratch.

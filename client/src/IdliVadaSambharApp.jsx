@@ -14,7 +14,7 @@
  * is where the round of discovery ends ("Idli Vada" for two numbers,
  * "Idli Vada Sambhar" for three).
  *
- * Pure React 19 + hooks, no backend. Rendered as a Tenali module via the
+ * Pure React 19 + hooks, no backend. Rendered as a Pramana module via the
  * modeMap registry; receives an `onBack` prop to return to the home menu.
  */
 import { useState, useEffect, useRef, useCallback } from 'react';

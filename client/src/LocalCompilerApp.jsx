@@ -99,7 +99,7 @@ const TEMPLATES = {
   },
 }
 
-const SAVE_KEY = 'tenali_localcompiler_snippets'
+const SAVE_KEY = 'pramana_localcompiler_snippets'
 
 function loadSnippets() {
   try { return JSON.parse(localStorage.getItem(SAVE_KEY)) || [] } catch { return [] }

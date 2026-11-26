@@ -1,9 +1,23 @@
 import React, { useState } from 'react';
 import { useAccessibility } from '../../lib/AccessibilityProvider';
+import {
+  Home,
+  LayoutGrid,
+  Layers,
+  Tv,
+  Zap,
+  BookOpen,
+  Sun,
+  Moon,
+  Settings,
+  User,
+  Menu,
+  X,
+} from 'lucide-react';
 
 /**
  * LandingNavbar Component
- * Responsive glassmorphic navigation bar for Tenali.
+ * Responsive glassmorphic navigation bar for Pramana.
  * Provides direct access between the Landing Page and the full Puzzles view,
  * with integrated theme toggle, accessibility settings, and account menu.
  */
@@ -46,7 +60,7 @@ export default function LandingNavbar({
 
   const handleOpenAuth = () => {
     setMobileOpen(false);
-    window.dispatchEvent(new CustomEvent('tenali:openAuth'));
+    window.dispatchEvent(new CustomEvent('pramana:openAuth'));
   };
 
   const handleOpenA11y = () => {
@@ -67,7 +81,7 @@ export default function LandingNavbar({
           aria-label="Pramana Home"
         >
           <img
-            src="/tenali.png"
+            src="/logo.png"
             alt="Pramana Logo"
             className="landing-nav-logo"
             onError={(e) => {
@@ -89,7 +103,8 @@ export default function LandingNavbar({
                 className={`landing-nav-link-btn ${currentView === 'landing' ? 'active' : ''}`}
                 onClick={() => handleNavClick('hero')}
               >
-                🏠 Home
+                <Home size={16} />
+                <span>Home</span>
               </button>
             </li>
             <li>
@@ -98,7 +113,8 @@ export default function LandingNavbar({
                 className={`landing-nav-link-btn ${currentView === 'puzzles' ? 'active' : ''}`}
                 onClick={() => handleNavClick('puzzles')}
               >
-                🧩 All Puzzles
+                <LayoutGrid size={16} />
+                <span>All Puzzles</span>
               </button>
             </li>
             <li>
@@ -107,7 +123,8 @@ export default function LandingNavbar({
                 className="landing-nav-link-btn"
                 onClick={() => handleNavClick('showcase')}
               >
-                🖼️ Showcase
+                <Layers size={16} />
+                <span>Showcase</span>
               </button>
             </li>
             <li>
@@ -116,7 +133,8 @@ export default function LandingNavbar({
                 className="landing-nav-link-btn"
                 onClick={() => handleNavClick('demo')}
               >
-                ▶️ Live Demo
+                <Tv size={16} />
+                <span>Live Demo</span>
               </button>
             </li>
             <li>
@@ -125,7 +143,8 @@ export default function LandingNavbar({
                 className="landing-nav-link-btn"
                 onClick={() => handleNavClick('features')}
               >
-                ⚡ Features
+                <Zap size={16} />
+                <span>Features</span>
               </button>
             </li>
             <li>
@@ -134,7 +153,8 @@ export default function LandingNavbar({
                 className="landing-nav-link-btn"
                 onClick={() => handleNavClick('curriculum')}
               >
-                📚 Curriculum
+                <BookOpen size={16} />
+                <span>Curriculum</span>
               </button>
             </li>
           </ul>
@@ -149,7 +169,7 @@ export default function LandingNavbar({
             title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             aria-label="Toggle Theme"
           >
-            {theme === 'dark' ? '☀️' : '🌙'}
+            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
           </button>
 
           <button
@@ -159,7 +179,7 @@ export default function LandingNavbar({
             title="Accessibility & Language Settings"
             aria-label="Settings"
           >
-            ⚙️
+            <Settings size={18} />
           </button>
 
           <button
@@ -169,7 +189,7 @@ export default function LandingNavbar({
             title="Account & Login"
             aria-label="Account"
           >
-            👤
+            <User size={18} />
           </button>
 
           {/* Mobile hamburger toggle */}
@@ -179,7 +199,7 @@ export default function LandingNavbar({
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle mobile menu"
           >
-            {mobileOpen ? '✕' : '☰'}
+            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
       </div>
@@ -191,42 +211,48 @@ export default function LandingNavbar({
           className="landing-nav-link-btn"
           onClick={() => handleNavClick('hero')}
         >
-          🏠 Home Overview
+          <Home size={16} />
+          <span>Home Overview</span>
         </button>
         <button
           type="button"
           className="landing-nav-link-btn"
           onClick={() => handleNavClick('puzzles')}
         >
-          🧩 All 90+ Puzzles & Games
+          <LayoutGrid size={16} />
+          <span>All 90+ Puzzles & Games</span>
         </button>
         <button
           type="button"
           className="landing-nav-link-btn"
           onClick={() => handleNavClick('showcase')}
         >
-          🖼️ Feature Showcase
+          <Layers size={16} />
+          <span>Feature Showcase</span>
         </button>
         <button
           type="button"
           className="landing-nav-link-btn"
           onClick={() => handleNavClick('demo')}
         >
-          ▶️ Interactive Demo
+          <Tv size={16} />
+          <span>Interactive Demo</span>
         </button>
         <button
           type="button"
           className="landing-nav-link-btn"
           onClick={() => handleNavClick('features')}
         >
-          ⚡ Pedagogy & Features
+          <Zap size={16} />
+          <span>Pedagogy & Features</span>
         </button>
         <button
           type="button"
           className="landing-nav-link-btn"
           onClick={() => handleNavClick('curriculum')}
         >
-          📚 Curriculum Domains
+          <BookOpen size={16} />
+          <span>Curriculum Domains</span>
         </button>
         <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
           <button
@@ -235,7 +261,8 @@ export default function LandingNavbar({
             style={{ flex: 1, justifyContent: 'center' }}
             onClick={handleOpenA11y}
           >
-            ⚙️ Settings
+            <Settings size={16} />
+            <span>Settings</span>
           </button>
           <button
             type="button"
@@ -243,7 +270,8 @@ export default function LandingNavbar({
             style={{ flex: 1, justifyContent: 'center' }}
             onClick={handleOpenAuth}
           >
-            👤 Account
+            <User size={16} />
+            <span>Account</span>
           </button>
         </div>
       </div>

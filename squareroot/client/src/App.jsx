@@ -1,7 +1,7 @@
 /**
  * ARYABHATA SQUARE ROOT DRILL - REACT COMPONENT
  *
- * Main component for the Square Root drill module in the Tenali project.
+ * Main component for the Square Root drill module in the Pramana project.
  * This is a standalone/legacy version that provides continuous square root estimation practice.
  *
  * Features:

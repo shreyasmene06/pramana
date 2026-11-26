@@ -1,7 +1,7 @@
 /**
  * ARYABHATA ADDITION SERVER
  *
- * Standalone Express server for the Addition quiz module in the Tenali project.
+ * Standalone Express server for the Addition quiz module in the Pramana project.
  * This is a legacy/older version of the addition quiz module that runs independently.
  *
  * Architecture:

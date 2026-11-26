@@ -1,7 +1,7 @@
 /**
  * CHITRAGUPTA QUIZ - REACT COMPONENT
  *
- * Main component for the Chitragupta (General Knowledge) quiz module in the Tenali project.
+ * Main component for the Chitragupta (General Knowledge) quiz module in the Pramana project.
  * This is a standalone/legacy version that provides a multiple-choice quiz interface.
  *
  * Features:

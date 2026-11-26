@@ -41,13 +41,13 @@ export default function VoiceAssistant({ onStartTour }) {
   useEffect(() => {
     if (greetingPlayed) return;
     const timer = setTimeout(() => {
-      const hasSeenTour = sessionStorage.getItem('tenali-tour');
+      const hasSeenTour = sessionStorage.getItem('pramana-tour');
       if (!hasSeenTour) {
         setExpanded(true);
         if (onStartTour) onStartTour();
-        sessionStorage.setItem('tenali-tour', 'true');
+        sessionStorage.setItem('pramana-tour', 'true');
       } else {
-        const userStr = localStorage.getItem('tenali-auth-user');
+        const userStr = localStorage.getItem('pramana-auth-user');
         const username = userStr ? JSON.parse(userStr).username : 'Student';
         speak('Welcome back, ' + username);
       }

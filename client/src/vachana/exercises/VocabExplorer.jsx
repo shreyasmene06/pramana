@@ -358,7 +358,7 @@ export default function VocabExplorer() {
   // --- Vocab Explorer State (Mastery-Driven) ---
   const [vocabState, setVocabState] = useState(() => {
     try {
-      const stored = localStorage.getItem('tenali_vocab_progress');
+      const stored = localStorage.getItem('pramana_vocab_progress');
       if (stored) {
         return JSON.parse(stored);
       }
@@ -384,7 +384,7 @@ export default function VocabExplorer() {
   const saveVocabState = (newState) => {
     setVocabState(newState);
     try {
-      localStorage.setItem('tenali_vocab_progress', JSON.stringify(newState));
+      localStorage.setItem('pramana_vocab_progress', JSON.stringify(newState));
     } catch {
       // Ignore
     }

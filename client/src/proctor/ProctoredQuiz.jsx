@@ -81,8 +81,8 @@ export default function ProctoredQuiz({ children, quizType, onBack, autoStartCon
         setQuizTotal(e.detail.total || 0)
       }
     }
-    window.addEventListener('tenali-quiz-end', handleQuizEnd)
-    return () => window.removeEventListener('tenali-quiz-end', handleQuizEnd)
+    window.addEventListener('pramana-quiz-end', handleQuizEnd)
+    return () => window.removeEventListener('pramana-quiz-end', handleQuizEnd)
   }, [quizType])
 
   // When quiz finishes, end the proctor session
@@ -95,9 +95,9 @@ export default function ProctoredQuiz({ children, quizType, onBack, autoStartCon
       }
       // Read the emotion timeline captured during the quiz
       try {
-        const tl = JSON.parse(sessionStorage.getItem('tenali_emotion_timeline') || '[]')
+        const tl = JSON.parse(sessionStorage.getItem('pramana_emotion_timeline') || '[]')
         setEmotionTimeline(tl)
-        sessionStorage.removeItem('tenali_emotion_timeline')
+        sessionStorage.removeItem('pramana_emotion_timeline')
       } catch {
         // ignore — emotion timeline is optional
       }
@@ -115,7 +115,7 @@ export default function ProctoredQuiz({ children, quizType, onBack, autoStartCon
       // Restart quiz from the beginning
       setRestartKey(k => k + 1)
       setQuizFinished(false)
-      window.dispatchEvent(new CustomEvent('tenali-quiz-restart', { detail: { quizType } }))
+      window.dispatchEvent(new CustomEvent('pramana-quiz-restart', { detail: { quizType } }))
     }
   }, [anomalies.length, phase, quizType])
 
@@ -168,7 +168,7 @@ export default function ProctoredQuiz({ children, quizType, onBack, autoStartCon
           <button
             className="proctor-end-quiz-btn"
             onClick={() => {
-              window.dispatchEvent(new CustomEvent('tenali-quiz-end', { detail: { quizType, score: 0, total: 0 } }))
+              window.dispatchEvent(new CustomEvent('pramana-quiz-end', { detail: { quizType, score: 0, total: 0 } }))
             }}
             title="End quiz and view proctor report"
           >

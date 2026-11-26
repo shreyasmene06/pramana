@@ -1,8 +1,9 @@
 import React from 'react';
+import { Sparkles, Play, Tv, ArrowRight, Swords, Award, AlertTriangle } from 'lucide-react';
 
 /**
  * LandingHero Component
- * Hero presentation introducing the Tenali platform with core value proposition,
+ * Hero presentation introducing the Pramana platform with core value proposition,
  * quick action buttons, platform statistics, and animated mascot visual.
  */
 export default function LandingHero({ onExplorePuzzles = () => {} }) {
@@ -17,7 +18,7 @@ export default function LandingHero({ onExplorePuzzles = () => {} }) {
         {/* Left Column: Heading & Value Proposition */}
         <div className="hero-content-col">
           <div className="hero-pill-badge">
-            <span className="hero-pill-sparkle">✨</span>
+            <Sparkles size={14} className="hero-pill-sparkle" />
             <span>Intelligent, Adaptive Math & Reasoning Engine</span>
           </div>
 
@@ -35,8 +36,9 @@ export default function LandingHero({ onExplorePuzzles = () => {} }) {
               className="hero-btn-primary"
               onClick={onExplorePuzzles}
             >
-              <span>🚀 Start Playing Now</span>
-              <span aria-hidden="true">➔</span>
+              <Play size={16} style={{ marginRight: 6 }} />
+              <span>Start Playing Now</span>
+              <ArrowRight size={16} style={{ marginLeft: 6 }} />
             </button>
 
             <button
@@ -44,7 +46,8 @@ export default function LandingHero({ onExplorePuzzles = () => {} }) {
               className="hero-btn-secondary"
               onClick={scrollToDemo}
             >
-              <span>▶️ Watch Live Demo</span>
+              <Tv size={16} style={{ marginRight: 6 }} />
+              <span>Watch Live Demo</span>
             </button>
           </div>
 
@@ -75,7 +78,7 @@ export default function LandingHero({ onExplorePuzzles = () => {} }) {
             <div className="hero-mascot-circle-bg" aria-hidden="true" />
             
             <img
-              src="/tenali.png"
+              src="/logo.png"
               alt="Pramana Logo"
               className="hero-mascot-img"
               onError={(e) => {
@@ -85,7 +88,7 @@ export default function LandingHero({ onExplorePuzzles = () => {} }) {
 
             {/* Minimalist Floating Feature Badges */}
             <div className="hero-floating-card hero-floating-card-1">
-              <span className="hero-floating-icon">⚔️</span>
+              <span className="hero-floating-icon"><Swords size={20} color="#e05a4a" /></span>
               <div>
                 <span className="hero-floating-text">Battle Arena</span>
                 <span className="hero-floating-sub">Live 1v1 duels</span>
@@ -93,7 +96,7 @@ export default function LandingHero({ onExplorePuzzles = () => {} }) {
             </div>
 
             <div className="hero-floating-card hero-floating-card-2">
-              <span className="hero-floating-icon">🥇</span>
+              <span className="hero-floating-icon"><Award size={20} color="#e8864a" /></span>
               <div>
                 <span className="hero-floating-text">Gold Mastery</span>
                 <span className="hero-floating-sub">Topic achievements</span>
@@ -101,7 +104,7 @@ export default function LandingHero({ onExplorePuzzles = () => {} }) {
             </div>
 
             <div className="hero-floating-card hero-floating-card-3">
-              <span className="hero-floating-icon">👾</span>
+              <span className="hero-floating-icon"><AlertTriangle size={20} color="#8b5cf6" /></span>
               <div>
                 <span className="hero-floating-text">Misconceptions</span>
                 <span className="hero-floating-sub">Guided solver cures</span>

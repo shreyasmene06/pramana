@@ -35,7 +35,7 @@ const hintResolvers = require('./hintResolvers');
 
 const router = express.Router();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'tenali-dev-secret-change-me';
+const JWT_SECRET = process.env.JWT_SECRET || 'pramana-dev-secret-change-me';
 
 // Anti-cheese knobs
 const PER_QUESTION_LIMIT = 5;        // max unlock calls per questionId

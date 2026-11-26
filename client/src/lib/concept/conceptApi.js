@@ -25,7 +25,7 @@ export class ConceptApiError extends Error {
 async function conceptFetch(path, options = {}) {
   let token = null;
   try {
-    token = localStorage.getItem('tenali-auth-token');
+    token = localStorage.getItem('pramana-auth-token');
   } catch {
     token = null;
   }

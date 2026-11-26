@@ -41,7 +41,7 @@ export default function WordCreatorApp({ onBack }) {
   // Read stats from localStorage on mount
   useEffect(() => {
     try {
-      const savedXp = localStorage.getItem('tenali_wordcreator_xp');
+      const savedXp = localStorage.getItem('pramana_wordcreator_xp');
       if (savedXp) setTotalXp(Number(savedXp));
     } catch { /* ignored */ }
   }, []);
@@ -88,7 +88,7 @@ export default function WordCreatorApp({ onBack }) {
         setUserInputs(Array(data.blanksCount).fill(''));
         
         // Load words found for this level/puzzle
-        const savedWordsKey = `tenali_wordcreator_words_${level}_${puzzleIndex}`;
+        const savedWordsKey = `pramana_wordcreator_words_${level}_${puzzleIndex}`;
         const savedWords = localStorage.getItem(savedWordsKey);
         setFoundWords(savedWords ? JSON.parse(savedWords) : []);
 
@@ -186,7 +186,7 @@ export default function WordCreatorApp({ onBack }) {
         const xpEarned = level * 10;
         const newXp = totalXp + xpEarned;
         setTotalXp(newXp);
-        localStorage.setItem('tenali_wordcreator_xp', String(newXp));
+        localStorage.setItem('pramana_wordcreator_xp', String(newXp));
 
         // Append to found words
         const newWordObj = {
@@ -198,7 +198,7 @@ export default function WordCreatorApp({ onBack }) {
         const updatedWords = [...foundWords, newWordObj];
         setFoundWords(updatedWords);
 
-        const savedWordsKey = `tenali_wordcreator_words_${level}_${puzzleIndex}`;
+        const savedWordsKey = `pramana_wordcreator_words_${level}_${puzzleIndex}`;
         localStorage.setItem(savedWordsKey, JSON.stringify(updatedWords));
 
         // Update stats

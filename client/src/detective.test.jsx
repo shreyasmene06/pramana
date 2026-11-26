@@ -8,7 +8,7 @@
  * 4. Correct route navigation (/detective-agency, /detective)
  * 5. Hint system works correctly
  * 6. Case deduplication tracking
- * 7. All Tenali modules have story coverage
+ * 7. All Pramana modules have story coverage
  */
 
 import { describe, test, expect, beforeEach, vi } from 'vitest';
@@ -63,7 +63,7 @@ const DETECTIVE_RANKS = [
 ];
 
 // ─── Helpers (matching detective-app.jsx logic) ────────────────────
-const STORAGE_KEY = 'tenali-detective-progress';
+const STORAGE_KEY = 'pramana-detective-progress';
 
 function loadDetectiveProgress() {
   try {
@@ -233,7 +233,7 @@ describe('localStorage persistence', () => {
   });
 
   test('corrupt data returns defaults', () => {
-    localStorage.setItem('tenali-detective-progress', 'not-json{{{');
+    localStorage.setItem('pramana-detective-progress', 'not-json{{{');
     const progress = loadDetectiveProgress();
     expect(progress.xp).toBe(0);
     expect(progress.casesSolved).toBe(0);
@@ -872,7 +872,7 @@ describe('Case library mode counts and tabs', () => {
 
 describe('Case library tabs in the running app', () => {
   function seedProgress(extra = {}) {
-    localStorageMock.setItem('tenali-detective-progress', JSON.stringify({
+    localStorageMock.setItem('pramana-detective-progress', JSON.stringify({
       xp: 0,
       casesSolved: 0,
       usedCaseIds: [],
@@ -910,7 +910,7 @@ describe('Case library tabs in the running app', () => {
 
 describe('Resuming an in-progress case', () => {
   test('an unfinished case is reopened on the stage it was left on', () => {
-    localStorageMock.setItem('tenali-detective-progress', JSON.stringify({
+    localStorageMock.setItem('pramana-detective-progress', JSON.stringify({
       xp: 40,
       casesSolved: 0,
       usedCaseIds: [],
@@ -932,7 +932,7 @@ describe('Resuming an in-progress case', () => {
 
 describe('Opening route from saved progress', () => {
   function seedProgress(cases, extra = {}) {
-    localStorageMock.setItem('tenali-detective-progress', JSON.stringify({
+    localStorageMock.setItem('pramana-detective-progress', JSON.stringify({
       xp: 0,
       casesSolved: 0,
       usedCaseIds: [],

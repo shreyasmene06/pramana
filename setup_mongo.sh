@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Tenali — install and start MongoDB locally on macOS via Homebrew.
+# Pramana — install and start MongoDB locally on macOS via Homebrew.
 # Idempotent: safe to re-run.
 
 set -euo pipefail
@@ -44,4 +44,4 @@ else
   echo "[setup_mongo] mongosh not on PATH; skipping ping. MongoDB should be running on 27017."
 fi
 
-echo "[setup_mongo] Done. Server reads MONGO_URI; default is mongodb://127.0.0.1:27017/tenali"
+echo "[setup_mongo] Done. Server reads MONGO_URI; default is mongodb://127.0.0.1:27017/pramana"

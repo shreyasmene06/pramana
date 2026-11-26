@@ -56,7 +56,7 @@ export default function WordSearchApp({ onBack }) {
   const [solvedWords, setSolvedWords] = useState(new Set());
   const [totalXp, setTotalXp] = useState(() => {
     try {
-      const saved = localStorage.getItem('tenali_wordsearch_xp');
+      const saved = localStorage.getItem('pramana_wordsearch_xp');
       return saved ? Number(saved) : 0;
     } catch { return 0; }
   });
@@ -204,7 +204,7 @@ export default function WordSearchApp({ onBack }) {
       setLevelXp(prev => prev + xpGained);
       const newTotal = totalXp + xpGained;
       setTotalXp(newTotal);
-      try { localStorage.setItem('tenali_wordsearch_xp', String(newTotal)); } catch { /* ignored */ }
+      try { localStorage.setItem('pramana_wordsearch_xp', String(newTotal)); } catch { /* ignored */ }
 
       showToast(`Found "${matched.word}"! +${xpGained} XP`, 'correct');
       setSuccessAnimation(true);

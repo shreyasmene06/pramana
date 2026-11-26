@@ -17,7 +17,7 @@ import {
   PathCasePlay,
 } from './detective-app';
 
-const STORAGE_KEY = 'tenali-detective-progress';
+const STORAGE_KEY = 'pramana-detective-progress';
 
 function classicCase(overrides = {}) {
   return {

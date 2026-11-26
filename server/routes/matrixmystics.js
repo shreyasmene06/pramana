@@ -49,7 +49,10 @@ const mmQuestionBank = {};
 const mmModules = {};
 
 function loadMatrixMysticsBank() {
-  const dir = path.join(__dirname, '..', 'linearalgebra', 'matrixmystics');
+  let dir = path.join(__dirname, '..', '..', 'linearalgebra', 'matrixmystics');
+  if (!fs.existsSync(dir)) {
+    dir = path.join(__dirname, '..', 'linearalgebra', 'matrixmystics');
+  }
   try {
     const files = fs.readdirSync(dir).filter(f => f.endsWith('.json'));
     let totalTopics = 0;

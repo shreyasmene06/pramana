@@ -47,11 +47,11 @@
 
 ## 1. Project Overview
 
-Tenali is an adaptive, web-based educational math quiz platform. It serves **69 distinct puzzle types** spanning arithmetic, algebra, geometry, calculus, statistics, vectors/matrices, number theory, general knowledge, and vocabulary. The platform adapts difficulty in real time based on accuracy and response speed.
+Pramana is an adaptive, web-based educational math quiz platform. It serves **69 distinct puzzle types** spanning arithmetic, algebra, geometry, calculus, statistics, vectors/matrices, number theory, general knowledge, and vocabulary. The platform adapts difficulty in real time based on accuracy and response speed.
 
 Primary students: **Taittiriya** and **Tatsavit** (Tatsavit is also the name of the 9-level progressive drill puzzle; context determines which is meant).
 
-Deployed at: `tenali.onrender.com`
+Deployed at: `pramana.onrender.com`
 
 ### Key Features (v4.0)
 - 69 puzzle types with adaptive difficulty
@@ -69,7 +69,7 @@ Deployed at: `tenali.onrender.com`
 ## 2. Directory Structure
 
 ```
-Tenali/
+Pramana/
 ├── server/
 │   ├── package.json          # Express server dependencies
 │   └── index.js              # ~7200 lines: ALL API endpoints + static serving
@@ -141,7 +141,7 @@ Tenali/
 ```yaml
 services:
   - type: web
-    name: tenali
+    name: pramana
     env: node
     buildCommand: npm install && cd client && npm install && npm run build
     startCommand: node server/index.js

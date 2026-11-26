@@ -161,7 +161,7 @@ export default function FloatingVideo({ videoRef, isRunning, error, penaltyScore
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     try {
-      const dismissed = Number(sessionStorage.getItem('tenali_struggling_dismissed') || 0)
+      const dismissed = Number(sessionStorage.getItem('pramana_struggling_dismissed') || 0)
       if (struggling && Date.now() - dismissed > 120000) {
         setShowStruggling(true)
         clearTimeout(struggleTimerRef.current)

@@ -13,7 +13,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ConceptApiError, fetchConceptState, saveConceptStage } from './conceptApi';
 
-const AUTH_TOKEN_KEY = 'tenali-auth-token';
+const AUTH_TOKEN_KEY = 'pramana-auth-token';
 
 let fetchMock;
 

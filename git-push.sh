@@ -20,7 +20,7 @@ done
 APP_FILE="client/src/App.jsx"
 if [ -f "$APP_FILE" ]; then
   # Extract current version
-  CURRENT_VERSION=$(grep -E "const (TENALI|SOOTRA)_VERSION" "$APP_FILE" | head -n 1 | sed "s/.*= '//;s/'.*//")
+  CURRENT_VERSION=$(grep -E "const (PRAMANA|SOOTRA)_VERSION" "$APP_FILE" | head -n 1 | sed "s/.*= '//;s/'.*//")
   if [ -n "$CURRENT_VERSION" ]; then
     # Increment patch version (1.0.1 → 1.0.2)
     MAJOR=$(echo "$CURRENT_VERSION" | cut -d. -f1)

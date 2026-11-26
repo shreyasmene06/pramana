@@ -23,8 +23,8 @@
 import { useState, useEffect, useCallback, useRef, useMemo, memo } from 'react'
 
 const API = import.meta.env?.VITE_API_BASE_URL || ''
-const STORAGE_KEY_SESSIONS = 'tenali_proctor_sessions_cache'
-const STORAGE_KEY_DETAIL = 'tenali_proctor_detail_cache'
+const STORAGE_KEY_SESSIONS = 'pramana_proctor_sessions_cache'
+const STORAGE_KEY_DETAIL = 'pramana_proctor_detail_cache'
 const POLL_SESSIONS_MS = 10000
 const POLL_DETAIL_MS = 5000
 const CACHE_DEBOUNCE_MS = 1000
@@ -66,7 +66,7 @@ function loadCache(key, fallback) {
 }
 
 function makeHeaders() {
-  const token = localStorage.getItem('tenali-auth-token') || '';
+  const token = localStorage.getItem('pramana-auth-token') || '';
   return { 'Content-Type': 'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) }
 }
 

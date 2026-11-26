@@ -69,7 +69,7 @@ Reset stubs between tests (`vi.unstubAllGlobals()` in `afterEach`, a fresh mock 
 
 ### localStorage and authentication
 
-Several modules read auth state (e.g. the JWT under `tenali-auth-token`) from `localStorage`. jsdom provides a real `localStorage`, so tests can seed a fake value before the call and let the setup file's global `afterEach` clear it. **Never use a real credential or depend on an actual authenticated session** — a fake token string in the test is enough, as demonstrated in `conceptApi.test.js`.
+Several modules read auth state (e.g. the JWT under `pramana-auth-token`) from `localStorage`. jsdom provides a real `localStorage`, so tests can seed a fake value before the call and let the setup file's global `afterEach` clear it. **Never use a real credential or depend on an actual authenticated session** — a fake token string in the test is enough, as demonstrated in `conceptApi.test.js`.
 
 ### Testing philosophy
 
@@ -78,4 +78,4 @@ Write React component tests with Testing Library and assert on **what a user can
 ## Core Maintainers & Interns
 If you are joining as a dedicated intern or a core maintainer, please refer to the `docs/` directory in this repository for more in-depth guidelines, RFC templates, and project standards.
 
-Thank you for helping make Tenali better!
+Thank you for helping make Pramana better!

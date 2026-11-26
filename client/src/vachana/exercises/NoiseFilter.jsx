@@ -100,7 +100,7 @@ export default function NoiseFilter() {
   // --- LocalStorage Mastery-Driven State ---
   const [noiseState, setNoiseState] = useState(() => {
     try {
-      const stored = localStorage.getItem('tenali_noise_progress');
+      const stored = localStorage.getItem('pramana_noise_progress');
       if (stored) {
         return JSON.parse(stored);
       }
@@ -126,7 +126,7 @@ export default function NoiseFilter() {
   const saveNoiseState = (newState) => {
     setNoiseState(newState);
     try {
-      localStorage.setItem('tenali_noise_progress', JSON.stringify(newState));
+      localStorage.setItem('pramana_noise_progress', JSON.stringify(newState));
     } catch {
       // Ignore
     }

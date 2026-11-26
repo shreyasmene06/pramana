@@ -52,7 +52,7 @@ export function HintModal({ concept, questionId, questionData, answerData, revea
     setLoadingLevel(level);
 
     try {
-      const token = localStorage.getItem('tenali-auth-token');
+      const token = localStorage.getItem('pramana-auth-token');
       const res = await fetch(`${API}/api/hints/unlock`, {
         method: 'POST',
         headers: {
@@ -84,7 +84,7 @@ export function HintModal({ concept, questionId, questionData, answerData, revea
       } else if (data.balance !== undefined) {
         setLocalXp(data.balance);
         try {
-          window.dispatchEvent(new CustomEvent('tenali-xp-float', { detail: { diff: -actualCost } }));
+          window.dispatchEvent(new CustomEvent('pramana-xp-float', { detail: { diff: -actualCost } }));
         } catch { /* dispatch may fail */ }
       }
 
@@ -97,7 +97,7 @@ export function HintModal({ concept, questionId, questionData, answerData, revea
       }
 
       try {
-        window.dispatchEvent(new CustomEvent('tenali-hint-used', { detail: { level } }));
+        window.dispatchEvent(new CustomEvent('pramana-hint-used', { detail: { level } }));
       } catch { /* dispatch may fail */ }
 
     } catch (err) {
@@ -655,13 +655,13 @@ export function GlobalXpPanel() {
       }
     };
     window.addEventListener('popstate', checkMode);
-    window.addEventListener('tenali-navigate', checkMode);
-    window.addEventListener('tenali-change-mode', checkMode);
+    window.addEventListener('pramana-navigate', checkMode);
+    window.addEventListener('pramana-change-mode', checkMode);
     const interval = setInterval(checkMode, 800);
     return () => {
       window.removeEventListener('popstate', checkMode);
-      window.removeEventListener('tenali-navigate', checkMode);
-      window.removeEventListener('tenali-change-mode', checkMode);
+      window.removeEventListener('pramana-navigate', checkMode);
+      window.removeEventListener('pramana-change-mode', checkMode);
       clearInterval(interval);
     };
   }, []);

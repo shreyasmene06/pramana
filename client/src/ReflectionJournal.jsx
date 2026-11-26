@@ -29,14 +29,14 @@
  *    the journal. The captured text is shown in an editable field, so even
  *    where capture is imperfect the learner can fix it before saving.
  *
- * 100% client-side. Entries persist in localStorage under `tenali-journal`.
+ * 100% client-side. Entries persist in localStorage under `pramana-journal`.
  * Private to the device — nothing is uploaded.
  */
 import { useEffect, useRef, useState } from 'react';
 import './ReflectionJournal.css';
 
-const RJ_LS_KEY = 'tenali-journal';
-const RJ_WIDTH_KEY = 'tenali-journal-width';
+const RJ_LS_KEY = 'pramana-journal';
+const RJ_WIDTH_KEY = 'pramana-journal-width';
 const RJ_MIN_WIDTH = 280;   // px — narrowest useful panel
 const RJ_DEFAULT_WIDTH = 380;
 
@@ -102,7 +102,7 @@ function rjExportTxt(journal) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'tenali-journal.txt';
+  a.download = 'pramana-journal.txt';
   a.click();
   URL.revokeObjectURL(url);
 }

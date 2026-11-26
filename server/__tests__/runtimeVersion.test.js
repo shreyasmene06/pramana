@@ -95,7 +95,7 @@ describe('check-node-version.js', () => {
 
   it('accepts a runtime at or above the floor', () => {
     // A scratch copy with a floor the running runtime satisfies.
-    const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'tenali-runtime-'));
+    const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'pramana-runtime-'));
     try {
       fs.mkdirSync(path.join(scratch, 'server', 'deploy'), { recursive: true });
       fs.copyFileSync(checkerPath, path.join(scratch, 'server', 'deploy', 'check-node-version.js'));
@@ -128,7 +128,7 @@ describe('check-node-version.js', () => {
     // The checker reads the floor from .nvmrc, so a rejected runtime can only
     // be simulated through a temporary checkout — assert the failure path by
     // pointing the checker at a lower floor in a scratch copy.
-    const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'tenali-runtime-'));
+    const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'pramana-runtime-'));
     try {
       fs.mkdirSync(path.join(scratch, 'server', 'deploy'), { recursive: true });
       fs.copyFileSync(checkerPath, path.join(scratch, 'server', 'deploy', 'check-node-version.js'));

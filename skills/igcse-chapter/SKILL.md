@@ -1,6 +1,6 @@
 ---
 name: igcse-chapter
-description: Use this skill whenever the user asks to add, build, scaffold, or convert a Cambridge IGCSE chapter into an interactive Tenali lesson module — e.g. "build chapter 7", "add the chapter on trigonometry", "do the same for chapter X". Use it for both fresh chapters and edits to existing chapter modules. Triggers include any mention of a chapter number ("chapter 5", "chapter 6", "/chapter7"), chapter title from the IGCSE Mathematics Core and Extended coursebook, or a request to mirror the existing /chapter5 or /chapter6 module pattern. Do NOT use this skill for non-chapter quizzes (gym, supertables, IntervalScheduling, etc.) — those use other patterns.
+description: Use this skill whenever the user asks to add, build, scaffold, or convert a Cambridge IGCSE chapter into an interactive Pramana lesson module — e.g. "build chapter 7", "add the chapter on trigonometry", "do the same for chapter X". Use it for both fresh chapters and edits to existing chapter modules. Triggers include any mention of a chapter number ("chapter 5", "chapter 6", "/chapter7"), chapter title from the IGCSE Mathematics Core and Extended coursebook, or a request to mirror the existing /chapter5 or /chapter6 module pattern. Do NOT use this skill for non-chapter quizzes (gym, supertables, IntervalScheduling, etc.) — those use other patterns.
 ---
 
 # IGCSE Chapter Module — pattern guide
@@ -11,7 +11,7 @@ If the user asks for a new chapter, follow this guide end-to-end. If they ask fo
 
 ---
 
-## What "a chapter" is in Tenali
+## What "a chapter" is in Pramana
 
 A chapter is a single self-contained React component, mounted at `pathname === '/chapterN'`, whose job is to walk a student through one numbered chapter of the *Cambridge IGCSE Mathematics Core and Extended* coursebook by:
 
@@ -43,7 +43,7 @@ The student should be able to finish the chapter purely by working through the l
   ```
 
   Place the new branch alongside the existing `/chapter5` and `/chapter6` branches.
-- Progress is stored under the localStorage key `tenali-chapterN-progress` (one key per chapter).
+- Progress is stored under the localStorage key `pramana-chapterN-progress` (one key per chapter).
 
 ---
 

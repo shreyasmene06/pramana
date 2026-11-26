@@ -11,7 +11,7 @@
  *
  * Self-contained module: rendered via App.jsx's modeMap under key 'realworld';
  * receives `onBack` (returns to the home grid) and `setMode`, which it forwards
- * to the active pathway so a Road License can open the matching Tenali card.
+ * to the active pathway so a Road License can open the matching Pramana card.
  */
 import { useState } from 'react';
 import CarJourneyApp from './CarJourneyApp';

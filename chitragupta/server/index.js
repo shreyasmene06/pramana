@@ -1,7 +1,7 @@
 /**
  * CHITRAGUPTA SERVER
  *
- * Standalone Express server for the Chitragupta quiz module in the Tenali project.
+ * Standalone Express server for the Chitragupta quiz module in the Pramana project.
  * This is a legacy/older version of the general knowledge (GK) quiz module.
  *
  * Named after Chitragupta, the celestial scribe in Hindu mythology who records all actions.

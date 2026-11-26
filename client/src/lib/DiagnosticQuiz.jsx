@@ -11,7 +11,7 @@ import { getTopicLabel, getTopicApiPath } from './prerequisiteGraph'
 import requestCache from './RequestCache'
 
 const API = import.meta.env.VITE_API_BASE_URL || ''
-const DIAG_CACHE_KEY = 'tenali-diag-'
+const DIAG_CACHE_KEY = 'pramana-diag-'
 const CACHE_DURATION_MS = 24 * 60 * 60 * 1000 // 24 hours
 const PASS_THRESHOLD = 3 // out of 5
 

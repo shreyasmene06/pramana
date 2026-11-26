@@ -2,13 +2,13 @@ export const API = import.meta.env.VITE_API_BASE_URL || '';
 
 export function getLocalXp() {
   try {
-    const val = localStorage.getItem('tenali_xp');
+    const val = localStorage.getItem('pramana_xp');
     return val ? parseInt(val, 10) : 300;
   } catch { return 300; }
 }
 
 export function setLocalXp(val) {
-  try { localStorage.setItem('tenali_xp', val.toString()); } catch {
+  try { localStorage.setItem('pramana_xp', val.toString()); } catch {
     // ignore — XP persistence is best-effort
   }
 }

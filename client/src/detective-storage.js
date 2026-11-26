@@ -11,7 +11,7 @@
  * loads correctly.
  */
 
-export const DETECTIVE_STORAGE_KEY = 'tenali-detective-progress';
+export const DETECTIVE_STORAGE_KEY = 'pramana-detective-progress';
 
 export function loadDetectiveProgress() {
   try {

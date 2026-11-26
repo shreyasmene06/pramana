@@ -9,11 +9,11 @@
 // They run against a real mongod on 127.0.0.1:27017 using a scratch database
 // that is dropped afterwards.
 
-const TEST_DB = 'mongodb://127.0.0.1:27017/tenali_auth_test';
+const TEST_DB = 'mongodb://127.0.0.1:27017/pramana_auth_test';
 
 // auth.js reads both of these at module load, so set them before requiring it.
 process.env.MONGO_URI = TEST_DB;
-process.env.TENALI_SEED_USERS = 'seed_alice:pw-alice,seed_root:pw-root:admin';
+process.env.PRAMANA_SEED_USERS = 'seed_alice:pw-alice,seed_root:pw-root:admin';
 
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
@@ -72,7 +72,7 @@ describe("UserSchema pre('save')", () => {
 // ─── seedUsers ────────────────────────────────────────────────────────────────
 
 describe('seedUsers', () => {
-  test('creates every TENALI_SEED_USERS entry with a matching password hash', async () => {
+  test('creates every PRAMANA_SEED_USERS entry with a matching password hash', async () => {
     await auth.seedUsers();
 
     const alice = await User.findOne({ username: 'seed_alice' });

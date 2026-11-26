@@ -146,13 +146,13 @@ export default function WarmupModal({
       setIsFinishing(true);
       try {
         const guestHabit = (() => {
-          try { return JSON.parse(localStorage.getItem('tenali-weekly-habit') || 'null'); } catch { return null; }
+          try { return JSON.parse(localStorage.getItem('pramana-weekly-habit') || 'null'); } catch { return null; }
         })();
         const guestLadder = (() => {
-          try { return JSON.parse(localStorage.getItem('tenali-spacing-ladder') || '{}'); } catch { return {}; }
+          try { return JSON.parse(localStorage.getItem('pramana-spacing-ladder') || '{}'); } catch { return {}; }
         })();
 
-        const token = localStorage.getItem('tenali-token') || '';
+        const token = localStorage.getItem('pramana-token') || '';
         const res = await fetch(`${apiBase}/api/review/daily-warmup/complete`, {
           method: 'POST',
           headers: {
@@ -173,12 +173,12 @@ export default function WarmupModal({
         if (data && data.success) {
           if (data.weeklyHabit) {
             try {
-              localStorage.setItem('tenali-weekly-habit', JSON.stringify(data.weeklyHabit));
+              localStorage.setItem('pramana-weekly-habit', JSON.stringify(data.weeklyHabit));
             } catch (e) { void e; }
           }
           if (data.spacingLadder) {
             try {
-              localStorage.setItem('tenali-spacing-ladder', JSON.stringify(data.spacingLadder));
+              localStorage.setItem('pramana-spacing-ladder', JSON.stringify(data.spacingLadder));
             } catch (e) { void e; }
           }
           setCompletionResult(data);

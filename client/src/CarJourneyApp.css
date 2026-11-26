@@ -440,7 +440,7 @@
   line-height: 1.45;
 }
 
-/* ── Road License (earned Tenali start level) ── */
+/* ── Road License (earned Pramana start level) ── */
 .cj-stop-done-actions { display: flex; flex-direction: column; gap: 6px; }
 .cj-stop-action.license { background: var(--clr-surface); color: var(--clr-text); border: 1px solid var(--clr-border); }
 .cj-stop-action.license:hover { border-color: var(--clr-accent); filter: none; }

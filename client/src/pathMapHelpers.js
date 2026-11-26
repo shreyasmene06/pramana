@@ -55,7 +55,7 @@ export function usePmGraphData() {
 }
 
 // ─── Module Progress Tracker (localStorage-based, easy/medium/hard per module) ───
-const PM_TRACK_KEY = 'tenali_module_tracking';
+const PM_TRACK_KEY = 'pramana_module_tracking';
 
 export function pmTrackLoad() {
   try { return JSON.parse(localStorage.getItem(PM_TRACK_KEY)) || {}; } catch { return {}; }
@@ -203,7 +203,7 @@ export function pmTrackRemaining(moduleId) {
 
 export function pmGetKnownFromStorage() {
   try {
-    const r = localStorage.getItem('tenali_pathmap_known');
+    const r = localStorage.getItem('pramana_pathmap_known');
     return new Set(r ? JSON.parse(r) : []);
   } catch {
     return new Set();
@@ -309,7 +309,7 @@ export function pmStarPoints(cx, cy, r) {
 
 let _pmGoalIds = (() => {
   try {
-    const r = localStorage.getItem('tenali_pathmap_goal');
+    const r = localStorage.getItem('pramana_pathmap_goal');
     return r ? JSON.parse(r) : [];
   } catch {
     return [];
@@ -318,7 +318,7 @@ let _pmGoalIds = (() => {
 
 let _pmKnown = (() => {
   try {
-    const r = localStorage.getItem('tenali_pathmap_known');
+    const r = localStorage.getItem('pramana_pathmap_known');
     return new Set(r ? JSON.parse(r) : []);
   } catch {
     return new Set();
@@ -332,10 +332,10 @@ export function notifyPmStateChange() {
 
 if (typeof window !== 'undefined') {
   window.addEventListener('storage', (e) => {
-    if (e.key === 'tenali_pathmap_goal') {
+    if (e.key === 'pramana_pathmap_goal') {
       try { _pmGoalIds = e.newValue ? JSON.parse(e.newValue) : []; } catch { _pmGoalIds = []; }
       notifyPmStateChange();
-    } else if (e.key === 'tenali_pathmap_known') {
+    } else if (e.key === 'pramana_pathmap_known') {
       try { _pmKnown = new Set(e.newValue ? JSON.parse(e.newValue) : []); } catch { _pmKnown = new Set(); }
       notifyPmStateChange();
     }
@@ -357,13 +357,13 @@ export function usePathmapState() {
 
   const setGoal = useCallback((ids) => {
     _pmGoalIds = ids;
-    try { localStorage.setItem('tenali_pathmap_goal', JSON.stringify(ids)); } catch { /* ignore */ }
+    try { localStorage.setItem('pramana_pathmap_goal', JSON.stringify(ids)); } catch { /* ignore */ }
     notifyPmStateChange();
   }, []);
 
   const clearGoal = useCallback(() => {
     _pmGoalIds = [];
-    try { localStorage.setItem('tenali_pathmap_goal', JSON.stringify([])); } catch { /* ignore */ }
+    try { localStorage.setItem('pramana_pathmap_goal', JSON.stringify([])); } catch { /* ignore */ }
     notifyPmStateChange();
   }, []);
 
@@ -372,13 +372,13 @@ export function usePathmapState() {
     if (next.has(id)) next.delete(id);
     else next.add(id);
     _pmKnown = next;
-    try { localStorage.setItem('tenali_pathmap_known', JSON.stringify([...next])); } catch { /* ignore */ }
+    try { localStorage.setItem('pramana_pathmap_known', JSON.stringify([...next])); } catch { /* ignore */ }
     notifyPmStateChange();
   }, []);
 
   const resetKnown = useCallback(() => {
     _pmKnown = new Set();
-    try { localStorage.setItem('tenali_pathmap_known', JSON.stringify([])); } catch { /* ignore */ }
+    try { localStorage.setItem('pramana_pathmap_known', JSON.stringify([])); } catch { /* ignore */ }
     notifyPmStateChange();
   }, []);
 

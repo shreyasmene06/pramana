@@ -4,15 +4,15 @@ let code = fs.readFileSync('client/src/App.jsx', 'utf8');
 const xpFuncs = `
 export function getLocalXp() {
   try {
-    const val = localStorage.getItem('tenali_xp');
+    const val = localStorage.getItem('pramana_xp');
     return val ? parseInt(val, 10) : 0;
   } catch { return 0; }
 }
 
 export function setLocalXp(val) {
-  try { localStorage.setItem('tenali_xp', val.toString()); } catch {}
+  try { localStorage.setItem('pramana_xp', val.toString()); } catch {}
   // dispatch event to sync UI if needed
-  window.dispatchEvent(new CustomEvent('tenali_xp_update', { detail: { xp: val } }));
+  window.dispatchEvent(new CustomEvent('pramana_xp_update', { detail: { xp: val } }));
 }
 
 export function changeXp(delta) {

@@ -21,10 +21,10 @@ function emptyGrid(size) {
   )
 }
 
-// ─── Auth helper (reads existing Tenali auth from localStorage) ─────────────
+// ─── Auth helper (reads existing Pramana auth from localStorage) ─────────────
 function getUsername() {
   try {
-    const raw = localStorage.getItem('tenali-auth-user')
+    const raw = localStorage.getItem('pramana-auth-user')
     const user = raw ? JSON.parse(raw) : null
     return user?.username || 'guest'
   } catch { return 'guest' }
@@ -32,7 +32,7 @@ function getUsername() {
 
 // ─── Persistence helpers ────────────────────────────────────────────────────
 function getProgressKey() {
-  return `tenali-treasurehunt-progress-${getUsername()}`
+  return `pramana-treasurehunt-progress-${getUsername()}`
 }
 
 function loadAllProgress() {

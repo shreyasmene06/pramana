@@ -42,7 +42,7 @@ describe('GET /api/proctor/sessions', () => {
   });
 
   it('refuses a token signed with the wrong secret', async () => {
-    const forged = jwt.sign({ sub: 'admin-1', username: 'root', role: 'admin' }, 'tenali-dev-secret-change-me');
+    const forged = jwt.sign({ sub: 'admin-1', username: 'root', role: 'admin' }, 'pramana-dev-secret-change-me');
     const res = await request(app).get('/api/proctor/sessions').set('Authorization', `Bearer ${forged}`);
     expect(res.status).toBe(401);
     expect(res.body.error).toBe('invalid or expired token');
@@ -92,7 +92,7 @@ describe('POST /api/emotions/submit', () => {
   });
 
   it('refuses a forged token', async () => {
-    const forged = jwt.sign({ sub: 'x', username: 'y', role: 'admin' }, 'tenali-dev-secret-change-me');
+    const forged = jwt.sign({ sub: 'x', username: 'y', role: 'admin' }, 'pramana-dev-secret-change-me');
     const res = await request(app)
       .post('/api/emotions/submit')
       .set('Authorization', `Bearer ${forged}`)
@@ -119,7 +119,7 @@ describe('GET /api/emotions/history', () => {
   });
 
   it('refuses a forged token', async () => {
-    const forged = jwt.sign({ sub: 'x', username: 'y', role: 'admin' }, 'tenali-dev-secret-change-me');
+    const forged = jwt.sign({ sub: 'x', username: 'y', role: 'admin' }, 'pramana-dev-secret-change-me');
     const res = await request(app).get('/api/emotions/history').set('Authorization', `Bearer ${forged}`);
     expect(res.status).toBe(401);
   });

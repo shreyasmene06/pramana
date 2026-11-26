@@ -48,7 +48,7 @@ The elevated variant keeps its visual prominence (gold gradient, `monster-detail
 - `client/src/monsters/CureFlow.jsx` (1 line, copy only — no logic change)
 
 **Companion artifact (outside this repo):**
-- `D:\vins-phase-2\tenali-docs-backup\guided_solver_button_redesign.html` — standalone HTML preview of three button styles (current/alarm, calm/card, minimal/bordered) with a toggle for 1-fail vs 2-fail-elevated state. Reference only, not ship code.
+- `D:\vins-phase-2\pramana-docs-backup\guided_solver_button_redesign.html` — standalone HTML preview of three button styles (current/alarm, calm/card, minimal/bordered) with a toggle for 1-fail vs 2-fail-elevated state. Reference only, not ship code.
 
 **Verification:** Parse suite still passes. No behavior change. All 111/111 smoke-test assertions still green.
 
@@ -171,8 +171,8 @@ A new escalation flow: when a cure fails, the student can opt into a guided step
 **Branch:** `feature/monster-misconceptions` (off commit `93f0cea` at branch time).
 
 **Decisions baked into the branch baseline (from spec v0.2):**
-- Storage: `localStorage` key `tenali.monsterLog.v1`. Zero new server endpoints.
-- Hook: `window.fetch` monkey-patch, dispatch `tenali:wrongAnswer` CustomEvent.
+- Storage: `localStorage` key `pramana.monsterLog.v1`. Zero new server endpoints.
+- Hook: `window.fetch` monkey-patch, dispatch `pramana:wrongAnswer` CustomEvent.
 - Carry Crasher: `enabled: false` by default. Test before turning on.
 - Hall placement: C-only for v1 (toast→Hall). Code is placement-agnostic.
 - Cure: 4/5 correct threshold. History stays on cure. No respawn.
@@ -325,7 +325,7 @@ A new escalation flow: when a cure fails, the student can opt into a guided step
 
 A. **Topic allow-list.** 14 single-input topics from warmupAdapter.js hard-coded. URL detection rejects anything not in the list. Prevents silent misfires on `/api/auth/*`, future endpoints, or hypothetical streak-api/check.
 
-B. **Debug instrumentation.** When `localStorage.tenali.monsters.debug === 'true'`, exposes `window._monstersDebug` with:
+B. **Debug instrumentation.** When `localStorage.pramana.monsters.debug === 'true'`, exposes `window._monstersDebug` with:
 - `lastEvent()` — most recent intercepted event
 - `replay(input)` — run classifier on arbitrary input
 - `storageDump()` — formatted localStorage state
@@ -390,7 +390,7 @@ E. **Promise.resolve wrapping.** Explicit async contract for the patched fetch r
 - `client/src/monsters/__tests__/monsterToast.test.cjs` (new, ~140 lines)
 
 **MonsterToast component:**
-- Subscribes to `tenali:wrongAnswer` CustomEvent on window
+- Subscribes to `pramana:wrongAnswer` CustomEvent on window
 - Two variants driven by `isMonsterSeen()`:
   - **Introduced** (5s on screen): "Bracketeer introduced!" with **View Hall** CTA
   - **Repeat** (2s on screen): "Bracketeer strikes again!" tappable to dismiss
@@ -416,7 +416,7 @@ E. **Promise.resolve wrapping.** Explicit async contract for the patched fetch r
 **Smoke tests:**
 - `monsterToast.parse.cjs`: acorn + acorn-jsx parses `MonsterToast.jsx` (8131 bytes) + `App.jsx` (2.6MB) cleanly
 - `monsterToast.test.cjs`: 9 checks pass
-  - Event name = `tenali:wrongAnswer` ✓
+  - Event name = `pramana:wrongAnswer` ✓
   - Intro duration = 5000ms, repeat = 2000ms (spec §6.5) ✓
   - All 4 monsters in MONSTER_COLORS ✓
   - Uses React portal to body ✓
@@ -489,13 +489,13 @@ E. **Promise.resolve wrapping.** Explicit async contract for the patched fetch r
 
 **App.jsx integration:**
 - New state: `monsterLog` (hydrated from `loadMonsterLog()` once), `hallOpen` (bool)
-- New useEffect: listens for `storage` event (cross-tab sync) + `tenali:monsterLogChanged` (same-tab sync)
+- New useEffect: listens for `storage` event (cross-tab sync) + `pramana:monsterLogChanged` (same-tab sync)
 - Mount: `<MonsterToast onOpenHall={...} />` + `<HallPanel open={...} onClose={...} ... />`
 - Why both events: `storage` event doesn't fire in the originating tab; the CustomEvent bridge covers same-tab updates from the interceptor
 
 **fetchInterceptor update:**
 - Added `notifyMonsterLogChanged()` helper
-- Fires `tenali:monsterLogChanged` CustomEvent after:
+- Fires `pramana:monsterLogChanged` CustomEvent after:
   - Successful `monsterStore.append()` (every wrong answer)
   - Successful `monsterStore.markMonsterSeen()` returning true (first sighting only)
 - Both wrapped in try/catch (spec §8 — never break the interceptor)

@@ -5,7 +5,7 @@
  * breach counts, last attempt recency, and cure history. Tapping a monster
  * opens MonsterDetail.
  *
- * Spec: D:\vins-phase-2\tenali-docs-backup\FEATURE_MONSTERS.md v0.2 §6.5.
+ * Spec: D:\vins-phase-2\pramana-docs-backup\FEATURE_MONSTERS.md v0.2 §6.5.
  *
  * Layout:
  *   - Full-screen overlay with semi-transparent backdrop

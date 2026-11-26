@@ -100,7 +100,7 @@ When a student correctly answers a question:
 ### 5.2 localStorage Schema
 
 ```javascript
-// Key format: `tenali_adaptivetables_{studentId}`
+// Key format: `pramana_adaptivetables_{studentId}`
 // Value:
 {
   selectedTable: 2,              // Starting table chosen by student
@@ -126,7 +126,7 @@ When a student correctly answers a question:
 ```
 
 **Loading on mount:**
-1. Check localStorage for `tenali_adaptivetables_{studentId}`
+1. Check localStorage for `pramana_adaptivetables_{studentId}`
 2. If exists, restore state; otherwise initialize with defaults
 3. Set `phase = 'setup'` to let student confirm starting table
 
@@ -334,7 +334,7 @@ Displayed during gameplay and on round completion:
 
 ### 6.1 Data Persistence
 
-- **localStorage key format**: `tenali_adaptivetables_{studentId}`
+- **localStorage key format**: `pramana_adaptivetables_{studentId}`
 - **Save timing**: After every answer submission and state update
 - **Graceful fallback**: If localStorage unavailable, continue with in-memory state
 - **Cross-tab sync**: Use `storage` event listener (optional enhancement)

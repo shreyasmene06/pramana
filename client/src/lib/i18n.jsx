@@ -1,5 +1,5 @@
 /**
- * i18n Engine for Tenali (Feature U)
+ * i18n Engine for Pramana (Feature U)
  * 
  * Lightweight, zero-dependency internationalization system.
  * All translations are bundled as static JSON — no server calls, no API costs.
@@ -40,7 +40,7 @@ export const LANGUAGES = [
   { code: 'ta', name: 'Tamil', nativeName: 'தமிழ்', script: 'tamil' },
 ];
 
-const STORAGE_KEY = 'tenali-lang';
+const STORAGE_KEY = 'pramana-lang';
 
 const I18nContext = createContext();
 

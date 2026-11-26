@@ -536,9 +536,9 @@ export function getMisconceptionHint(quizType, studentAnswer, correctAnswer) {
       if (m.pattern(studentAnswer, correctAnswer)) {
         // Log to "database" for long-term weakness tracking (Feature 2 upgrade)
         try {
-          const history = JSON.parse(localStorage.getItem('tenali-misconceptions') || '[]')
+          const history = JSON.parse(localStorage.getItem('pramana-misconceptions') || '[]')
           history.push({ quizType, label: m.label, timestamp: Date.now() })
-          localStorage.setItem('tenali-misconceptions', JSON.stringify(history))
+          localStorage.setItem('pramana-misconceptions', JSON.stringify(history))
         } catch { /* skipped */ }
         
         // Replace placeholders in hint

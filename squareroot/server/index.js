@@ -1,7 +1,7 @@
 /**
  * ARYABHATA SQUARE ROOT SERVER
  *
- * Standalone Express server for the Square Root drill module in the Tenali project.
+ * Standalone Express server for the Square Root drill module in the Pramana project.
  * This is a legacy/older version of the square root estimation drill module.
  *
  * Architecture:

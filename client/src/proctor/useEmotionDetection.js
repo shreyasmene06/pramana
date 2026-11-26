@@ -3,7 +3,7 @@
  *
  * Runs alongside the existing face detector. Every 2 seconds, classifies the
  * student's facial expression into one of 7 emotions: neutral, happy, sad,
- * angry, fearful, disgusted, surprised. Emits 'tenali-emotion' DOM events
+ * angry, fearful, disgusted, surprised. Emits 'pramana-emotion' DOM events
  * with the latest emotion + confidence + all-scores map.
  *
  * Model: face_expression_model (~330KB quantized)
@@ -134,7 +134,7 @@ export default function useEmotionDetection({
           isStruggling,
           timestamp: Date.now(),
         }
-        window.dispatchEvent(new CustomEvent('tenali-emotion', { detail: payload }))
+        window.dispatchEvent(new CustomEvent('pramana-emotion', { detail: payload }))
         onRef.current?.(payload)
       }
     } catch (err) {

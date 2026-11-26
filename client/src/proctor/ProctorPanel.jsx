@@ -212,7 +212,7 @@ export default function ProctorPanel() {
     enabled: enabled && anomalyDetectionReady,
     onEmotion: useCallback((payload) => {
       try {
-        const KEY = 'tenali_emotion_timeline'
+        const KEY = 'pramana_emotion_timeline'
         const existing = JSON.parse(sessionStorage.getItem(KEY) || '[]')
         const last = existing[existing.length - 1]
         if (!last || payload.timestamp - last.timestamp > 2400) {
@@ -255,7 +255,7 @@ export default function ProctorPanel() {
       emotion={emotion}
       struggling={struggling}
       onDismissStruggling={() => {
-        try { sessionStorage.setItem('tenali_struggling_dismissed', String(Date.now())) } catch {
+        try { sessionStorage.setItem('pramana_struggling_dismissed', String(Date.now())) } catch {
           // ignore — dismiss flag is best-effort
         }
       }}

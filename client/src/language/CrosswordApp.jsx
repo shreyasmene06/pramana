@@ -316,12 +316,12 @@ function getActiveWord(puzzle, selectedCell, direction) {
 
 function getLevelStars(levelId) {
   try {
-    return Number(localStorage.getItem(`tenali_cw_stars_${levelId}`) || 0);
+    return Number(localStorage.getItem(`pramana_cw_stars_${levelId}`) || 0);
   } catch { return 0; }
 }
 
 function setLevelStars(levelId, stars) {
-  try { localStorage.setItem(`tenali_cw_stars_${levelId}`, String(stars)); } catch { /* ignored */ }
+  try { localStorage.setItem(`pramana_cw_stars_${levelId}`, String(stars)); } catch { /* ignored */ }
 }
 
 export default function CrosswordApp({ onBack }) {
@@ -347,7 +347,7 @@ export default function CrosswordApp({ onBack }) {
   // Load XP from storage
   useEffect(() => {
     try {
-      const saved = Number(localStorage.getItem('tenali_crossword_xp') || 0);
+      const saved = Number(localStorage.getItem('pramana_crossword_xp') || 0);
       setTotalXp(saved);
     } catch { /* ignored */ }
   }, []);
@@ -615,7 +615,7 @@ export default function CrosswordApp({ onBack }) {
         setLevelXp(x => x + xpGained);
         const newTotal = totalXp + xpGained;
         setTotalXp(newTotal);
-        try { localStorage.setItem('tenali_crossword_xp', String(newTotal)); } catch { /* ignored */ }
+        try { localStorage.setItem('pramana_crossword_xp', String(newTotal)); } catch { /* ignored */ }
 
         showToast(`Solved: ${w.word}! +${xpGained} XP`, 'correct');
 

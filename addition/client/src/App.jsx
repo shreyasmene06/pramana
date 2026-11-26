@@ -1,7 +1,7 @@
 /**
  * ARYABHATA ADDITION QUIZ - REACT COMPONENT
  *
- * Main component for the Addition quiz module in the Tenali project.
+ * Main component for the Addition quiz module in the Pramana project.
  * This is a standalone/legacy version that provides an interactive addition practice interface.
  *
  * Features:

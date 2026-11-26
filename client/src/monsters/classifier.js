@@ -2,7 +2,7 @@
  * classifier.js
  *
  * Heuristic pattern matchers for the four Misconception Monsters.
- * Spec: D:\vins-phase-2\tenali-docs-backup\FEATURE_MONSTERS.md v0.2 §3, §5.4.
+ * Spec: D:\vins-phase-2\pramana-docs-backup\FEATURE_MONSTERS.md v0.2 §3, §5.4.
  *
  * Public surface:
  *   - classifyMonster({ question, userAnswer, correctAnswer, topic })

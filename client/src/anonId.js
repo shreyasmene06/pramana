@@ -1,4 +1,4 @@
-const ANON_ID_KEY = 'tenali-anon-id'
+const ANON_ID_KEY = 'pramana-anon-id'
 
 export function getOrCreateAnonymousId() {
   try {

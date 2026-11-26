@@ -18,7 +18,7 @@ const SIMILARITY_THRESHOLD = 0.88
 const API = import.meta.env?.VITE_API_BASE_URL || ''
 
 function getToken() {
-  try { return localStorage.getItem('tenali-auth-token') || null } catch { return null }
+  try { return localStorage.getItem('pramana-auth-token') || null } catch { return null }
 }
 
 export default function useFaceVerification({ videoRef, enabled = false, sessionId, onAnomaly }) {

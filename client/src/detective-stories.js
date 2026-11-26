@@ -1,7 +1,7 @@
 /**
  * DETECTIVE STORIES — Complete Case Library
  *
- * Each topic from Tenali has 2–3 story variants so no student gets the same case
+ * Each topic from Pramana has 2–3 story variants so no student gets the same case
  * twice for the same module. Cases include narrative, question, answer, and hints.
  *
  * Schema:
@@ -10,7 +10,7 @@
  *   description — short blurb for the case library
  *   difficulty  — 1 (easy) / 2 (medium) / 3 (hard)
  *   xpReward    — XP earned on completing all stages
- *   topic       — which Tenali module key this belongs to
+ *   topic       — which Pramana module key this belongs to
  *   stages[]    — { narrative, question, answer, hint }
  *
  * Hint levels (shown progressively on hint click):

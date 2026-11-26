@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
+import { Play, RotateCcw, Lightbulb, Compass, Award, Check, X, ArrowRight } from 'lucide-react';
 
 /**
  * AppVideoDemo Component
  * Video showcase and interactive simulated demo player allowing visitors
- * to experience Tenali's real-time problem answering, dynamic feedback,
+ * to experience Pramana's real-time problem answering, dynamic feedback,
  * adaptive score adjustments, and step-by-step hint reveals.
  */
 export default function AppVideoDemo({ onSelectTopic = () => {} }) {
@@ -65,7 +66,8 @@ export default function AppVideoDemo({ onSelectTopic = () => {} }) {
     <section id="demo" className="landing-section">
       <div className="section-header-center">
         <div className="section-tag">
-          <span>▶️ Interactive Demo & Video</span>
+          <Play size={14} style={{ marginRight: 6 }} />
+          <span>Interactive Demo & Video</span>
         </div>
         <h2 className="section-title">See Pramana in Action</h2>
         <p className="section-subtitle">
@@ -83,7 +85,7 @@ export default function AppVideoDemo({ onSelectTopic = () => {} }) {
           </div>
 
           <div className="demo-window-title">
-            <span>🎮 Pramana Interactive Preview Player</span>
+            <span>Pramana Interactive Preview Player</span>
           </div>
 
           <div className="demo-mode-switcher">
@@ -126,8 +128,9 @@ export default function AppVideoDemo({ onSelectTopic = () => {} }) {
             {/* Simulated Quiz Header */}
             <div className="sim-quiz-header">
               <div className="sim-topic-tag">
-                <span>📐 Pythagoras' Theorem</span>
-                <span style={{ opacity: 0.6, fontSize: '0.8rem' }}>· Question 4 of 20</span>
+                <Compass size={14} style={{ marginRight: 6 }} />
+                <span>Pythagoras' Theorem</span>
+                <span style={{ opacity: 0.6, fontSize: '0.8rem', marginLeft: 6 }}>· Question 4 of 20</span>
               </div>
 
               <div className="sim-difficulty-meter">
@@ -181,10 +184,14 @@ export default function AppVideoDemo({ onSelectTopic = () => {} }) {
                       {opt.text}
                     </span>
                     {isAnswered && opt.correct && (
-                      <span style={{ color: '#5cb87a' }}>✓ Correct</span>
+                      <span style={{ color: '#5cb87a', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                        <Check size={14} /> Correct
+                      </span>
                     )}
                     {isAnswered && isSelected && !opt.correct && (
-                      <span style={{ color: '#e05a4a' }}>✗ Incorrect</span>
+                      <span style={{ color: '#e05a4a', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                        <X size={14} /> Incorrect
+                      </span>
                     )}
                   </button>
                 );
@@ -194,8 +201,9 @@ export default function AppVideoDemo({ onSelectTopic = () => {} }) {
             {/* Answer Feedback Banner */}
             {isAnswered && (
               <div className="sim-feedback-banner sim-feedback-correct">
-                <div>
-                  <strong>🎉 Brilliant reasoning!</strong>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Award size={18} color="#5cb87a" />
+                  <strong>Brilliant reasoning!</strong>
                   <span style={{ marginLeft: 8, opacity: 0.9 }}>
                     +0.35 Adapt Score · Difficulty calibrated up! · +50 XP
                   </span>
@@ -205,7 +213,8 @@ export default function AppVideoDemo({ onSelectTopic = () => {} }) {
                   className="demo-action-btn"
                   onClick={() => setShowHint(!showHint)}
                 >
-                  {showHint ? 'Hide Solution' : '💡 Inspect Step-by-Step Proof'}
+                  <Lightbulb size={14} style={{ marginRight: 6 }} />
+                  {showHint ? 'Hide Solution' : 'Inspect Step-by-Step Proof'}
                 </button>
               </div>
             )}
@@ -214,7 +223,7 @@ export default function AppVideoDemo({ onSelectTopic = () => {} }) {
             {showHint && (
               <div className="sim-hint-card">
                 <strong style={{ color: 'var(--clr-accent)', display: 'block', marginBottom: 6 }}>
-                  📐 Step-by-Step Solution:
+                  Step-by-Step Solution:
                 </strong>
                 <ol style={{ paddingLeft: 20, margin: 0, lineHeight: 1.6 }}>
                   <li>Apply the Pythagorean theorem: <code>c² = a² + b²</code></li>
@@ -234,14 +243,16 @@ export default function AppVideoDemo({ onSelectTopic = () => {} }) {
               className="demo-action-btn"
               onClick={handleReset}
             >
-              🔄 Reset Demo
+              <RotateCcw size={14} style={{ marginRight: 6 }} />
+              Reset Demo
             </button>
             <button
               type="button"
               className="demo-action-btn"
               onClick={() => setShowHint(!showHint)}
             >
-              💡 {showHint ? 'Hide Explanation' : 'Show Explanation'}
+              <Lightbulb size={14} style={{ marginRight: 6 }} />
+              {showHint ? 'Hide Explanation' : 'Show Explanation'}
             </button>
           </div>
 
@@ -252,7 +263,7 @@ export default function AppVideoDemo({ onSelectTopic = () => {} }) {
               onClick={() => onSelectTopic('pythag')}
             >
               <span>Play Full Pythagoras Quiz</span>
-              <span aria-hidden="true">➔</span>
+              <ArrowRight size={14} style={{ marginLeft: 6 }} />
             </button>
           </div>
         </div>

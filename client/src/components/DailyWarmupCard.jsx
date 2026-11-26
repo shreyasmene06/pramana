@@ -12,13 +12,13 @@ export default function DailyWarmupCard({ completedTopics = [], onSelectTopic, a
     const fetchWarmup = async () => {
       try {
         const guestHabit = (() => {
-          try { return JSON.parse(localStorage.getItem('tenali-weekly-habit') || 'null'); } catch (e) { void e; return null; }
+          try { return JSON.parse(localStorage.getItem('pramana-weekly-habit') || 'null'); } catch (e) { void e; return null; }
         })();
         const guestLadder = (() => {
-          try { return JSON.parse(localStorage.getItem('tenali-spacing-ladder') || 'null'); } catch (e) { void e; return null; }
+          try { return JSON.parse(localStorage.getItem('pramana-spacing-ladder') || 'null'); } catch (e) { void e; return null; }
         })();
 
-        const token = localStorage.getItem('tenali-token') || '';
+        const token = localStorage.getItem('pramana-token') || '';
         const topicsParam = Array.isArray(completedTopics) && completedTopics.length > 0
           ? `&topics=${encodeURIComponent(completedTopics.join(','))}`
           : '';
@@ -36,7 +36,7 @@ export default function DailyWarmupCard({ completedTopics = [], onSelectTopic, a
           setWarmupData(data);
           if (data.weeklyHabit) {
             try {
-              localStorage.setItem('tenali-weekly-habit', JSON.stringify(data.weeklyHabit));
+              localStorage.setItem('pramana-weekly-habit', JSON.stringify(data.weeklyHabit));
             } catch (e) { void e; }
           }
         }

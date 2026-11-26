@@ -14,8 +14,8 @@
  * with fresh values every time; answers are computed and checked locally.
  * No server changes. Progress persists in localStorage.
  *
- * Rendered as a Tenali module via the modeMap registry; receives `onBack`
- * (and `setMode`, used by the Road License to open a Tenali card).
+ * Rendered as a Pramana module via the modeMap registry; receives `onBack`
+ * (and `setMode`, used by the Road License to open a Pramana card).
  */
 import { useRef, useState } from 'react';
 import './CarJourneyApp.css';
@@ -1164,7 +1164,7 @@ const CJ_STOPS = [
 
 /* ── Progress persistence ──────────────────────────────────────────────── */
 
-const CJ_LS_KEY = 'tenali-car-journey';
+const CJ_LS_KEY = 'pramana-car-journey';
 
 /** Empty per-topic outcome record — the shape a future global mastery store can ingest untransformed. */
 function cjEmptyOutcome() { return { attempts: 0, correct: 0, checkPassed: false, lastSeen: 0 }; }

@@ -75,7 +75,7 @@ router.get('/daily-warmup', async (req, res) => {
 
       habit = normalizeWeeklyHabit(user.weeklyHabit || {});
     } else {
-      // Guest learner: accept topics passed from localStorage['tenali-completed-topics']
+      // Guest learner: accept topics passed from localStorage['pramana-completed-topics']
       if (req.query.topics) {
         const raw = typeof req.query.topics === 'string'
           ? req.query.topics.split(',')

@@ -4,7 +4,7 @@
  * Story-based detective cases with:
  * - Progressive hints for each question
  * - Case deduplication per topic (no user gets same case twice for same topic)
- * - All Tenali modules covered with multiple variants
+ * - All Pramana modules covered with multiple variants
  *
  * This is a drop-in replacement for the original MathDetectiveApp in App.jsx.
  * It imports stories from detective-stories.js and adds hint & deduplication features.
@@ -1105,8 +1105,8 @@ const ACHIEVEMENTS = [
   { id: 'completionist', title: 'Completionist',     icon: '🏆', desc: 'Solve all cases', check: () => false },
 ];
 
-const ACHIEVEMENT_STORAGE_KEY = 'tenali-detective-achievements';
-const NEW_ACHIEVEMENT_KEY = 'tenali-detective-new-achievements';
+const ACHIEVEMENT_STORAGE_KEY = 'pramana-detective-achievements';
+const NEW_ACHIEVEMENT_KEY = 'pramana-detective-new-achievements';
 
 function loadAchievements() {
   try {
@@ -1244,7 +1244,7 @@ function AchievementNotification({ achievements, onDismiss }) {
 
 // ─── Leaderboard Component ───────────────────────────────────────────────
 
-const LEADERBOARD_KEY = 'tenali-detective-leaderboard';
+const LEADERBOARD_KEY = 'pramana-detective-leaderboard';
 
 function loadLeaderboard() {
   try {

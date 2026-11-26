@@ -1,4 +1,4 @@
-// Vitest global setup for the Tenali client.
+// Vitest global setup for the Pramana client.
 //
 // Registers the jest-dom matchers (toBeInTheDocument, toHaveTextContent, …)
 // in their Vitest flavour so component tests can assert on the DOM the way

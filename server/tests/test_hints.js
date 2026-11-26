@@ -5,9 +5,9 @@ const path = require('path');
 const PORT = 4500;
 const API_URL = `http://localhost:${PORT}/api/hints/lesson-complete`;
 
-console.log('Starting Tenali test server on port', PORT);
+console.log('Starting Pramana test server on port', PORT);
 const child = spawn('node', [path.join(__dirname, '..', 'index.js')], {
-  env: { ...process.env, PORT, MONGO_URI: 'mongodb://127.0.0.1:27017/tenali-test-nonexistent-db' }
+  env: { ...process.env, PORT, MONGO_URI: 'mongodb://127.0.0.1:27017/pramana-test-nonexistent-db' }
 });
 
 let serverStarted = false;
@@ -15,7 +15,7 @@ let serverStarted = false;
 child.stdout.on('data', (data) => {
   const output = data.toString();
   console.log(`[Server STDOUT] ${output.trim()}`);
-  if (output.includes('Tenali app running') && !serverStarted) {
+  if (output.includes('Pramana app running') && !serverStarted) {
     serverStarted = true;
     runTests();
   }

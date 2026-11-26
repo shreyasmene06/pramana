@@ -17,8 +17,8 @@ if (!eventMatch) {
   process.exit(1);
 }
 const eventName = eventMatch[1];
-if (eventName !== 'tenali:wrongAnswer') {
-  console.log(`FAIL | EVENT_NAME = ${eventName}, expected tenali:wrongAnswer`);
+if (eventName !== 'pramana:wrongAnswer') {
+  console.log(`FAIL | EVENT_NAME = ${eventName}, expected pramana:wrongAnswer`);
   process.exit(1);
 }
 console.log(`PASS | EVENT_NAME = ${eventName}`);

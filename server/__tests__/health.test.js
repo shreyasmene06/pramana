@@ -41,7 +41,7 @@ describe('GET /api/health', () => {
     expect(body).not.toContain('JWT_SECRET');
     expect(body).not.toContain('MONGO_URI');
     expect(body).not.toContain(process.env.JWT_SECRET);
-    expect(body).not.toContain('TENALI_SEED_USERS');
+    expect(body).not.toContain('PRAMANA_SEED_USERS');
   });
 
   it('does not need a database connection', async () => {

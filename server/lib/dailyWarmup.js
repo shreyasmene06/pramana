@@ -22,7 +22,7 @@ const DEFAULT_WARMUP_QUESTIONS_COUNT = 3;
 
 const FOUNDATIONAL_TOPICS = ['addition', 'multiplication', 'arithmetic', 'fractions', 'subtraction', 'lineq'];
 
-// ─── Topic to Tenali App-Key Mapping ─────────────────────────────────────────
+// ─── Topic to Pramana App-Key Mapping ─────────────────────────────────────────
 
 const TOPIC_APP_KEYS = {
   addition: 'basicarith',

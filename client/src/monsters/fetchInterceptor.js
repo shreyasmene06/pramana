@@ -3,15 +3,15 @@
  *
  * Installs a wrapper around window.fetch that observes /api/<topic>-api/check
  * responses and, on a wrong answer, runs the monster classifier, persists the
- * log entry, and dispatches a `tenali:wrongAnswer` CustomEvent for UI subscribers.
+ * log entry, and dispatches a `pramana:wrongAnswer` CustomEvent for UI subscribers.
  *
- * Spec: D:\vins-phase-2\tenali-docs-backup\FEATURE_MONSTERS.md v0.2 §5.
+ * Spec: D:\vins-phase-2\pramana-docs-backup\FEATURE_MONSTERS.md v0.2 §5.
  *
  * Design notes (improvements over v0.2 baseline spec):
  *  A. Topic allow-list. We only run classification for math topic slugs
  *     (basicarith, multiply, etc.). Endpoints like /api/auth/* or future
  *     non-math endpoints with `correct: false` are ignored.
- *  B. Debug instrumentation. When localStorage.tenali.monsters.debug === 'true',
+ *  B. Debug instrumentation. When localStorage.pramana.monsters.debug === 'true',
  *     a `_monstersDebug` global is exposed with lastEvent/eventLog/replay/storageDump/
  *     enable/disable. Dev-only; production users see nothing.
  *  C. Atomic append. monsterStore.append calls go through a module-level
@@ -62,9 +62,9 @@ const ALLOWED_TOPICS = new Set([
   'polymul',  // Poly Multiply — enables Bracketeer on a(x±c) easy questions
 ]);
 
-const EVENT_NAME = 'tenali:wrongAnswer';
-const DEBUG_FLAG_KEY = 'tenali.monsters.debug';
-const ENABLE_FLAG_KEY = 'tenali.monsters.enabled';
+const EVENT_NAME = 'pramana:wrongAnswer';
+const DEBUG_FLAG_KEY = 'pramana.monsters.debug';
+const ENABLE_FLAG_KEY = 'pramana.monsters.enabled';
 
 const DEBUG_FIXTURES = {
   'bracketeer':      { topic: 'polymul', question: '3(x+2)', userAnswer: '3x + 2', correctAnswer: '3x + 6' },
@@ -214,7 +214,7 @@ function extractNormalized(data, url) {
 function notifyMonsterLogChanged() {
   try {
     if (typeof window === 'undefined') return;
-    window.dispatchEvent(new CustomEvent('tenali:monsterLogChanged'));
+    window.dispatchEvent(new CustomEvent('pramana:monsterLogChanged'));
   } catch { /* never break the interceptor */ }
 }
 
@@ -437,7 +437,7 @@ function installDebugSurface() {
      */
     storageDump() {
       try {
-        const raw = window.localStorage.getItem('tenali.monsterLog.v1');
+        const raw = window.localStorage.getItem('pramana.monsterLog.v1');
         return raw ? JSON.parse(raw) : null;
       } catch (e) {
         return { error: e.message };

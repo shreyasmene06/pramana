@@ -4,7 +4,7 @@ let code = fs.readFileSync('client/src/App.jsx', 'utf8');
 // The things to extract
 const thingsToExtract = [
   'export const API = import.meta.env.VITE_API_BASE_URL || \'\';',
-  'const XP_TOKEN_KEY = \'tenali-xp\';',
+  'const XP_TOKEN_KEY = \'pramana-xp\';',
 ];
 
 const start1 = code.indexOf('export function getLocalXp(');
@@ -21,7 +21,7 @@ const utilsContent = `import React from 'react';
 
 export const API = import.meta.env.VITE_API_BASE_URL || '';
 
-const XP_TOKEN_KEY = 'tenali-xp';
+const XP_TOKEN_KEY = 'pramana-xp';
 
 ${xpFns}
 
@@ -32,7 +32,7 @@ fs.writeFileSync('client/src/utils.js', utilsContent);
 
 // Remove them from App.jsx
 code = code.replace('export const API = import.meta.env.VITE_API_BASE_URL || \'\';', '');
-code = code.replace('const XP_TOKEN_KEY = \'tenali-xp\';', '');
+code = code.replace('const XP_TOKEN_KEY = \'pramana-xp\';', '');
 code = code.replace(xpFns, '');
 code = code.replace(svgFns, '');
 

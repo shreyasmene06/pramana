@@ -5,7 +5,7 @@
  * Authoritative source of "what monsters has the student triggered, and
  * which have they cured?" on this device.
  *
- * Spec: D:\vins-phase-2\tenali-docs-backup\FEATURE_MONSTERS.md v0.2 §4.
+ * Spec: D:\vins-phase-2\pramana-docs-backup\FEATURE_MONSTERS.md v0.2 §4.
  *
  * API surface (all sync, all idempotent, all never-throw):
  *   - load({ persist })         -> state (persist: false never writes)
@@ -32,7 +32,7 @@
  *   the data is gone — by design (same as private browsing would behave).
  */
 
-const STORAGE_KEY = 'tenali.monsterLog.v1';
+const STORAGE_KEY = 'pramana.monsterLog.v1';
 const CURRENT_VERSION = 1;
 
 const KNOWN_MONSTER_IDS = ['bracketeer', 'sign-swapper', 'decimal-drifter', 'carry-crasher'];

@@ -415,7 +415,7 @@ function extendedGCD(a, b) {
 
 Save user input history to localStorage:
 ```javascript
-// Key: 'tenali_exteuclid_history'
+// Key: 'pramana_exteuclid_history'
 // Value: array of { a, b, gcd, x, y, timestamp }
 ```
 

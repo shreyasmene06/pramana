@@ -19,8 +19,8 @@ export function useQuizHintsAndXp(concept, finished, score, totalQ, wasSolved = 
 
   useEffect(() => {
     const handleHintUsed = () => setHintsUsedCount(c => c + 1);
-    window.addEventListener('tenali-hint-used', handleHintUsed);
-    return () => window.removeEventListener('tenali-hint-used', handleHintUsed);
+    window.addEventListener('pramana-hint-used', handleHintUsed);
+    return () => window.removeEventListener('pramana-hint-used', handleHintUsed);
   }, []);
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export function useQuizHintsAndXp(concept, finished, score, totalQ, wasSolved = 
     const submitCompletion = async () => {
       setBonusLoading(true);
       try {
-        const token = localStorage.getItem('tenali-auth-token');
+        const token = localStorage.getItem('pramana-auth-token');
         const res = await fetch(`${API}/api/hints/lesson-complete`, {
           method: 'POST',
           headers: {
@@ -63,7 +63,7 @@ export function useQuizHintsAndXp(concept, finished, score, totalQ, wasSolved = 
             } else if (data.balance !== undefined) {
               setLocalXp(data.balance);
               try {
-                window.dispatchEvent(new CustomEvent('tenali-xp-float', { detail: { diff: data.totalAward } }));
+                window.dispatchEvent(new CustomEvent('pramana-xp-float', { detail: { diff: data.totalAward } }));
               } catch { /* dispatch may fail in restricted contexts */ }
             }
           }
@@ -79,4 +79,4 @@ export function useQuizHintsAndXp(concept, finished, score, totalQ, wasSolved = 
 
   return { hintsUsedCount, xpBreakdown, bonusLoading };
 }
-
+

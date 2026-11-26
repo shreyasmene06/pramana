@@ -10,8 +10,8 @@
 // See #199.
 
 export const TILES = [
-    { key: 'battle', name: '⚔️ Battle Arena', subtitle: 'Live fastest-finger duels', color: 'red', category: 'shelf' },
-    { key: 'detective', name: '🔍 Detective Agency', subtitle: 'Solve math mysteries and crack cases!', color: 'indigo', category: 'shelf' },
+    { key: 'battle', name: 'Battle Arena', subtitle: 'Live fastest-finger duels', color: 'red', category: 'shelf' },
+    { key: 'detective', name: 'Detective Agency', subtitle: 'Solve math mysteries and crack cases!', color: 'indigo', category: 'shelf' },
     { key: 'addition', name: 'Addition', subtitle: '20-question addition practice', color: 'blue', category: 'number-foundations' },
     { key: 'column-addition', name: 'Column Addition', subtitle: 'Vertical addition with carrying', color: 'blue', category: 'number-foundations', foldInto: 'basicarith' },
     { key: 'column-division', name: 'Column Division', subtitle: 'Vertical division with long division', color: 'blue', category: 'number-foundations', foldInto: 'basicarith' },
@@ -35,7 +35,7 @@ export const TILES = [
     { key: 'dotprod', name: 'Dot Products', subtitle: 'Vectors, matrices, fill blanks', color: 'blue', category: 'linear-algebra' },
     { key: 'fractionadd', name: 'Fractions', subtitle: 'Add, subtract, multiply & divide', color: 'green', category: 'number-foundations' },
     { key: 'funceval', name: 'Functions', subtitle: 'Evaluate f(x), f(x,y), f(x,y,z)', color: 'green', category: 'algebra' },
-    { key: 'geocraft', name: '📐 GeoCraft', subtitle: 'Interactive Geometry Lab', color: 'featured', category: 'shape-space' },
+    { key: 'geocraft', name: 'GeoCraft', subtitle: 'Interactive Geometry Lab', color: 'featured', category: 'shape-space' },
     { key: 'gk', name: 'GK', subtitle: 'General Knowledge questions', color: 'purple', category: 'shelf' },
     { key: 'gst', name: 'GST', subtitle: 'Goods & Services Tax', color: 'purple', category: 'everyday-maths' },
     { key: 'hcflcm', name: 'HCF & LCM', subtitle: 'Highest common factor & LCM', color: 'blue', category: 'number-foundations' },
@@ -54,7 +54,7 @@ export const TILES = [
     { key: 'matrix', name: 'Matrices', subtitle: 'Add, multiply, determinant', color: 'blue', category: 'linear-algebra' },
     { key: 'mensur', name: 'Mensuration', subtitle: 'Area, volume, surface area', color: 'green', category: 'shape-space' },
     { key: 'mensuration-lab', name: 'Mensuration Lab', subtitle: 'Area, perimeter & volume through animated shapes', color: 'green', category: 'shape-space' },
-    { key: 'math-lab', name: '🔬 Visual Learning Universe', subtitle: 'Visual, Mensuration & Addition labs', color: 'orange', category: 'shape-space' },
+    { key: 'math-lab', name: 'Visual Learning Universe', subtitle: 'Visual, Mensuration & Addition labs', color: 'orange', category: 'shape-space' },
     { key: 'multiply', name: 'Multiplication', subtitle: 'Practice any times table (2–19)', color: 'purple', category: 'number-foundations' },
     { key: 'bases', name: 'Number Bases', subtitle: 'Binary, decimal, hexadecimal', color: 'green', category: 'number-foundations' },
     { key: 'percent', name: 'Percentages', subtitle: 'Find, increase, reverse, compound', color: 'blue', category: 'everyday-maths' },
@@ -102,10 +102,10 @@ export const TILES = [
     { key: 'lineqgym', name: 'Linear Eq.', subtitle: 'Solve linear equations (MCQ)', color: 'blue', category: 'algebra', foldInto: 'lineareq' },
     { key: 'indicesgym', name: 'Indices', subtitle: 'Index laws (MCQ)', color: 'green', category: 'algebra', foldInto: 'indices' },
     { key: 'polygym', name: 'Polynomials', subtitle: 'Arithmetic → monomial algebra (MCQ)', color: 'blue', category: 'algebra', foldInto: 'polymul' },
-    { key: 'water-jug-lab', name: '🧪 Water Jug Lab', subtitle: 'GCD discovery — 13-level progression', color: 'teal', category: 'shelf' },
-    { key: 'equation-crafting-lab', name: '⚗️ Equation Crafting Lab', subtitle: 'Build expressions in the mixing pot', color: 'orange', category: 'algebra' },
+    { key: 'water-jug-lab', name: 'Water Jug Lab', subtitle: 'GCD discovery — 13-level progression', color: 'teal', category: 'shelf' },
+    { key: 'equation-crafting-lab', name: 'Equation Crafting Lab', subtitle: 'Build expressions in the mixing pot', color: 'orange', category: 'algebra' },
     { key: 'contrastlist', name: 'Contrast Challenge', subtitle: 'Distinguish similar concepts', color: 'featured', category: 'shelf' },
-    { key: 'pathmap', name: '📍 Learning Path', subtitle: 'Prerequisite graph & personalized path', color: 'orange', category: 'shelf' },
+    { key: 'pathmap', name: 'Learning Path', subtitle: 'Prerequisite graph & personalized path', color: 'orange', category: 'shelf' },
 ]
 
 // Hamburger-only entries (#190). Data only -- composition stays in App.jsx.
@@ -119,9 +119,9 @@ export const FEATURED_TILES = [
 ]
 
 // Hamburger pin for Visual Learning Universe (#191); also on home grid (#216).
-export const MATH_LAB_ENTRY = { key: 'math-lab', name: '🔬 Visual Learning Universe', subtitle: 'Visual, Mensuration & Addition labs', color: 'orange' }
+export const MATH_LAB_ENTRY = { key: 'math-lab', name: 'Visual Learning Universe', subtitle: 'Visual, Mensuration & Addition labs', color: 'orange' }
 
 // Hamburger pin for GeoCraft (#191); also on home grid (#215).
-export const GEOCRAFT_ENTRY = { key: 'geocraft', name: '📐 GeoCraft', subtitle: 'Interactive Geometry Lab', color: 'featured' }
+export const GEOCRAFT_ENTRY = { key: 'geocraft', name: 'GeoCraft', subtitle: 'Interactive Geometry Lab', color: 'featured' }
 
 export default TILES

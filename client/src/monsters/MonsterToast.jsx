@@ -2,9 +2,9 @@
  * MonsterToast.jsx
  *
  * Renders a brief, top-right floating notification when a monster is
- * triggered. Subscribes to `tenali:wrongAnswer` CustomEvent on window.
+ * triggered. Subscribes to `pramana:wrongAnswer` CustomEvent on window.
  *
- * Spec: D:\vins-phase-2\tenali-docs-backup\FEATURE_MONSTERS.md v0.2 §6.
+ * Spec: D:\vins-phase-2\pramana-docs-backup\FEATURE_MONSTERS.md v0.2 §6.
  *
  * UX:
  *   - First sighting ("introduced!") — 5s on screen, larger, has "View Hall" CTA
@@ -30,7 +30,7 @@ import { getMonsterName } from './monsterExplanations.js';
 import { getMonsterHealedState } from './monsterStore.js';
 import MonsterAvatar from './MonsterAvatar.jsx';
 
-const EVENT_NAME = 'tenali:wrongAnswer';
+const EVENT_NAME = 'pramana:wrongAnswer';
 const INTRO_DURATION_MS = 5000;
 const REPEAT_DURATION_MS = 2000;
 const FADE_OUT_MS = 300;
@@ -176,8 +176,8 @@ export function MonsterToast({ onOpenHall, onTap }) {
         }, FADE_OUT_MS);
       }, 9000);
     }
-    window.addEventListener('tenali:sessionSummary', handle);
-    return () => window.removeEventListener('tenali:sessionSummary', handle);
+    window.addEventListener('pramana:sessionSummary', handle);
+    return () => window.removeEventListener('pramana:sessionSummary', handle);
   }, []);
 
   function dismiss() {

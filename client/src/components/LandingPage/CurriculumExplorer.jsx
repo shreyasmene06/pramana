@@ -1,9 +1,20 @@
 import React, { useState } from 'react';
+import {
+  Hash,
+  Compass,
+  Variable,
+  ShoppingBag,
+  LineChart,
+  Dices,
+  BookOpen,
+  ArrowRight,
+} from 'lucide-react';
 
 const CATEGORIES = [
   {
     id: 'numbers',
-    name: '🔢 Number Foundations',
+    name: 'Number Foundations',
+    icon: Hash,
     topics: [
       { key: 'addition', name: 'Addition', sub: '20-question mental addition' },
       { key: 'multiply', name: 'Multiplication Tables', sub: 'Adaptive times table drills (2–19)' },
@@ -17,7 +28,8 @@ const CATEGORIES = [
   },
   {
     id: 'shape',
-    name: '📐 Shape & Space',
+    name: 'Shape & Space',
+    icon: Compass,
     topics: [
       { key: 'angles', name: 'Angles', sub: 'Parallel lines, transversals & interior sum' },
       { key: 'pythag', name: "Pythagoras' Theorem", sub: '2D & 3D right-angled triangle solving' },
@@ -31,7 +43,8 @@ const CATEGORIES = [
   },
   {
     id: 'algebra',
-    name: '🔣 Algebra',
+    name: 'Algebra',
+    icon: Variable,
     topics: [
       { key: 'lineareq', name: 'Linear Equations', sub: 'One-variable balance & isolation' },
       { key: 'quadratic', name: 'Quadratic Substitution', sub: 'Evaluate ax² + bx + c' },
@@ -45,7 +58,8 @@ const CATEGORIES = [
   },
   {
     id: 'everyday',
-    name: '🛒 Everyday Maths & Finance',
+    name: 'Everyday Maths & Finance',
+    icon: ShoppingBag,
     topics: [
       { key: 'percent', name: 'Percentages', sub: 'Discounts, reverse percent & compounding' },
       { key: 'profitloss', name: 'Profit & Loss', sub: 'Markup, cost price & margins' },
@@ -57,7 +71,8 @@ const CATEGORIES = [
   },
   {
     id: 'calculus',
-    name: '📈 Calculus & Advanced',
+    name: 'Calculus & Advanced',
+    icon: LineChart,
     topics: [
       { key: 'diff', name: 'Differentiation', sub: 'Power rule, tangents & turning points' },
       { key: 'integ', name: 'Integration', sub: 'Definite integrals & area under curves' },
@@ -69,12 +84,13 @@ const CATEGORIES = [
   },
   {
     id: 'games',
-    name: '🎲 Games & Reasoning',
+    name: 'Games & Reasoning',
+    icon: Dices,
     topics: [
-      { key: 'battle', name: '⚔️ Battle Arena', sub: 'Real-time 1v1 multiplayer duels' },
-      { key: 'detective', name: '🔍 Detective Agency', sub: 'Narrative math mysteries & case files' },
+      { key: 'battle', name: 'Battle Arena', sub: 'Real-time 1v1 multiplayer duels' },
+      { key: 'detective', name: 'Detective Agency', sub: 'Narrative math mysteries & case files' },
       { key: 'sudoku', name: 'Sudoku Puzzle', sub: '9×9 logical grid solving' },
-      { key: 'riddle', name: '🧩 Math Riddles', sub: 'Discover hidden arithmetic rules' },
+      { key: 'riddle', name: 'Math Riddles', sub: 'Discover hidden arithmetic rules' },
       { key: 'spot', name: 'Twin Hunt', sub: 'Visual spot-the-common-object game' },
       { key: 'carjourney', name: 'The Car Journey', sub: '16-stop progressive math odyssey' },
     ],
@@ -94,38 +110,39 @@ export default function CurriculumExplorer({
     <section id="curriculum" className="landing-section">
       <div className="section-header-center">
         <div className="section-tag">
-          <span>📚 Curriculum Architecture</span>
+          <BookOpen size={14} style={{ marginRight: 6 }} />
+          <span>Curriculum Architecture</span>
         </div>
         <h2 className="section-title">Comprehensive Mathematical Coverage</h2>
         <p className="section-subtitle">
-          Explore structured modules spanning elementary numeracy, secondary school geometry, Cambridge IGCSE topics, and advanced calculus.
+          Six organized domains spanning 69 topic areas, each powered by algorithmic problem synthesis and real-time difficulty adaptation.
         </p>
+
+        {/* Category Filter Pills */}
+        <div className="curriculum-tabs">
+          {CATEGORIES.map((cat) => {
+            const IconComponent = cat.icon;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                className={`curriculum-tab-btn ${activeCategory === cat.id ? 'active' : ''}`}
+                onClick={() => setActiveCategory(cat.id)}
+              >
+                {IconComponent && <IconComponent size={16} />}
+                <span>{cat.name}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Category Tabs */}
-      <div className="curriculum-tabs" role="tablist">
-        {CATEGORIES.map((cat) => (
-          <button
-            key={cat.id}
-            type="button"
-            className={`curriculum-tab-btn ${
-              activeCategory === cat.id ? 'active' : ''
-            }`}
-            onClick={() => setActiveCategory(cat.id)}
-            role="tab"
-            aria-selected={activeCategory === cat.id}
-          >
-            {cat.name}
-          </button>
-        ))}
-      </div>
-
-      {/* Topics Grid */}
-      <div className="curriculum-grid">
+      {/* Topics Grid for Active Category */}
+      <div className="curriculum-topics-grid">
         {currentCategory.topics.map((t) => (
           <div
             key={t.key}
-            className="curriculum-card"
+            className="curriculum-topic-card"
             onClick={() => onSelectTopic(t.key)}
             role="button"
             tabIndex={0}
@@ -136,31 +153,23 @@ export default function CurriculumExplorer({
               }
             }}
           >
-            <h4 className="curriculum-card-title">{t.name}</h4>
-            <p className="curriculum-card-sub">{t.sub}</p>
-            <span
-              style={{
-                fontSize: '0.78rem',
-                color: 'var(--clr-accent)',
-                marginTop: 10,
-                fontWeight: 600,
-              }}
-            >
-              Launch Practice ➔
-            </span>
+            <div className="curriculum-topic-header">
+              <span className="curriculum-topic-title">{t.name}</span>
+              <ArrowRight size={14} className="curriculum-topic-arrow" />
+            </div>
+            <p className="curriculum-topic-sub">{t.sub}</p>
           </div>
         ))}
       </div>
 
-      {/* Bottom Action */}
-      <div className="curriculum-bottom-cta">
+      <div style={{ textAlign: 'center', marginTop: 36 }}>
         <button
           type="button"
           className="hero-btn-primary"
           onClick={onExplorePuzzles}
         >
-          <span>View All 90+ Topics in Interactive Grid</span>
-          <span aria-hidden="true">➔</span>
+          <span>Explore All 90+ Topics</span>
+          <ArrowRight size={16} style={{ marginLeft: 6 }} />
         </button>
       </div>
     </section>

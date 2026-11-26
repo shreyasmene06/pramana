@@ -13,7 +13,7 @@ const jwt = require('jsonwebtoken');
 
 const { JWT_SECRET } = require('../auth');
 
-const TEST_DB = 'mongodb://127.0.0.1:27017/tenali_concept_test';
+const TEST_DB = 'mongodb://127.0.0.1:27017/pramana_concept_test';
 
 // Two distinct learners, both valid ObjectIds so the mastery path is exercised.
 const LEARNER_A = new mongoose.Types.ObjectId().toString();

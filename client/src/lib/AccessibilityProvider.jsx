@@ -45,7 +45,7 @@ export function AccessibilityProvider({ children }) {
   const { t } = useI18n();
   const readSavedA11y = () => {
     try {
-      return JSON.parse(localStorage.getItem('tenali-a11y')) || {};
+      return JSON.parse(localStorage.getItem('pramana-a11y')) || {};
     } catch { return {}; }
   };
 
@@ -83,7 +83,7 @@ export function AccessibilityProvider({ children }) {
   useEffect(() => {
     const config = { dyslexiaFont, textSize, letterSpacing, highContrast, readingRuler, colorTint, textToSpeech };
     try {
-      localStorage.setItem('tenali-a11y', JSON.stringify(config));
+      localStorage.setItem('pramana-a11y', JSON.stringify(config));
     } catch { // ignored
     }
 

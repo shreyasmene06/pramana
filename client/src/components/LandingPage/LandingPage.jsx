@@ -11,7 +11,7 @@ import './LandingPage.css';
 
 /**
  * LandingPage Component
- * Main landing page for Tenali introducing the platform, showcasing key features,
+ * Main landing page for Pramana introducing the platform, showcasing key features,
  * sliding carousel, video/animated demo, curriculum explorer, and navigation to puzzles.
  */
 export default function LandingPage({
