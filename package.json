@@ -1,17 +1,14 @@
 {
-  "name": "tenali-contributors-bot",
+  "name": "pramana",
   "private": true,
   "version": "1.0.0",
-  "description": "GitHub Actions bot that regenerates README contributor stats",
+  "description": "Pramana — Adaptive math and logic learning platform",
   "scripts": {
-    "update-readme": "node scripts/update-readme-contributors.js",
-    "update-readme:dry": "node scripts/update-readme-contributors.js --dry-run"
+    "test": "npm --prefix server test && npm --prefix client test",
+    "build": "npm --prefix client run build",
+    "lint": "npm --prefix client run lint"
   },
   "engines": {
     "node": ">=20"
-  },
-  "devDependencies": {
-    "acorn": "^8.16.0",
-    "acorn-jsx": "^5.3.2"
   }
 }

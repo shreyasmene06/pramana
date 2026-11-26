@@ -4,7 +4,7 @@
  * An educational game that teaches Multiples, Common Multiples and the
  * Least Common Multiple (LCM) through a "fizz-buzz" style counting circle.
  *
- * Three children — User, Tenali and Birbal — sit in a circle and take turns
+ * Three children — User, Arya and Birbal — sit in a circle and take turns
  * counting up from 1. On each turn the number is replaced by a food word when
  * it is a multiple of one of the chosen numbers:
  *   a -> Idli, b -> Vada, c -> Sambhar (optional third number).
@@ -21,8 +21,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import './IdliVadaSambharApp.css';
 import { useI18n } from './lib/i18n.jsx';
 
-const PLAYERS = ['User', 'Tenali', 'Birbal'];
-const PLAYER_EMOJI = { User: '🧒', Tenali: '👦', Birbal: '👳' };
+const PLAYERS = ['User', 'Arya', 'Birbal'];
+const PLAYER_EMOJI = { User: '🧒', Arya: '👦', Birbal: '👳' };
 
 const gcd = (x, y) => (y === 0 ? x : gcd(y, x % y));
 const lcm2 = (x, y) => (x / gcd(x, y)) * y;
@@ -112,7 +112,7 @@ export default function IdliVadaSambharApp({ onBack }) {
     advance();
   }, [targetLcm, hasWon, advance]);
 
-  // ---- Computer players (Tenali & Birbal) always answer correctly ----
+  // ---- Computer players (Arya & Birbal) always answer correctly ----
   useEffect(() => {
     if (phase !== 'playing' || winInfo) return;
     if (currentPlayer === 'User') return;

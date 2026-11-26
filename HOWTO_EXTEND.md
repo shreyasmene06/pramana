@@ -1,6 +1,6 @@
 # Developer Guide: Extending Conceptual MCQ Quizzes to New Topics
 
-The **Conceptual MCQ Variants** feature is built with a highly extensible, generic architecture. Adding conceptual checkpoints to any of the other 40+ topics in Tenali requires **zero code changes**. You only need to seed a new JSON question database.
+The **Conceptual MCQ Variants** feature is built with a highly extensible, generic architecture. Adding conceptual checkpoints to any of the other 40+ topics in Pramana requires **zero code changes**. You only need to seed a new JSON question database.
 
 Follow this step-by-step guide to add conceptual questions for a new mathematical topic.
 

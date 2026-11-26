@@ -177,7 +177,7 @@ function updateTopicSpacingLadder(currentLadder = {}, topic, isCorrect) {
 
 
 
-const CHARACTERS = ['Maya', 'Rohan', 'Aria', 'Tenali', 'Liam', 'Zara', 'Priya', 'Kavya', 'Arjun', 'Ananya', 'Vikram', 'Leo', 'Meera'];
+const CHARACTERS = ['Maya', 'Rohan', 'Aria', 'Karan', 'Liam', 'Zara', 'Priya', 'Kavya', 'Arjun', 'Ananya', 'Vikram', 'Leo', 'Meera'];
 
 // ─── Narrative Storyline Question Generators ────────────────────────────────
 

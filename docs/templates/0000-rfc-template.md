@@ -32,7 +32,7 @@ Detailed walk-through of how a student or teacher interacts with the feature.
 3. **Feedback Mechanics:** What happens on correct/incorrect attempts? (e.g., celebratory micro-animations, instant diagnostic hint, error correction modal).
 
 ### 3.2 Visual & Design System Compliance
-- **Color Palette & Theme:** Adheres to Tenali design system tokens (`var(--clr-text)`, `var(--clr-accent)`, etc.).
+- **Color Palette & Theme:** Adheres to Pramana design system tokens (`var(--clr-text)`, `var(--clr-accent)`, etc.).
 - **Typography & Icons:** Uses standard Google Fonts and Lucide icons.
 - **Responsive Layout:** Works seamlessly across mobile (`320px+`) and desktop viewports.
 
@@ -74,7 +74,7 @@ Provide the exact JSON schema for problem datasets or configuration files:
 
 ## 5. Zero-Cost Scaling & Performance Constraints
 
-Tenali is built for zero-cost, high-scale execution for millions of concurrent users.
+Pramana is built for zero-cost, high-scale execution for millions of concurrent users.
 
 - [ ] **Client-Side Deterministic Logic:** Does this feature execute 100% on the client browser without external LLM/API billing?
 - [ ] **Asset Footprint:** Are SVG graphics, sounds, and datasets optimized (< 100KB gzip)?

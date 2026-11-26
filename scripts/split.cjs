@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 (async () => {
-  const m = await import('file:///c:/PROJECTS/Tenali/Tenali-IITROPAR/client/src/data/learnContent.js');
+  const m = await import('../client/src/data/learnContent.js');
   const data = m.learnContent;
   const dir = path.join(__dirname, 'learnContent');
   if (!fs.existsSync(dir)) {

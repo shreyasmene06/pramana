@@ -1,12 +1,12 @@
-# Tenali Core Problem Statements
+# Pramana Core Problem Statements
 
 ## Problem Statement A: Learner Motivation & Retention (Engagement)
 
-**Priority Rationale:** We observed students trying Tenali, enjoying it, but not returning. Solving engagement is the top priority because other features won't matter if learners don't come back.
+**Priority Rationale:** We observed students trying Pramana, enjoying it, but not returning. Solving engagement is the top priority because other features won't matter if learners don't come back.
 
 **The Problem:** Learners drop off due to a lack of visible progress tracking, mismatched motivation/reward systems for different age groups, rigid habit structures, and shallow gamification that creates short spikes of activity instead of long-term use.
 
-Every improvement on Tenali depends on learners coming back consistently. This problem statement is directly grounded in real observation rather than assumed gaps.
+Every improvement on Pramana depends on learners coming back consistently. This problem statement is directly grounded in real observation rather than assumed gaps.
 
 **Research References:**
 - **Self-Determination Theory (Deci & Ryan, 2000):** Motivation and sustained engagement depend on satisfying three basic psychological needs: autonomy, competence, and relatedness. Extrinsic rewards like badges or points create short-term activity, but long-term retention requires visible progress and felt competence.
@@ -18,7 +18,7 @@ Every improvement on Tenali depends on learners coming back consistently. This p
 
 **Priority Rationale:** This forms the structural backbone for engagement. If a learner hits a sudden difficulty spike, confusing transitions, or gets stuck, they will disengage regardless of rewards.
 
-**Vision:** Every learner moves through Tenali on a staircase tailored to them: steps small enough to feel reachable, clear transitions between levels, and built-in recovery options when someone struggles.
+**Vision:** Every learner moves through Pramana on a staircase tailored to them: steps small enough to feel reachable, clear transitions between levels, and built-in recovery options when someone struggles.
 
 ### Facet 1: Granular Level Design
 **The Problem:** Concepts are often packed into too few, uneven levels. Some are broken down carefully while others are compressed, creating steep jumps and unexpected difficulty spikes.

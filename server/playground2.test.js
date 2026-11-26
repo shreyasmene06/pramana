@@ -55,7 +55,7 @@ describe('POST /api/playground2/run', () => {
 
   it('a forged token with the public default secret is still refused', async () => {
     const jwt = require('jsonwebtoken');
-    const forged = jwt.sign({ username: 'sudarshan' }, 'tenali-dev-secret-change-me');
+    const forged = jwt.sign({ username: 'testuser' }, 'tenali-dev-secret-change-me');
     const res = await request(app).post('/api/playground2/run').set('Authorization', `Bearer ${forged}`)
       .send({ language: 'python', code: evil.python });
     expect(res.status).toBe(401);

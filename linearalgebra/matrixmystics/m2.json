@@ -93,7 +93,7 @@
           },
           {
             "id": "M2Q1E8",
-            "question": "How many letters are in the word SUDARSHANA?",
+            "question": "How many letters are in the word CIPHERTEXT?",
             "options": [
               "9",
               "10",
@@ -101,7 +101,7 @@
               "8"
             ],
             "correct_option": "10",
-            "explanation": "S-U-D-A-R-S-H-A-N-A has exactly 10 letters."
+            "explanation": "C-I-P-H-E-R-T-E-X-T has exactly 10 letters."
           },
           {
             "id": "M2Q1E9",

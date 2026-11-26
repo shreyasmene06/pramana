@@ -20,7 +20,7 @@ done
 APP_FILE="client/src/App.jsx"
 if [ -f "$APP_FILE" ]; then
   # Extract current version
-  CURRENT_VERSION=$(grep "const TENALI_VERSION" "$APP_FILE" | sed "s/.*= '//;s/'.*//")
+  CURRENT_VERSION=$(grep -E "const (TENALI|SOOTRA)_VERSION" "$APP_FILE" | head -n 1 | sed "s/.*= '//;s/'.*//")
   if [ -n "$CURRENT_VERSION" ]; then
     # Increment patch version (1.0.1 → 1.0.2)
     MAJOR=$(echo "$CURRENT_VERSION" | cut -d. -f1)
@@ -31,8 +31,8 @@ if [ -f "$APP_FILE" ]; then
     # Get current IST time (UTC+5:30)
     IST_DATE=$(TZ='Asia/Kolkata' date '+%Y-%m-%d %H:%M IST')
     # Update version and date in file
-    sed -i '' "s/const TENALI_VERSION = '${CURRENT_VERSION}'/const TENALI_VERSION = '${NEW_VERSION}'/" "$APP_FILE"
-    sed -i '' "s/const TENALI_BUILD_DATE = '.*'/const TENALI_BUILD_DATE = '${IST_DATE}'/" "$APP_FILE"
+    sed -i "s/const SOOTRA_VERSION = '${CURRENT_VERSION}'/const SOOTRA_VERSION = '${NEW_VERSION}'/" "$APP_FILE"
+    sed -i "s/const SOOTRA_BUILD_DATE = '.*'/const SOOTRA_BUILD_DATE = '${IST_DATE}'/" "$APP_FILE"
     echo "📌 Version: ${CURRENT_VERSION} → ${NEW_VERSION} (${IST_DATE})"
   fi
 fi

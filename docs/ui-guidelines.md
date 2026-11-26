@@ -1,6 +1,6 @@
-# Tenali UI Guidelines & Design System
+# Pramana UI Guidelines & Design System
 
-Tenali focuses on a **minimalistic, cognitive-load-aware UI** (refer to `docs/problem-statements.md` for the underlying pedagogical research). To ensure a consistent look and feel across features built by different contributors, you must strictly follow this design system and use the centralized CSS tokens.
+Pramana focuses on a **minimalistic, cognitive-load-aware UI** (refer to `docs/problem-statements.md` for the underlying pedagogical research). To ensure a consistent look and feel across features built by different contributors, you must strictly follow this design system and use the centralized CSS tokens.
 
 ---
 
@@ -21,7 +21,7 @@ All UI elements must utilize these global custom CSS variables instead of hardco
 
 ### Theme Palette (Dark & Light)
 
-Tenali features a default **Dark theme** with a toggleable **Light theme**. The variables resolve automatically based on the presence of the `[data-theme="light"]` attribute on the DOM.
+Pramana features a default **Dark theme** with a toggleable **Light theme**. The variables resolve automatically based on the presence of the `[data-theme="light"]` attribute on the DOM.
 
 | Variable | Dark Theme (Default) | Light Theme | Usage |
 | :--- | :--- | :--- | :--- |

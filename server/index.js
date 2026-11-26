@@ -1818,10 +1818,10 @@ function ensureUserMilestones(user) {
     user.milestones = [];
   }
   
-  const hasJoined = user.milestones.some(m => m.event === 'Joined Tenali');
+  const hasJoined = user.milestones.some(m => m.event === 'Joined Pramana' || m.event === 'Joined Tenali');
   if (!hasJoined) {
     user.milestones.push({
-      event: 'Joined Tenali',
+      event: 'Joined Pramana',
       date: user.createdAt || new Date(),
       type: 'system'
     });

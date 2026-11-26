@@ -67,7 +67,7 @@ export default function AppVideoDemo({ onSelectTopic = () => {} }) {
         <div className="section-tag">
           <span>▶️ Interactive Demo & Video</span>
         </div>
-        <h2 className="section-title">See Tenali in Action</h2>
+        <h2 className="section-title">See Pramana in Action</h2>
         <p className="section-subtitle">
           Experience the real-time feedback loop: answer on-the-fly generated questions, watch difficulty calibrate dynamically, and inspect step-by-step explanations.
         </p>
@@ -83,7 +83,7 @@ export default function AppVideoDemo({ onSelectTopic = () => {} }) {
           </div>
 
           <div className="demo-window-title">
-            <span>🎮 Tenali Interactive Preview Player</span>
+            <span>🎮 Pramana Interactive Preview Player</span>
           </div>
 
           <div className="demo-mode-switcher">
@@ -214,7 +214,7 @@ export default function AppVideoDemo({ onSelectTopic = () => {} }) {
             {showHint && (
               <div className="sim-hint-card">
                 <strong style={{ color: 'var(--clr-accent)', display: 'block', marginBottom: 6 }}>
-                  📐 Step-by-Step Tenali Raman Solution:
+                  📐 Step-by-Step Solution:
                 </strong>
                 <ol style={{ paddingLeft: 20, margin: 0, lineHeight: 1.6 }}>
                   <li>Apply the Pythagorean theorem: <code>c² = a² + b²</code></li>

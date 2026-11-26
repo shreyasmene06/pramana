@@ -23,7 +23,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const logger = require('./lib/logger');
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/tenali';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/pramana';
 const DEFAULT_DEV_SECRET = 'tenali-dev-secret-change-me';
 const JWT_SECRET = process.env.JWT_SECRET || DEFAULT_DEV_SECRET;
 const JWT_TTL = process.env.JWT_TTL || '14d';
@@ -249,7 +249,7 @@ async function connectMongo(uri = MONGO_URI) {
 // are committed to source. If unset, no users are seeded and existing DB users
 // still log in. The admin entry (role "admin") gates the proctor dashboard, so a
 // deploy that needs proctor access must include one in TENALI_SEED_USERS.
-const ENV_SEED_USERS = (process.env.TENALI_SEED_USERS || '')
+const ENV_SEED_USERS = (process.env.SOOTRA_SEED_USERS || process.env.TENALI_SEED_USERS || '')
   .split(',')
   .map((s) => s.trim())
   .filter(Boolean)

@@ -32,7 +32,7 @@ nothing is sent anywhere.
 
 ## CR — Real-World Math Pathways
 
-A phenomenon-first route into the existing Tenali cards. Instead of picking a
+A phenomenon-first route into the existing Pramana cards. Instead of picking a
 topic, the student picks something real — a car — and the mathematics arrives in
 the order the phenomenon demands it.
 
@@ -49,12 +49,12 @@ a mastery check that must be passed to unlock the next stop.
 - **Mastery check** — passing it marks the stop cleared and opens the next one.
 - **Stops are locked in sequence.** Finish the previous stop to unlock the next.
 
-### Road License — hand-off into Tenali
+### Road License — hand-off into Pramana
 
-Clearing a stop earns a licence naming the Tenali card it maps to and the level
+Clearing a stop earns a licence naming the Pramana card it maps to and the level
 the student has demonstrably earned:
 
-> 🪪 Cleared: Multiplication — start at **Hard — tables up to 12** in Tenali.
+> 🪪 Cleared: Multiplication — start at **Hard — tables up to 12** in Pramana.
 
 Tapping **Open Multiplication →** opens that card with Hard already selected.
 The student can change it freely before starting — the licence says where they
@@ -109,7 +109,7 @@ a question with 📎, save, then reopen to edit or export it.
 
 **Car Journey** — open the ☰ menu → **Real-World** → **Cars**. Stop 1 is open;
 the rest unlock in sequence. Clear a stop to see its Road Licence, then tap
-**Open <topic> →** to land on that Tenali card with the earned level selected.
+**Open <topic> →** to land on that Pramana card with the earned level selected.
 
 ## Notes for reviewers
 

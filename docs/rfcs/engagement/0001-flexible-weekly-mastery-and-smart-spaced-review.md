@@ -10,7 +10,7 @@
 
 ## 1. Problem Statement
 
-Tenali currently suffers from learner churn after initial engagement. While learners enjoy the interactive math quizzes during their first visit, returning rates drop sharply. 
+Pramana currently suffers from learner churn after initial engagement. While learners enjoy the interactive math quizzes during their first visit, returning rates drop sharply. 
 
 ### Key Pain Points Identified:
 1. **Brittle Habit Loops:** Traditional daily streaks (1-day missed = reset to 0) punish minor life disruptions, triggering the *"abstinence violation effect"* where learners abandon the platform completely after breaking a streak.
@@ -89,7 +89,7 @@ flowchart TD
 
 ### 3.2. Frontend Design & UI System Adherence
 
-The UI strictly complies with the **Tenali Minimalistic Design System**:
+The UI strictly complies with the **Pramana Minimalistic Design System**:
 
 #### A. Weekly Habit & Warmup Card
 - Sits above the 90+ topic grid on the Home screen.
@@ -112,7 +112,7 @@ The UI strictly complies with the **Tenali Minimalistic Design System**:
 | Approach Considered | Trade-Offs | Why It Was Rejected |
 | :--- | :--- | :--- |
 | **Strict 7-Day Calendar Streak** | High initial urgency | High churn rate when a single day is missed; promotes anxiety rather than genuine competence. |
-| **Streak Freezes / Buybacks** | Forgives occasional misses | Requires virtual currency paywalls/sinks, violating Tenali's zero-cost open educational philosophy. |
+| **Streak Freezes / Buybacks** | Forgives occasional misses | Requires virtual currency paywalls/sinks, violating Pramana's zero-cost open educational philosophy. |
 | **Full 10-Question Diagnostic Quiz** | Thorough assessment | High cognitive burden upon opening the app; discourages quick daily touchpoints. |
 | **Browser Push Notifications** | Out-of-app reminders | Intrusive, low conversion, and creates extraneous distraction. |
 
@@ -144,5 +144,5 @@ The UI strictly complies with the **Tenali Minimalistic Design System**:
 
 ## 7. Open Questions & Reviewer Feedback
 
-- *Question 1:* Should guest (unauthenticated) learners have their weekly target saved in `localStorage['tenali-weekly-habit']`? (Proposed: Yes, with automatic migration upon login).
+- *Question 1:* Should guest (unauthenticated) learners have their weekly target saved in `localStorage['pramana-weekly-habit']`? (Proposed: Yes, with automatic migration upon login).
 - *Question 2:* Is 3 questions the optimal warmup length, or should users be allowed to configure it between 3 and 5?

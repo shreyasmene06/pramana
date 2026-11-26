@@ -66,7 +66,7 @@ export default function VoiceAssistant({ onStartTour }) {
       
       {expanded && (
         <div className="va-menu">
-          <h4>Tenali Guide</h4>
+          <h4>Pramana Guide</h4>
           <button className="va-btn" onClick={() => { if (onStartTour) onStartTour(); setSpeaking(false); window.speechSynthesis.cancel(); }}>
             🗺️ Take a tour
           </button>

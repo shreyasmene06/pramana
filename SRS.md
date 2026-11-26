@@ -1,8 +1,8 @@
-# Tenali — Complete Software Specification
+# Pramana — Complete Software Specification
 
-**Version:** 4.0 | **Date:** April 5, 2026 | **Author:** Sudarshan Iyengar, IIT Ropar
+**Version:** 4.0 | **Date:** April 5, 2026 | **Author:** Core Team
 
-> This document is a complete, formal specification of the Tenali educational quiz platform. An LLM given only this document should be able to recreate the entire project from scratch.
+> This document is a complete, formal specification of the Pramana educational quiz platform. An LLM given only this document should be able to recreate the entire project from scratch.
 
 ---
 

@@ -6,8 +6,8 @@ const tourData = {
   home: [
     {
       id: 'tour-welcome',
-      title: 'Welcome to Tenali!',
-      message: 'Tenali is an AI-native learning journey that completely flips how you learn. Instead of just reading, you will face real-world scenarios and use your natural reasoning to solve them first. This tour will walk you through the entire experience.',
+      title: 'Welcome to Pramana!',
+      message: 'Pramana is an AI-native learning journey that completely flips how you learn. Instead of just reading, you will face real-world scenarios and use your natural reasoning to solve them first. This tour will walk you through the entire experience.',
       mockup: null
     },
     {

@@ -1,4 +1,4 @@
-# Feature Proposal Process for Tenali Interns
+# Feature Proposal Process for Pramana Interns
 
 As we scale development with multiple interns building parallel features, we need a structured way to review feature ideas before they clutter the codebase, while keeping the actual implementation process as lightweight as possible.
 

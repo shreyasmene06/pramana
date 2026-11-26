@@ -6,7 +6,7 @@ const SLIDES = [
     badgeText: 'CORE ENGINE',
     badgeColor: '#e8864a',
     title: 'Adaptive Practice with Instant Step-by-Step Solvers',
-    description: 'Every problem is mathematically generated on the fly. As you answer, Tenali’s dynamic engine calibrates your difficulty band in real time, from Easy to Extra-Hard.',
+    description: 'Every problem is mathematically generated on the fly. As you answer, Pramana’s dynamic engine calibrates your difficulty band in real time, from Easy to Extra-Hard.',
     highlights: [
       'Self-calibrating score (0.0 to 3.0) adapts per answer',
       'One-tap "Solve" for crystal-clear pedagogical explanations',
@@ -70,7 +70,7 @@ const SLIDES = [
     badgeText: 'ERROR RECOVERY',
     badgeColor: '#8b5cf6',
     title: 'Misconception Monsters: Turn Mistakes into Mastery',
-    description: 'When you slip up on a common trap, Tenali catches the specific misconception monster and guides you through a personalized cure rather than just marking it wrong.',
+    description: 'When you slip up on a common trap, Pramana catches the specific misconception monster and guides you through a personalized cure rather than just marking it wrong.',
     highlights: [
       'Real-time cognitive error classifier targeting known traps',
       'Hall of Silly Mistakes to track and tame common errors',
@@ -148,7 +148,7 @@ export default function ImageSlider({ onSelectTopic = () => { } }) {
         <span className="section-tag">🚀 Platform Showcase</span>
         <h2 className="section-title">Engineered for Deep Mathematical Mastery</h2>
         <p className="section-subtitle">
-          Explore the breakthrough features that make Tenali more than just another quiz app.
+          Explore the breakthrough features that make Pramana more than just another quiz app.
         </p>
       </div>
 

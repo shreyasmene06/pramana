@@ -64,18 +64,18 @@ export default function LandingNavbar({
           type="button"
           className="landing-nav-brand"
           onClick={() => handleNavClick('hero')}
-          aria-label="Tenali Home"
+          aria-label="Pramana Home"
         >
           <img
             src="/tenali.png"
-            alt="Tenali Raman Mascot"
+            alt="Pramana Logo"
             className="landing-nav-logo"
             onError={(e) => {
               e.target.style.display = 'none';
             }}
           />
           <div className="landing-nav-title-group">
-            <span className="landing-nav-title">Tenali</span>
+            <span className="landing-nav-title">Pramana</span>
             <span className="landing-nav-badge">v1.1 Adaptive</span>
           </div>
         </button>

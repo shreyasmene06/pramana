@@ -26,7 +26,7 @@ export default function LandingHero({ onExplorePuzzles = () => {} }) {
           </h1>
 
           <p className="hero-description">
-            Named after the legendary wit <strong>Tenali Raman</strong>, Tenali turns math practice into an infinite adventure. With <strong>93+ algorithmic puzzle types</strong>, real-time adaptive difficulty, multiplayer duels, and visual concept labs, every problem is generated on the fly—ensuring practice is never repetitive.
+            Rooted in deep first-principles thinking and logic, <strong>Pramana</strong> turns math practice into an infinite adventure. With <strong>93+ algorithmic puzzle types</strong>, real-time adaptive difficulty, multiplayer duels, and visual concept labs, every problem is generated on the fly—ensuring practice is never repetitive.
           </p>
 
           <div className="hero-cta-group">
@@ -76,7 +76,7 @@ export default function LandingHero({ onExplorePuzzles = () => {} }) {
             
             <img
               src="/tenali.png"
-              alt="Tenali Raman - The Wit of Logic"
+              alt="Pramana Logo"
               className="hero-mascot-img"
               onError={(e) => {
                 e.target.style.display = 'none';

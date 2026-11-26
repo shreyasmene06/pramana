@@ -17,13 +17,13 @@ export default function LandingFooter({
             <div className="footer-brand-header">
               <img
                 src="/tenali.png"
-                alt="Tenali Logo"
+                alt="Pramana Logo"
                 className="footer-brand-logo"
                 onError={(e) => {
                   e.target.style.display = 'none';
                 }}
               />
-              <span className="footer-brand-title">Tenali</span>
+              <span className="footer-brand-title">Pramana</span>
             </div>
 
             <p className="footer-brand-desc">
@@ -119,42 +119,27 @@ export default function LandingFooter({
             <ul className="footer-links-list">
               <li>
                 <a
-                  href="https://github.com/vicharanashala/tenali"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="#overview"
                   className="footer-link-btn"
+                  onClick={scrollToTop}
                 >
-                  ⭐ GitHub Repository
+                  ⭐ Open Source Core
                 </a>
               </li>
               <li>
                 <a
-                  href="https://github.com/vicharanashala/tenali/blob/main/CONTRIBUTORS.md"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="#contributors"
                   className="footer-link-btn"
                 >
-                  👥 Contributors (40+)
+                  👥 Contributors
                 </a>
               </li>
               <li>
                 <a
-                  href="https://github.com/vicharanashala/tenali/blob/main/LICENSE"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="#license"
                   className="footer-link-btn"
                 >
                   📜 MIT Open Source License
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://tenali.fun"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="footer-link-btn"
-                >
-                  🌐 Live: tenali.fun
                 </a>
               </li>
               <li>
@@ -176,7 +161,7 @@ export default function LandingFooter({
         {/* Bottom Bar */}
         <div className="footer-bottom-bar">
           <div>
-            © 2026 Tenali Platform. Built for curious learners everywhere.
+            © 2026 Pramana Platform. Built for curious learners everywhere.
           </div>
 
           <div className="footer-badges-strip">

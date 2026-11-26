@@ -1,13 +1,13 @@
 # Case Study: Duolingo
 
-> Part of the **Tenali Case Study Library**
+> Part of the **Pramana Case Study Library**
 > Category: Engagement & Gamification · Adaptive Learning Systems
 
 ---
 
 ## 1. Why This Case Study
 
-Duolingo comes up constantly in Tenali discussions - usually when we're talking about Engagement, streaks, or "how do we make learners come back." This doc pulls that recurring conversation into one reference: what Duolingo actually does, the research behind it, and - critically - which parts are genuinely relevant to Tenali versus which parts don't transfer (different audience, no monetization pressure, different pedagogical goals).
+Duolingo comes up constantly in Pramana discussions - usually when we're talking about Engagement, streaks, or "how do we make learners come back." This doc pulls that recurring conversation into one reference: what Duolingo actually does, the research behind it, and - critically - which parts are genuinely relevant to Pramana versus which parts don't transfer (different audience, no monetization pressure, different pedagogical goals).
 
 ---
 
@@ -41,7 +41,7 @@ Push notifications and in-app cues (like a simple red dot) are tuned to create u
 
 ## 4. The Science Behind the Mechanics
 
-This is the part most directly relevant to Tenali, since it's about *learning*, not just habit-formation.
+This is the part most directly relevant to Pramana, since it's about *learning*, not just habit-formation.
 
 ### 4.1 Half-Life Regression (HLR)
 Published by Duolingo researchers Burr Settles and Brendan Meeder at ACL 2016, Half-Life Regression models each word or fact a learner is studying as having a **"half-life"** - the time until there's a 50% chance the learner will have forgotten it. The model estimates this half-life per learner, per item, using features like how many times the item has been seen, how often it was answered correctly, and time since last practice. In evaluation, HLR produced substantially lower prediction error than the older Leitner box system it was compared against. Duolingo has since released the underlying dataset (roughly 13 million learner-word interaction records) publicly, and it has been used as a benchmark in academic spaced-repetition research beyond Duolingo itself.
@@ -50,7 +50,7 @@ Published by Duolingo researchers Burr Settles and Brendan Meeder at ACL 2016, H
 Duolingo's more recent adaptive-difficulty system, reportedly built on top of HLR-style forgetting-curve modeling, personalizes not just *when* to review a word but the difficulty and content of an entire lesson in real time - reportedly requiring a rewrite of their session-generation backend to bring prediction latency down from roughly 750ms to about 14ms so this personalization could happen live, per lesson, at scale.
 
 ### 4.3 Why This Matters More Than the Gamification Layer
-The forgetting-curve modeling is Duolingo's actual pedagogical engine - streaks and leagues get someone to open the app, but HLR/Birdbrain decide *what they should practice next* based on a genuine model of what they're likely to have forgotten. This is architecturally very close to what Tenali's **Mastery Tracking** and **Performance-Based Regression** facets are trying to solve: a persistent, per-learner, per-concept model of mastery that decays over time and drives what content to surface next.
+The forgetting-curve modeling is Duolingo's actual pedagogical engine - streaks and leagues get someone to open the app, but HLR/Birdbrain decide *what they should practice next* based on a genuine model of what they're likely to have forgotten. This is architecturally very close to what Pramana's **Mastery Tracking** and **Performance-Based Regression** facets are trying to solve: a persistent, per-learner, per-concept model of mastery that decays over time and drives what content to surface next.
 
 ---
 
@@ -58,28 +58,28 @@ The forgetting-curve modeling is Duolingo's actual pedagogical engine - streaks 
 
 - **Skill tree structure:** Courses are organized as a tree of skills, each represented visually (in earlier versions, literally as a strength bar that visibly "wears down" over time, nudging the learner back to review it).
 - **Short, single-focus lessons:** Each lesson is short (a few minutes), gated to one skill at a time, minimizing what's on screen during active practice - one exercise, one input, minimal surrounding chrome.
-- **Consistent interaction patterns:** The exercise formats (translate, match pairs, fill-in-blank, listen-and-type) repeat throughout a course, so learners spend their cognitive effort on the *content*, not on relearning how to interact with a new screen type - directly resembling what Tenali's **Minimalistic, Cognitive-Load-Aware UI** problem statement is aiming for.
+- **Consistent interaction patterns:** The exercise formats (translate, match pairs, fill-in-blank, listen-and-type) repeat throughout a course, so learners spend their cognitive effort on the *content*, not on relearning how to interact with a new screen type - directly resembling what Pramana's **Minimalistic, Cognitive-Load-Aware UI** problem statement is aiming for.
 
 ---
 
 ## 6. Business Model Snapshot (context, not directly transferable)
 
-Duolingo operates freemium: a free tier gated by Hearts and ads, and paid tiers (including an AI-powered "Duolingo Max" tier) that remove those limits and add features. Several mechanics above - Hearts, league repair, gem purchases - exist partly as monetization levers, not purely pedagogical ones. This is an important caveat: **Tenali has no monetization pressure**, so any mechanic borrowed from Duolingo should be evaluated purely on whether it serves learning and genuine motivation, with the monetization-driven friction (hearts limiting free users, paid league repair) deliberately left out.
+Duolingo operates freemium: a free tier gated by Hearts and ads, and paid tiers (including an AI-powered "Duolingo Max" tier) that remove those limits and add features. Several mechanics above - Hearts, league repair, gem purchases - exist partly as monetization levers, not purely pedagogical ones. This is an important caveat: **Pramana has no monetization pressure**, so any mechanic borrowed from Duolingo should be evaluated purely on whether it serves learning and genuine motivation, with the monetization-driven friction (hearts limiting free users, paid league repair) deliberately left out.
 
 ---
 
 ## 7. Critiques Worth Noting
 
 - **Engagement ≠ learning.** Streaks and leagues are validated to increase app opens and session frequency; they are not, by themselves, evidence of better learning outcomes. Reward the *behavior* (opening the app) and you may get more of that behavior without necessarily getting more mastery.
-- **Loss aversion can tip into anxiety.** For some users, the fear of losing a long streak becomes a source of stress rather than motivation - worth watching for in Tenali's context, particularly with younger learners.
-- **Social features have monetization-adjacent designs** (league repair for gems) that Tenali should deliberately not replicate.
-- **Notification/identity-framing tactics** sit close to what some critics label manipulative "dark patterns." Tenali should be able to borrow the underlying psychological insight (people respond to identity framing, not just reminders) without adopting the more aggressive versions of it.
+- **Loss aversion can tip into anxiety.** For some users, the fear of losing a long streak becomes a source of stress rather than motivation - worth watching for in Pramana's context, particularly with younger learners.
+- **Social features have monetization-adjacent designs** (league repair for gems) that Pramana should deliberately not replicate.
+- **Notification/identity-framing tactics** sit close to what some critics label manipulative "dark patterns." Pramana should be able to borrow the underlying psychological insight (people respond to identity framing, not just reminders) without adopting the more aggressive versions of it.
 
 ---
 
-## 8. Direct Relevance to Tenali Problem Statements
+## 8. Direct Relevance to Pramana Problem Statements
 
-| Duolingo Mechanic/System | Related Tenali Problem Statement | Takeaway |
+| Duolingo Mechanic/System | Related Pramana Problem Statement | Takeaway |
 |---|---|---|
 | Streaks, leagues, XP | **Engagement** | Validates that visible, forgiving progress + social accountability drive return visits - but should be tied to genuine mastery signals, not just activity, per our own Engagement problem statement. |
 | Half-Life Regression / Birdbrain | **Mastery Tracking**, **Performance-Based Regression** (Progression facet) | The closest real-world precedent for a persistent, decaying, per-concept mastery model driving what content to surface next - worth studying as a reference architecture, not necessarily copying the exact model. |
@@ -88,10 +88,10 @@ Duolingo operates freemium: a free tier gated by Hearts and ads, and paid tiers 
 
 ---
 
-## 9. Open Questions for Tenali
+## 9. Open Questions for Pramana
 
 - Could a simplified version of Half-Life Regression (or a similar decay model) be a reasonable technical foundation for Mastery Tracking's "confidence decay," rather than inventing this from scratch?
-- What would a monetization-free, purely-mastery-driven version of "streaks + leagues" look like for Tenali's much wider age range (early childhood through research-level), where the same mechanic likely shouldn't look identical across personas?
+- What would a monetization-free, purely-mastery-driven version of "streaks + leagues" look like for Pramana's much wider age range (early childhood through research-level), where the same mechanic likely shouldn't look identical across personas?
 - How do we borrow Duolingo's minimalist, single-focus lesson screen pattern without also inheriting its more manipulative notification/identity-framing tactics?
 
 ---

@@ -8,8 +8,8 @@ export default function ClassSelection({ onSelect }) {
 
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '40px 20px', textAlign: 'center' }}>
-      <img src="/tenali.png" alt="Tenali Raman" style={{ width: '120px', height: 'auto', marginBottom: '20px' }} />
-      <h1 style={{ fontSize: '2.5rem', marginBottom: '10px', color: 'var(--clr-text)' }}>Welcome to Tenali</h1>
+      <img src="/tenali.png" alt="Pramana Logo" style={{ width: '120px', height: 'auto', marginBottom: '20px' }} />
+      <h1 style={{ fontSize: '2.5rem', marginBottom: '10px', color: 'var(--clr-text)' }}>Welcome to Pramana</h1>
       <p style={{ fontSize: '1.2rem', color: 'var(--clr-text-soft)', marginBottom: '40px' }}>What class are you in?</p>
       
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '16px' }}>

@@ -36,7 +36,7 @@ const FEATURES = [
   {
     icon: '👾',
     title: 'Misconception Monster Healing',
-    description: 'Slips and mistakes aren’t punished—they are diagnosed. Tenali’s misconception engine classifies error patterns into collectible monsters, providing targeted guided solvers to cure reasoning traps permanently.',
+    description: 'Slips and mistakes aren’t punished—they are diagnosed. Pramana’s misconception engine classifies error patterns into collectible monsters, providing targeted guided solvers to cure reasoning traps permanently.',
     tag: 'Gamified Diagnostic',
     bg: 'rgba(139, 92, 246, 0.15)',
     border: 'rgba(139, 92, 246, 0.4)',
@@ -60,7 +60,7 @@ export default function FeaturesOverview() {
         </div>
         <h2 className="section-title">Built for Deep Understanding & Delight</h2>
         <p className="section-subtitle">
-          Tenali pairs rigorous mathematical algorithms with game mechanics and pedagogical insight, creating an engaging environment for learners of all ages.
+          Pramana pairs rigorous mathematical algorithms with game mechanics and pedagogical insight, creating an engaging environment for learners of all ages.
         </p>
       </div>
 

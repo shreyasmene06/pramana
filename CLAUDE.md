@@ -29,16 +29,16 @@ cd client && npm run lint
 
 **Deploy (production on this server):**
 ```bash
-sudo systemctl restart tenali
+sudo systemctl restart pramana
 ```
-The systemd service runs `node /home/tenali/tenali/server/index.js` as the `tenali` user. Nginx proxies `tenali.fun` → port 4000 with SSL already configured.
+The systemd service runs `node /home/pramana/pramana/server/index.js` as the `pramana` user. Nginx proxies `pramana.fun` → port 4000 with SSL already configured.
 
 ---
 
 ## Architecture
 
 ### Overview
-Tenali is a **stateless** adaptive math quiz platform. The backend generates questions algorithmically on every request — there is no database for question storage. All 69 puzzle types have a `GET /<type>-api/question` and `POST /<type>-api/check` pair in a single file.
+Pramana is a **stateless** adaptive math quiz platform. The backend generates questions algorithmically on every request — there is no database for question storage. All 69 puzzle types have a `GET /<type>-api/question` and `POST /<type>-api/check` pair in a single file.
 
 ### Server (`server/index.js` — ~9000 lines)
 One monolithic file. The structure top-to-bottom:
@@ -52,7 +52,7 @@ One monolithic file. The structure top-to-bottom:
 
 ### Client (`client/src/App.jsx` — ~47000 lines)
 One monolithic React file. All components live here. Structure:
-- **`useAuth()`** — login/logout hook with localStorage persistence and a custom `tenali-auth-change` window event for cross-component sync.
+- **`useAuth()`** — login/logout hook with localStorage persistence and a custom `pramana-auth-change` window event for cross-component sync.
 - **`useTimer()`** — per-question elapsed timer (250ms tick).
 - **`useAutoAdvance()`** — auto-advances after a correct answer (3.5s delay).
 - **`makeQuizApp({ title, apiPath, diffLabels, placeholders, answerField })`** — factory that generates ~45 standard quiz components. Each has setup → playing → finished screens with adaptive difficulty, Solve, Skip, and self-report buttons built in. Use this for new puzzle types.
@@ -73,10 +73,10 @@ Each quiz tracks `adaptScore` (float 0–3). Correct → +0.15 to +0.5; wrong �
 
 ### Deployment topology
 ```
-tenali.fun (DNS → <production IP — see README deployment section>)
-  └── Nginx (SSL via Let's Encrypt, /etc/nginx/sites-available/tenali)
+pramana.fun (DNS → <production IP — see README deployment section>)
+  └── Nginx (SSL via Let's Encrypt, /etc/nginx/sites-available/pramana)
         └── proxy_pass http://127.0.0.1:4000
-              └── tenali.service (systemd, runs as tenali user)
-                    └── node /home/tenali/tenali/server/index.js
+              └── pramana.service (systemd, runs as pramana user)
+                    └── node /home/pramana/pramana/server/index.js
 ```
-The repo lives at `/home/tenali/tenali/`. Changes to server code require a service restart. Changes to client code require a production build followed by a service restart.
+The repo lives at `/home/pramana/pramana/`. Changes to server code require a service restart. Changes to client code require a production build followed by a service restart.

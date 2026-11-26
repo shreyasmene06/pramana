@@ -202,7 +202,7 @@ function PageNotFound({ pathname }) {
       <div className="card" style={{ textAlign: 'center' }}>
         <h1 style={{ marginTop: 0 }}>Page not found</h1>
         <p style={{ color: 'var(--clr-text-soft)' }}>
-          There is no Tenali page at <code>{pathname}</code>.
+          There is no page at <code>{pathname}</code>.
         </p>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '20px' }}>
           <button type="button" onClick={() => { window.location.href = withBase('/?view=puzzles') }}>Browse all puzzles</button>
@@ -2239,7 +2239,7 @@ function ScaffoldedTablesApp({ studentName, defaultTable = 2 }) {
     return (
       <div className="app-shell">
         <div className="card">
-          <h1>Tenali's Tables Desk</h1>
+          <h1>Tables Desk</h1>
           <p style={{ textAlign: 'center', color: 'var(--clr-text-soft)', margin: '0.5rem 0 1.5rem' }}>
             Pick a table to practice:
           </p>
@@ -45584,9 +45584,9 @@ function Home({ onSelect, onBackToLanding, completedTopics = [], goldMastery = [
           </button>
         )}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginBottom: '4px', paddingTop: (isGoalSelection || onBackToLanding) ? '44px' : '0' }}>
-          <img src="/tenali.png" alt="Tenali Raman" style={{ width: '80px', height: 'auto', flexShrink: 0 }} />
+          <img src="/tenali.png" alt="Pramana Logo" style={{ width: '80px', height: 'auto', flexShrink: 0 }} />
           <div>
-            <h1 style={{ margin: 0 }}>{isGoalSelection ? 'Goal Practice' : 'Tenali Puzzles & Games'}</h1>
+            <h1 style={{ margin: 0 }}>{isGoalSelection ? 'Goal Practice' : 'Pramana Puzzles & Games'}</h1>
             <p className="subtitle" style={{ margin: 0 }}>
               {isGoalSelection ? 'Select a topic to practice with custom goals' : 'Explore 90+ algorithmically generated math and reasoning games'}
             </p>
